@@ -12,7 +12,7 @@ $ setup -v -r path/to/fake-sources/
 ####Running
 To run, you need to override the configure in the pipeline. The override is in config-random. You'll need to import the relevant file and then set retarget to the task you want to run. You can then set any other configurables here. The command to run it within the hsc pipeline is:
 ```bash
-$ hscProcessCcd.py /to/data/ --rerun=/to/rerun --id visit=XXX ccd=YY -C config-random
+$ hscProcessCcd.py /to/data/ --rerun=/to/rerun --id visit=XXX ccd=YY -C config_random
 ```
 
 
