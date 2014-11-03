@@ -5,7 +5,7 @@ Currently, this is only enabled in a special version of processCcd.py. In order 
 ```bash
 $ setup -v -r /home/bot/sandbox/bbot
 $ setup -v -j astrometry_net_data ps1_pv1.2c
-$ setup -v -j -r ~clackner/ptas-bosch
+$ setup -v -j -r ~clackner/sandbox/ptas-bosch
 $ setup -v -r path/to/fake-sources/
 ``` 
 
