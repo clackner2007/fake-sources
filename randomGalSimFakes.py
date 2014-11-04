@@ -43,10 +43,8 @@ class RandomGalSimFakesTask(FakeSourcesTask):
         for igal, gal in enumerate(self.galData):
             flux = exposure.getCalib().getFlux(gal['mag'])
             
-            #don't put the galaxy within 2Re or one PSF box of the edge
-            #this would probably be better served by splitting up the psf convolution and
-            #the image generation
-            margin = max(int(gal['reff_pix']*2)+1, minMargin)
+            #don't put the galaxy within 4Re or one PSF box of the edge
+            margin = max(int(gal['reff_pix']*4)+1, minMargin)
             bboxI = (exposure.getBBox(lsst.afw.image.PARENT))
             bboxI.grow(-margin)
             bboxD = lsst.afw.geom.BoxD(bboxI)
@@ -59,7 +57,6 @@ class RandomGalSimFakesTask(FakeSourcesTask):
                                                  gal['b_a'], gal['pos_ang'], psfImage.getArray())
             galImage = lsst.afw.image.ImageF(galArray.astype(np.float32))
             galBBox = galImage.getBBox()
-                      
             galImage = lsst.afw.math.offsetImage(galImage, 
                                                  x - galBBox.getWidth()/2.0 + 0.5, 
                                                  y - galBBox.getHeight()/2.0 + 0.5,
