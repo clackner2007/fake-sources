@@ -88,7 +88,7 @@ def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
                      expAll=False, devAll=False, plotFake=False, trunc=0,
                      psfNorm=False, drawMethod="auto", addPoisson=False):
 
-    # TODO: The reald input parser should be here
+    # TODO: The real input parser should be here
     # TODO: So...numpy.float32 is different from just float data type
     galID     = int(gal["ID"])
     nSersic   = float(gal["sersic_n"])
