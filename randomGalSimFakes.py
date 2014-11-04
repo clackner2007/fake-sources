@@ -60,9 +60,13 @@ class RandomGalSimFakesTask(FakeSourcesTask):
             galBBox = galImage.getBBox()
                       
             #TODO: check for 1/2 pixel offsets
+            import pdb
+            import lsst.afw.display.ds9 as ds9
+            pdb.set_trace()
             galImage = lsst.afw.math.offsetImage(galImage, 
-                                                 x - galBBox.getWidth()/2.0, y - galBBox.getHeight()/2.0,
-                                                 'bilinear')
+                                                 x - galBBox.getWidth()/2.0 + 0.5, 
+                                                 y - galBBox.getHeight()/2.0 + 0.5,
+                                                 'lanczos3')
             
             detector = exposure.getDetector()
             ccd =  lsst.afw.cameraGeom.cast_Ccd(detector)
