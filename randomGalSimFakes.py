@@ -25,6 +25,7 @@ class RandomGalSimFakesTask(FakeSourcesTask):
         FakeSourcesTask.__init__(self, **kwargs)
         print "RNG seed:", self.config.seed
         self.rng = lsst.afw.math.Random(self.config.seed)
+        self.npRand = np.random.RandomState(self.config.seed)
         self.galData = np.loadtxt(self.config.galList, dtype={'names':['ID', 'mag', 'sersic_n',
                                                                        'reff_pix', 'b_a', 'pos_ang'],
                                                               'formats':[int, float, float,
@@ -59,22 +60,25 @@ class RandomGalSimFakesTask(FakeSourcesTask):
             galImage = lsst.afw.image.ImageF(galArray.astype(np.float32))
             galBBox = galImage.getBBox()
                       
-            #TODO: check for 1/2 pixel offsets
-            import pdb
-            import lsst.afw.display.ds9 as ds9
-            pdb.set_trace()
             galImage = lsst.afw.math.offsetImage(galImage, 
                                                  x - galBBox.getWidth()/2.0 + 0.5, 
                                                  y - galBBox.getHeight()/2.0 + 0.5,
                                                  'lanczos3')
-            
+
             detector = exposure.getDetector()
             ccd =  lsst.afw.cameraGeom.cast_Ccd(detector)
             amp = ccd.findAmp(lsst.afw.geom.Point2I(int(x), int(y)))
             gain = amp.getElectronicParams().getGain()
-            #TODO: add noise to image, this is position dependent so should be done here
+            #TODO: figure out an HSC way to do add the noise
+            #TODO: this is gaussian noise right now, probably good enough
             varImage = lsst.afw.image.ImageF(galImage, True)
             varImage /= gain
+            noiseArray = self.npRand.normal(loc=0.0, 
+                                            scale=np.sqrt(varImage.getArray()), 
+                                             size=(galBBox.getHeight(),
+                                                   galBBox.getWidth()))
+            noiseImage = lsst.afw.image.ImageF(noiseArray.astype(np.float32))
+            galImage += noiseImage
 
             md.set("FAKE%d" % gal['ID'], "%.3f, %.3f" % (x, y))
             self.log.info("Adding fake at: %.1f,%.1f"% (x, y))
