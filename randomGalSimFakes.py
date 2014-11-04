@@ -39,6 +39,7 @@ class RandomGalSimFakesTask(FakeSourcesTask):
         psfBBox = psf.computeImage().getBBox()
         minMargin =  max(psfBBox.getWidth(), psfBBox.getHeight())/2 + 1
         md = exposure.getMetadata()
+        expBBox = exposure.getBBox()
 
         for igal, gal in enumerate(self.galData):
             flux = exposure.getCalib().getFlux(gal['mag'])
@@ -48,8 +49,8 @@ class RandomGalSimFakesTask(FakeSourcesTask):
             bboxI = (exposure.getBBox(lsst.afw.image.PARENT))
             bboxI.grow(-margin)
             bboxD = lsst.afw.geom.BoxD(bboxI)
-            x = self.rng.flat(bboxD.getMinX(), bboxD.getMaxX())
-            y = self.rng.flat(bboxD.getMinY(), bboxD.getMaxY())
+            x = 700.45 #self.rng.flat(bboxD.getMinX(), bboxD.getMaxX())
+            y = 4030.00 #self.rng.flat(bboxD.getMinY(), bboxD.getMaxY())
             #TODO: check for overlaps here and regenerate x,y if necessary
                        
             psfImage = psf.computeKernelImage(lsst.afw.geom.Point2D(x, y))
@@ -62,6 +63,13 @@ class RandomGalSimFakesTask(FakeSourcesTask):
                                                  y - galBBox.getHeight()/2.0 + 0.5,
                                                  'lanczos3')
 
+            #check that we're within the larger exposure, otherwise crop
+            if expBBox.contains(galImage.getBBox(lsst.afw.image.PARENT)) is False:
+                newBBox = galImage.getBBox(lsst.afw.image.PARENT)
+                newBBox.clip(expBBox)
+                #i have no idea what the next line means
+                galImage = galImage.Factory(galImage, newBBox, lsst.afw.image.PARENT)
+
             detector = exposure.getDetector()
             ccd =  lsst.afw.cameraGeom.cast_Ccd(detector)
             amp = ccd.findAmp(lsst.afw.geom.Point2I(int(x), int(y)))
@@ -71,7 +79,7 @@ class RandomGalSimFakesTask(FakeSourcesTask):
             varImage = lsst.afw.image.ImageF(galImage, True)
             varImage /= gain
             noiseArray = self.npRand.normal(loc=0.0, 
-                                            scale=np.sqrt(varImage.getArray()), 
+                                            scale=np.sqrt(np.abs(varImage.getArray())), 
                                              size=(galBBox.getHeight(),
                                                    galBBox.getWidth()))
             noiseImage = lsst.afw.image.ImageF(noiseArray.astype(np.float32))
