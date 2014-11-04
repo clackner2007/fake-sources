@@ -6,6 +6,7 @@ import lsst.afw.math
 import lsst.afw.cameraGeom
 import lsst.pex.config
 from lsst.pipe.tasks.fakes import FakeSourcesConfig, FakeSourcesTask
+import lsst.afw.display.ds9 as ds9
 
 import makeFakeGalaxy as makeFake
 
@@ -59,8 +60,9 @@ class RandomGalSimFakesTask(FakeSourcesTask):
             galBBox = galImage.getBBox()
                       
             #TODO: check for 1/2 pixel offsets
-            lsst.afw.math.offsetImage(galImage, x + galBBox.getWidth()/2.0, y + galBBox.getHeight()/2.0,
-                                      'bilinear')
+            galImage = lsst.afw.math.offsetImage(galImage, 
+                                                 x - galBBox.getWidth()/2.0, y - galBBox.getHeight()/2.0,
+                                                 'bilinear')
             
             detector = exposure.getDetector()
             ccd = lsst.afw.cameraGeom.utils.findCcd(detector, detector.getId())
