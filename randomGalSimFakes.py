@@ -11,7 +11,7 @@ import makeFakeGalaxy as makeFake
 
 
 class RandomGalSimFakesConfig(FakeSourcesConfig):
-    galList = lsst.pex.config.Field(doc="catalog of galaxies to add")
+    galList = lsst.pex.config.Field(dtype=str, doc="catalog of galaxies to add")
     #margin = lsst.pex.config.Field(dtype=int, default=None, optional=True,
     #                               doc="Size of margin at edge that should not be added")
     seed = lsst.pex.config.Field(dtype=int, default=1,
@@ -24,54 +24,56 @@ class RandomGalSimFakesTask(FakeSourcesTask):
         FakeSourcesTask.__init__(self, **kwargs)
         print "RNG seed:", self.config.seed
         self.rng = lsst.afw.math.Random(self.config.seed)
-        self.galData = np.loadtxt(self.config.galList, dtype={'ID':int, 
-                                                              'mag':float,
-                                                              'sersic_n':float, 
-                                                              'reff_pix':float,
-                                                              'b_a':float,
-                                                              'pos_ang':float})
+        self.galData = np.loadtxt(self.config.galList, dtype={'names':['ID', 'mag', 'sersic_n',
+                                                                       'reff_pix', 'b_a', 'pos_ang'],
+                                                              'formats':[int, float, float,
+                                                                         float, float, float]})
 
 
     def run(self, exposure, sources, background):
 
         self.log.info("Adding fake random galaxies")
         psf = exposure.getPsf()
+        psfBBox = psf.computeImage().getBBox()
+        minMargin =  max(psfBBox.getWidth(), psfBBox.getHeight())/2 + 1
         md = exposure.getMetadata()
 
         for igal, gal in enumerate(self.galData):
             flux = exposure.getCalib().getFlux(gal['mag'])
-           
-            psfImage = psf.computeKernelImage(lsst.afw.geom.Point2D(x, y))
-
-            galArray = makeFake.galSimFakeSersic(flux, gal['reff_pix'], gal['sersic_n'], 
-                                                 gal['b_a'], gal['pos_ang'], psfImage)
-            galImage = lsst.afw.image.ImageF(galArray.astype(np.float32))
-            galBBox = galImage.getBBox()
             
-            #TODO: these are conservative margins so the whole image is included
-            # we could make this smarter
-            margin = max(galBBox.getWidth(), galBBox.getHeight())/2 + 1
-            bboxI = (exposure.getBBox(lsst.afw.image.PARENT)).grow(-margin)
+            #don't put the galaxy within 2Re or one PSF box of the edge
+            #this would probably be better served by splitting up the psf convolution and
+            #the image generation
+            margin = max(int(gal['reff_pix']*2)+1, minMargin)
+            bboxI = (exposure.getBBox(lsst.afw.image.PARENT))
+            bboxI.grow(-margin)
             bboxD = lsst.afw.geom.BoxD(bboxI)
-            
             x = self.rng.flat(bboxD.getMinX(), bboxD.getMaxX())
             y = self.rng.flat(bboxD.getMinY(), bboxD.getMaxY())
             #TODO: check for overlaps here and regenerate x,y if necessary
+                       
+            psfImage = psf.computeKernelImage(lsst.afw.geom.Point2D(x, y))
+            galArray = makeFake.galSimFakeSersic(flux, gal['reff_pix'], gal['sersic_n'], 
+                                                 gal['b_a'], gal['pos_ang'], psfImage.getArray())
+            galImage = lsst.afw.image.ImageF(galArray.astype(np.float32))
+            galBBox = galImage.getBBox()
+                      
             #TODO: check for 1/2 pixel offsets
             lsst.afw.math.offsetImage(galImage, x + galBBox.getWidth()/2.0, y + galBBox.getHeight()/2.0,
                                       'bilinear')
             
             detector = exposure.getDetector()
-            amp = lsst.afw.cameraGeom.utils.findAmp(detector, detector.getId(), x, y)
+            ccd = lsst.afw.cameraGeom.utils.findCcd(detector, detector.getId())
+            amp = ccd.findAmp(lsst.afw.geom.Point2I(int(x), int(y)))
             gain = amp.getElectronicParams().getGain()
             #TODO: add noise to image, this is position dependent so should be done here
-            varImage = lsst.afw.image.Image(galImage)
+            varImage = lsst.afw.image.ImageF(galImage, True)
             varImage /= gain
 
-            md.set("FAKE%d" % i, "%.3f, %.3f" % (x, y))
+            md.set("FAKE%d" % gal['ID'], "%.3f, %.3f" % (x, y))
             self.log.info("Adding fake at: %.1f,%.1f"% (x, y))
 
-            galMaskedImage = lsst.afw.image.MaskedImageF(galImage, variance=varImage)
+            galMaskedImage = lsst.afw.image.MaskedImageF(galImage, None, varImage)
             #TODO: set the mask
             galMaskedImage.getMask().set(self.bitmask)
             subMaskedImage = exposure.getMaskedImage().Factory(exposure.getMaskedImage(),
