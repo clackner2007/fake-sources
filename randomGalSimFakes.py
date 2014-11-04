@@ -6,7 +6,7 @@ import lsst.afw.math
 import lsst.afw.cameraGeom
 import lsst.pex.config
 from lsst.pipe.tasks.fakes import FakeSourcesConfig, FakeSourcesTask
-import lsst.afw.display.ds9 as ds9
+
 
 import makeFakeGalaxy as makeFake
 
@@ -65,7 +65,7 @@ class RandomGalSimFakesTask(FakeSourcesTask):
                                                  'bilinear')
             
             detector = exposure.getDetector()
-            ccd = lsst.afw.cameraGeom.utils.findCcd(detector, detector.getId())
+            ccd =  lsst.afw.cameraGeom.cast_Ccd(detector)
             amp = ccd.findAmp(lsst.afw.geom.Point2I(int(x), int(y)))
             gain = amp.getElectronicParams().getGain()
             #TODO: add noise to image, this is position dependent so should be done here
