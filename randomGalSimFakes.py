@@ -49,26 +49,28 @@ class RandomGalSimFakesTask(FakeSourcesTask):
             bboxI = (exposure.getBBox(lsst.afw.image.PARENT))
             bboxI.grow(-margin)
             bboxD = lsst.afw.geom.BoxD(bboxI)
-            x = 700.45 #self.rng.flat(bboxD.getMinX(), bboxD.getMaxX())
-            y = 4030.00 #self.rng.flat(bboxD.getMinY(), bboxD.getMaxY())
+            x = self.rng.flat(bboxD.getMinX(), bboxD.getMaxX())
+            y = self.rng.flat(bboxD.getMinY(), bboxD.getMaxY())
             #TODO: check for overlaps here and regenerate x,y if necessary
                        
             psfImage = psf.computeKernelImage(lsst.afw.geom.Point2D(x, y))
             galArray = makeFake.galSimFakeSersic(flux, gal['reff_pix'], gal['sersic_n'], 
-                                                 gal['b_a'], gal['pos_ang'], psfImage.getArray())
+                                                 gal['b_a'], gal['pos_ang'], 
+                                                 psfImage.getArray())
             galImage = lsst.afw.image.ImageF(galArray.astype(np.float32))
-            galBBox = galImage.getBBox()
+            galBBox = galImage.getBBox(lsst.afw.image.PARENT)
             galImage = lsst.afw.math.offsetImage(galImage, 
                                                  x - galBBox.getWidth()/2.0 + 0.5, 
                                                  y - galBBox.getHeight()/2.0 + 0.5,
                                                  'lanczos3')
 
-            #check that we're within the larger exposure, otherwise crop
+ 
+           #check that we're within the larger exposure, otherwise crop
             if expBBox.contains(galImage.getBBox(lsst.afw.image.PARENT)) is False:
                 newBBox = galImage.getBBox(lsst.afw.image.PARENT)
                 newBBox.clip(expBBox)
-                #i have no idea what the next line means
                 galImage = galImage.Factory(galImage, newBBox, lsst.afw.image.PARENT)
+                galBBox = newBBox
 
             detector = exposure.getDetector()
             ccd =  lsst.afw.cameraGeom.cast_Ccd(detector)
