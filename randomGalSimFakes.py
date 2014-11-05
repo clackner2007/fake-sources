@@ -14,8 +14,8 @@ import makeFakeGalaxy as makeFake
 
 class RandomGalSimFakesConfig(FakeSourcesConfig):
     galList = lsst.pex.config.Field(dtype=str, doc="catalog of galaxies to add")
-    #margin = lsst.pex.config.Field(dtype=int, default=None, optional=True,
-    #                               doc="Size of margin at edge that should not be added")
+    margin = lsst.pex.config.Field(dtype=int, default=None, optional=True,
+                                   doc="Size of margin at edge that should not be added")
     seed = lsst.pex.config.Field(dtype=int, default=1,
                                  doc="Seed for random number generator")
     galType = lsst.pex.config.ChoiceField(dtype=str, default='sersic',
@@ -53,8 +53,22 @@ class RandomGalSimFakesTask(FakeSourcesTask):
         for igal, gal in enumerate(self.galData):
             flux = exposure.getCalib().getFlux(gal['mag'])
 
-            #don't put the galaxy within 4Re or one PSF box of the edge
-            margin = max(int(gal['reff_pix']*4)+1, minMargin)
+            try:
+                galident = gal["ID"]
+            except KeyError:
+                galident = igal + 1
+
+            try:
+                flux = exposure.getCalib().getFlux(float(gal['mag']))
+            except KeyError:
+                raise KeyError("No mag column in %s table"%self.config.galList)
+
+            #don't put the galaxy within one PSF box of the edge
+            #or within the given pixel margin
+            if self.config.margin is not None:
+                margin = self.config.margin
+            else:
+                margin = minMargin
             bboxI = (exposure.getBBox(lsst.afw.image.PARENT))
             bboxI.grow(-margin)
             bboxD = lsst.afw.geom.BoxD(bboxI)
@@ -66,17 +80,19 @@ class RandomGalSimFakesTask(FakeSourcesTask):
             
             galArray = makeFake.makeGalaxy( flux, gal, psfImage.getArray(), self.config.galType )
             galImage = lsst.afw.image.ImageF(galArray.astype(np.float32))
-            galBBox = galImage.getBBox()
+            galBBox = galImage.getBBox(lsst.afw.image.PARENT)
             galImage = lsst.afw.math.offsetImage(galImage,
                                                  x - galBBox.getWidth()/2.0 + 0.5,
                                                  y - galBBox.getHeight()/2.0 + 0.5,
                                                  'lanczos3')
+            galBBox = galImage.getBBox(lsst.afw.image.PARENT)
 
  
            #check that we're within the larger exposure, otherwise crop
             if expBBox.contains(galImage.getBBox(lsst.afw.image.PARENT)) is False:
                 newBBox = galImage.getBBox(lsst.afw.image.PARENT)
                 newBBox.clip(expBBox)
+                self.log.info("Cropping FAKE%d from %s to %s"%(galident, str(galBBox), str(newBBox)))
                 galImage = galImage.Factory(galImage, newBBox, lsst.afw.image.PARENT)
                 galBBox = newBBox
 
