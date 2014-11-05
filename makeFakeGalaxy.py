@@ -5,7 +5,8 @@ import galsim
 import pyfits as fits
 
 
-def makeGalaxy( flux, gal, psfImage, galType='sersic'):
+def makeGalaxy(flux, gal, psfImage, galType='sersic', drawMethod='auto',
+               trunc=10.0):
     """
     Function called by task to make galaxy images
 
@@ -14,42 +15,99 @@ def makeGalaxy( flux, gal, psfImage, galType='sersic'):
     gal = galaxy parameters in record (np.recarray)
     psfImage = np.ndarray of psfImage
     galType = type of galaxy we want to make, this has to agree with what's in the
-    record array, options now are: 'sersic' (single sersic), 
-    'dsersic' (double sersic), and 
+    record array, options now are: 'sersic' (single sersic),
+    'dsersic' (double sersic), and
     'real' (for making galaxies from real HST images)
     All the necessary keywords need to be in the fits catalog,
     including maybe drawMethod and trunc...
     """
 
-    drawMethod = 'auto'
-    trunc = 10.0 
     if galType is 'sersic':
-        return galSimFakeSersic(flux, gal, psfImage=psfImage, drawMethod=drawMethod,
-                                trunc=trunc, returnObj=False)
+        return galSimFakeSersic(flux, gal, psfImage=psfImage, trunc=trunc,
+                                drawMethod=drawMethod, returnObj=False)
+
     if galType is 'dsersic':
+        (comp1, comp2) = parseDoubleSersic(flux, gal)
+        return galSimFakeDoubleSersic(comp1, comp2, psfImage=psfImage,
+                                      trunc=trunc, drawMethod=drawMethod,
+                                      returnObj=False)
+
+    if galType is 'real':
         return None
-        #return galSimFakeDoubleSersic(flux, gal, psfImage=psfImage, .....)
-    
-    
+        #return galSimRealGalaxy(realID, psfImage=psfImage, .....)
+
+
+def parseDoubleSersic(tflux, gal):
+    """
+    Parse the input total flux [tflux] and parameter record array [gal] into two
+    parameter records for each component [comp1, comp2]
+    """
+
+    # Check if this is a real 2-Sersic record
+    try:
+        frac1 = float(gal['b2t'])
+    except KeyError:
+        raise KeyError("No b2t parameter is found in the record!!")
+    # Make sure the flux fraction of the first component is reasonable
+    if (frac1 <= 0) or (frac1 >=1):
+        raise Exception("b2t should be > 0 and <1 !!")
+    flux1, flux2 = (tflux * frac1), (tflux * (1.0 - frac1))
+
+    # Check, then read in other parameters
+    galID = gal["ID"]
+    # Effective radius
+    try:
+        reff1, reff2 = float(gal["reff_pix1"]), float(gal["reff_pix2"])
+    except KeyError:
+        raise KeyError("reff_pix1 or reff_pix2 is found in the record!!")
+    # Sersic index
+    try:
+        nser1, nser2 = float(gal["sersic_n1"]), float(gal["sersic_n2"])
+    except KeyError:
+        raise KeyError("sersic_n1 or sersic_n2 is found in the record!!")
+    # Axis ratio
+    try:
+        ba1, ba2 = float(gal["b_a1"]), float(gal["b_a2"])
+    except KeyError:
+        raise KeyError("b_a1 or b_a2 is found in the record!!")
+    # Position angle
+    try:
+        pa1, pa2 = float(gal["theta1"]), float(gal["theta2"])
+    except KeyError:
+        raise KeyError("theta1 or theta2 is found in the record!!")
+
+
+    comp1 = np.array((galID, flux1, nser1, reff1, ba1, pa1),
+                     dtype=[('ID','int'), ('mag','float'), ('sersic_n','float'),
+                            ('reff_pix','float'), ('b_a','float'),
+                            ('theta','float')])
+    comp2 = np.array((galID, flux2, nser2, reff2, ba2, pa2),
+                     dtype=[('ID','int'), ('mag','float'), ('sersic_n','float'),
+                            ('reff_pix','float'), ('b_a','float'),
+                            ('theta','float')])
+
+    return comp1, comp2
 
 
 def arrayToGSObj(imgArr, scale=1.0, norm=False):
+    """
+    Convert an input 2-D array into a GalSim Image object
+    """
     if norm:
-        gsObj = galsim.InterpolatedImage(galsim.image.Image(imgArr), scale=scale,
-                                         normalization="flux")
+        return galsim.InterpolatedImage(galsim.image.Image(imgArr),
+                                         scale=scale, normalization="flux")
     else:
-        gsObj = galsim.InterpolatedImage(galsim.image.Image(imgArr), scale=scale)
-    return gsObj
+        return galsim.InterpolatedImage(galsim.image.Image(imgArr),
+                                         scale=scale)
 
 
 def galSimDrawImage(galObj, size=0, method="auto", addPoisson=False):
+    """
+    "Draw" a GalSim Object into an GalSim Image using certain method, and with
+    certain size
+    """
 
     # Generate an "Image" object for the model
-    # TODO: The default setting is "auto"; However, when there is trunctation,
-    # it will use the "real_space" method, which is very time consuming; Using
-    # "fft" method will be less accurate, but much faster
-    # TODO: Also, simply apply truncated profile will not reduce the size of the
-    # image, we can manually truncate the image by draw it into a smaller image
     if size > 0:
         imgTemp = galsim.image.Image(size, size)
         galImg = galObj.drawImage(imgTemp, method=method)
@@ -97,16 +155,24 @@ def galSimAdd(galObjList, size=0, method="auto", returnArr=False):
         return outObj
 
 
-def plotFakeGalaxy(galObj, galID=None, size=0, addPoisson=False):
+def plotFakeGalaxy(galObj, galID=None, suffix=None, size=0, addPoisson=False):
+
+    """
+    Generate a PNG image of the model
+    By default, the image will be named as 'fake_galaxy.png'
+    """
 
     import matplotlib.pyplot as plt
 
     if galID is None:
-        outPNG = 'fake_galaxy.png'
+        outPNG = 'fake_galaxy'
     else:
-        outPNG = 'fake_galaxy_%i.png' % galID
+        outPNG = 'fake_galaxy_%i' % galID
+    if suffix is not None:
+        outPNG = outPNG + '_' + suffix.strip() + '.png'
 
     plt.figure(1, figsize=(8,8))
+
     # Use "fft" just to be fast
     plt.imshow(np.arcsinh(galSimDrawImage(galObj, size=size, method="fft",
                                          addPoisson=addPoisson)))
@@ -115,20 +181,35 @@ def plotFakeGalaxy(galObj, galID=None, size=0, addPoisson=False):
 
 def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
                      expAll=False, devAll=False, plotFake=False, trunc=0,
-                     psfNorm=False, drawMethod="auto", addPoisson=False):
+                     drawMethod="auto", addPoisson=False):
+    """
+    Make a fake single Sersic galaxy using the galSim.Sersic function
 
-    # TODO: The real input parser should be here
-    # TODO: So...numpy.float32 is different from just float data type
-    # CLAIRE, yes, but it's fine to do the casting here as galsim needs doubles
-    # and someone else may mess it up
-    galID     = int(gal["ID"])
+    Inputs: total flux of the galaxy, and a record array that stores the
+    necessary parameters [reffPix, nSersic, axisRatio, posAng]
+
+    Output: a 2-D image array of the galaxy model  OR
+            a GalSim object of the model
+
+    Options:
+        psfImage:     PSF image for convolution
+        trunc:        Flux of Sersic models will truncate at trunc * reffPix
+                      radius; trunc=0 means no truncation
+        drawMethod:   The method for drawImage: ['auto', 'fft', 'real_space']
+        addPoisson:   Add Poisson noise
+        plotFake:     Generate a PNG figure of the model
+        expAll:       Input model will be seen as nSersic=1
+        devAll:       Input model will be seen as nSersic=4
+        returnObj:    If TRUE, will return the GSObj, instead of the image array
+    """
+
+    # Convert the numpy.float32 into normal float format
     nSersic   = float(gal["sersic_n"])
     reffPix   = float(gal["reff_pix"])
     axisRatio = float(gal["b_a"])
     posAng    = float(gal["theta"])
 
-    # TODO: Decide how to do truncation or simply cut the image
-    # Right now, we truncate at trunc * reffPix
+    # Truncate the flux at trunc x reffPix
     if trunc > 0:
         trunc = int(trunc * reffPix)
 
@@ -136,8 +217,8 @@ def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
     if nSersic > 6.0:
         raise ValueError("Sersic index is too large! Should be <= 6.0")
     # Check the axisRatio value
-    if axisRatio <= 0.15:
-        raise ValueError("Axis Ratio is too small! Should be >= 0.15")
+    if axisRatio <= 0.24:
+        raise ValueError("Axis Ratio is too small! Should be >= 0.24")
 
     # Make the Sersic model based on flux, re, and Sersic index
     if nSersic == 1.0 or expAll:
@@ -145,8 +226,12 @@ def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
             serObj = galsim.Exponential(scale_radius=reffPix)
         else:
             serObj = galsim.Exponential(half_light_radius=reffPix)
+        if expAll:
+            print " * This model is treated as a n=1 Exponential disk : %d" % (gal["ID"])
     elif nSersic == 4.0 or devAll:
         serObj = galsim.DeVaucouleurs(half_light_radius=reffPix, trunc=trunc)
+        if devAll:
+            print " * This model is treated as a n=4 De Vaucouleurs model: %d" % (gal["ID"])
     else:
         serObj = galsim.Sersic(nSersic, half_light_radius=reffPix, trunc=trunc)
 
@@ -161,126 +246,191 @@ def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
     # Convolve the Sersic model using the provided PSF image
     if psfImage is not None:
         # Convert the PSF Image Array into a GalSim Object
-        if psfNorm:
-            psfObj = arrayToGSObj(psfImage, norm=True)
-        else:
-            psfObj = arrayToGSObj(psfImage)
+        # Norm=True by default
+        psfObj  = arrayToGSObj(psfImage, norm=True)
         serFinal = galsim.Convolve([serObj, psfObj])
     else:
         serFinal = serObj
 
     # Pass the flux to the object
-    # TODO: Pass the flux here or before convolution
     serFinal = serFinal.withFlux(float(flux))
-    #serObj = serObj.withFlux(float(flux))
-    print " With Flux : ", serFinal.getFlux()
 
     # Make a PNG figure of the fake galaxy to check if everything is Ok
     # TODO: For test, should be removed later
     if plotFake:
-        plotFakeGalaxy(serFinal, galID=galID, size=trunc)
+        plotFakeGalaxy(serFinal, galID=gal['ID'])
 
     # Now, by default, the function will just return the GSObj
     if returnObj:
         return serFinal
     else:
-        #CNL: you want the image to be twice as wide as trunc, right? I suspect 
-        #for convolved images that the hard edges don't matter and we can always use fft
-        
-        if trunc > 0:
-            galArray = galSimDrawImage(serFinal, size=trunc*2, method=drawMethod,
-                                       addPoisson=addPoisson)
-        else:
-            galArray = galSimDrawImage(serFinal, method=drawMethod,
-                                       addPoisson=addPoisson)
-        return galArray
+        return galSimDrawImage(serFinal, method=drawMethod,
+                               addPoisson=addPoisson)
 
 
+def galSimFakeDoubleSersic(comp1, comp2, psfImage=None, trunc=0, returnObj=True,
+                           devExp=False, plotFake=False, drawMethod='auto',
+                           addPoisson=False):
+    """
+    Make a fake double Sersic galaxy using the galSim.Sersic function
 
-def galSimFakeDoubleSersic(flux1, reffPix1, nSersic1, axisRatio1, posAng1,
-                           flux2, reffPix2, nSersic2, axisRatio2, posAng2,
-                           psfImage, noConvole=False, addPoisson=False,
-                           plotFake=False, galID=None):
+    Inputs: total flux of the galaxy, and a record array that stores the
+    necessary parameters [reffPix, nSersic, axisRatio, posAng]
 
-    serModel1 = galSimFakeSersic(flux1, reffPix1, nSersic1, axisRatio1, posAng1,
-                                 psfImage, noConvole=True, returnObj=True)
-    serModel2 = galSimFakeSersic(flux2, reffPix2, nSersic2, axisRatio2, posAng2,
-                                 psfImage, noConvole=True, returnObj=True)
-    serDouble = serModel1 + serModel2
+    Output: a 2-D image array of the galaxy model  OR
+            a GalSim object of the model
 
-    # Convert the PSF Image Array into a GalSim Object
-    psfObj = arrayToGSObj(psfImage)
+    Options:
+        psfImage:     PSF image for convolution
+        trunc:        Flux of Sersic models will truncate at trunc * reffPix
+                      radius; trunc=0 means no truncation
+        drawMethod:   The method for drawImage: ['auto', 'fft', 'real_space']
+        addPoisson:   Add Poisson noise
+        plotFake:     Generate a PNG figure of the model
+        devexp:       The first component will be seen as a nSersic=4 bulge;
+                      And, the second one will be seen as a nSersic=1 disk
+        returnObj:    If TRUE, will return the GSObj, instead of the image array
+    """
+
+    # Get the flux of both components
+    flux1 = float(comp1['mag'])
+    flux2 = float(comp2['mag'])
+    #tflux = flux1 + flux2
+
+    # If devExp = True : Treat the first component as an n=4 DeVaucouleurs bulge
+    #                    and, the second component as an n=1 Exponential disk
+    if devExp:
+        serModel1 = galSimFakeSersic(flux1, comp1, returnObj=True, devAll=True,
+                                     trunc=trunc)
+        serModel2 = galSimFakeSersic(flux2, comp2, returnObj=True, expAll=True,
+                                     trunc=trunc)
+    else:
+        serModel1 = galSimFakeSersic(flux1, comp1, returnObj=True, trunc=trunc)
+        serModel2 = galSimFakeSersic(flux2, comp2, returnObj=True, trunc=trunc)
+
+    # Combine these two components
+    doubleSersic = galSimAdd([serModel1, serModel2])
 
     # Convolve the Sersic model using the provided PSF image
-    # TODO: Make sure we understand the normalization
-    if not noConvole:
-        serFinal = galsim.Convolve([serDouble, psfObj])
+    if psfImage is not None:
+        # Convert the PSF Image Array into a GalSim Object
+        # Norm=True by default
+        psfObj   = arrayToGSObj(psfImage, norm=True)
+        dserFinal = galsim.Convolve([doubleSersic, psfObj])
     else:
-        serFinal = serDouble
+        dserFinal = doubleSersic
 
-    # Generate an "Image" object for the convolved model
-    serImg = serFinal.drawImage()
-
-    # Return the Numpy array version of the image
-    galArray = serImg.array
+    # Pass the flux to the object
+    #dserFinal = dserFinal.withFlux(float(flux))
 
     # Make a PNG figure of the fake galaxy to check if everything is Ok
-    # TODO: Should be removed later
+    # TODO: For test, should be removed later
     if plotFake:
-        plotFakeGalaxy(galArray, galID=galID)
+        if devExp:
+            plotFakeGalaxy(dserFinal, galID=(comp1['ID']*100), suffix='devexp')
+        else:
+            plotFakeGalaxy(dserFinal, galID=(comp1['ID']*100), suffix='double')
 
-    return galArray
+    # Now, by default, the function will just return the GSObj
+    if returnObj:
+        return dserFinal
+    else:
+        return galSimDrawImage(dserFinal, method=drawMethod,
+                               addPoisson=addPoisson)
 
 
+def galSimRealGalaxy(realID, psfImage=None):
+
+    """
+    Real galaxy
+    """
+
+    # TODO
+
+    return None
 
 
-
-
-def testMakeFake(galList, asciiTab=False):
+def testMakeFake(galList, asciiTab=False, single=True, double=True, real=False):
 
     # Make a fake Gaussian PSF
     psfGaussian = galsim.Gaussian(fwhm=2.0)
     psfImage    = psfGaussian.drawImage().array
 
-    if asciiTab:
-        galData = np.loadtxt(galList, dtype=[('ID','int'),
-                                             ('mag','float'),
-                                             ('sersic_n','float'),
-                                             ('reff_pix','float'),
-                                             ('b_a','float'),
-                                             ('theta','float')])
-    else:
-        galData = fits.open(galList)[1].data
-
     # Test SingleSersic
-    for igal, gal in enumerate(galData):
+    if single:
+        if asciiTab:
+            galData = np.loadtxt(galList, dtype=[('ID','int'),
+                                                 ('mag','float'),
+                                                 ('sersic_n','float'),
+                                                 ('reff_pix','float'),
+                                                 ('b_a','float'),
+                                                 ('theta','float')])
+        else:
+            galData = fits.open(galList)[1].data
 
-        flux = 10.0 ** ((27.0 - gal['mag']) / 2.5)
+        for igal, gal in enumerate(galData):
 
-        print '---------------------------------'
-        print " Input Flux : ", flux
-        print " Input Parameters : ", gal["sersic_n"], gal["reff_pix"], gal["b_a"], gal["theta"]
+            flux = 10.0 ** ((27.0 - gal['mag']) / 2.5)
 
-        galArray = galSimFakeSersic(flux, gal, psfImage=psfImage, plotFake=True,
-                                    returnObj=False, psfNorm=True, trunc=10.0,
-                                    drawMethod="auto")
+            print '\n---------------------------------'
+            print " Input Flux : ", flux
+            print " Input Parameters : ", gal["sersic_n"], gal["reff_pix"]
+            print "                    ", gal["b_a"], gal["theta"]
 
-        print " Output Flux : ", np.sum(galArray)
-        print " Shape of the Output Array : ", galArray.shape
-        print '---------------------------------'
+            galArray = galSimFakeSersic(flux, gal, psfImage=psfImage,
+                                        plotFake=True, returnObj=False,
+                                        trunc=12.0, drawMethod="fft")
+
+            print " Output Flux : ", np.sum(galArray)
+            print " Shape of the Output Array : ", galArray.shape
+            print '---------------------------------'
 
     # Test DoubleSersic
-    flux1 = 10.0 ** ((27.0 - galData['mag'][0]) / 2.5)
-    flux2 = 10.0 ** ((27.0 - galData['mag'][1]) / 2.5)
-    re1, re2 = galData['reff_pix'][0], galData['reff_pix'][1]
-    ns1, ns2 = galData['sersic_n'][0], galData['sersic_n'][1]
-    ba1, ba2 = galData['b_a'][0], galData['b_a'][1]
-    pa1, pa2 = galData['theta'][0], galData['theta'][1]
+    if double:
+        if asciiTab:
+            raise Exception("For now, only FITS input is allowed !!")
+        else:
+            galData = fits.open(galList)[1].data
 
-    #doubleArray = galSimFakeDoubleSersic(flux1, re1, ns1, ba1, pa1,
-    #                                     flux2, re2, ns2, ba2, pa2,
-    #                                     psfImage, plotFake=True, galID=4)
+        for igal, gal in enumerate(galData):
 
-    #print (flux1 + flux2), np.sum(doubleArray)
-    #print doubleArray.shape
+            flux = 10.0 ** ((27.0 - gal['mag']) / 2.5)
 
+            print '\n---------------------------------'
+            print " Input Flux : ", flux
+
+            (comp1, comp2) = parseDoubleSersic(flux, gal)
+
+            # TODO: Get error when the axis ratio is small: 0.2?
+            # RuntimeError: Solve error: Too many iterations in bracketLowerWithLimit()
+            # It seems like that GalSim has some issues with highly elliptical
+            # objects. Although different, see this one:
+            # https://github.com/GalSim-developers/GalSim/issues/384
+            # It seems that b/a = 0.25 is fine, so right now, just change the
+            # lower limit of b/a to 0.25
+
+            print " Flux for Component 1 : ", comp1['mag']
+            print " Flux for Component 2 : ", comp2['mag']
+            print " Comp 1 Parameters : %5.2f  %8.2f" % (comp1["sersic_n"],
+                                                         comp1["reff_pix"])
+            print "                     %5.2f  %8.2f" % (comp1["b_a"],
+                                                         comp1["theta"])
+            print " Comp 2 Parameters : %5.2f  %8.2f" % (comp2["sersic_n"],
+                                                         comp2["reff_pix"])
+            print "                     %5.2f  %8.2f" % (comp2["b_a"],
+                                                         comp2["theta"])
+
+            doubleArray = galSimFakeDoubleSersic(comp1, comp2,
+                                                 psfImage=psfImage,
+                                                 trunc=12, returnObj=False,
+                                                 devExp=True, plotFake=True,
+                                                 drawMethod='auto')
+
+            print " Output Flux : ", np.sum(doubleArray)
+            print " Shape of the Output Array : ", doubleArray.shape
+            print '---------------------------------'
+
+    # Test RealGalaxy
+    if real:
+
+        return None
