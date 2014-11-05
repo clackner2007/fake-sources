@@ -1,7 +1,7 @@
 import randomGalSimFakes
 
 root.fakes.retarget(randomGalSimFakes.RandomGalSimFakesTask)
-root.fakes.galList = 'galaxy_test.lis'
+root.fakes.galList = 'galaxy_test.fits'
 #include cmodels here
 root.measurement.algorithms.names.add('multishapelet.psf')
 root.measurement.algorithms.names.add('cmodel')
