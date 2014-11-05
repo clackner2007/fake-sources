@@ -119,6 +119,8 @@ def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
 
     # TODO: The real input parser should be here
     # TODO: So...numpy.float32 is different from just float data type
+    # CLAIRE, yes, but it's fine to do the casting here as galsim needs doubles
+    # and someone else may mess it up
     galID     = int(gal["ID"])
     nSersic   = float(gal["sersic_n"])
     reffPix   = float(gal["reff_pix"])
@@ -182,8 +184,11 @@ def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
     if returnObj:
         return serFinal
     else:
+        #CNL: you want the image to be twice as wide as trunc, right? I suspect 
+        #for convolved images that the hard edges don't matter and we can always use fft
+        
         if trunc > 0:
-            galArray = galSimDrawImage(serFinal, size=trunc, method=drawMethod,
+            galArray = galSimDrawImage(serFinal, size=trunc*2, method=drawMethod,
                                        addPoisson=addPoisson)
         else:
             galArray = galSimDrawImage(serFinal, method=drawMethod,
