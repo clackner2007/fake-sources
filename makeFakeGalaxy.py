@@ -33,8 +33,41 @@ def makeGalaxy(flux, gal, psfImage, galType='sersic', drawMethod='auto',
                                       returnObj=False)
 
     if galType is 'real':
-        return None
-        #return galSimRealGalaxy(realID, psfImage=psfImage, .....)
+        # TODO: For real galaxies, we need to decide which to use: index in the
+        # catalog or Object ID.  Now, I just use Index
+        (real_galaxy_catalog, index) = parseRealGalaxy(gal)
+        if index >= 0:
+            index = index
+            random = False
+        else:
+            index = None
+            random = True
+        return galSimRealGalaxy(flux, real_galaxy_catalog, index=index,
+                                psfImage=psfImage, random=random,
+                                returnObj=False, drawMethod=drawMethod)
+
+def parseRealGalaxy(gal):
+
+        # If an "index" column is presented, then use the index
+        # If not, turn random = True
+        try:
+            index = gal['index']
+        except KeyError:
+            index = -1
+
+        # Get the catalog name and the directory
+        try:
+            cat_name = gal['cat_name']
+        except KeyError:
+            raise KeyError('Can not find the name of the catlog')
+        try:
+            cat_dir = gal['cat_dir']
+        except KeyError:
+            cat_dir = None
+
+        real_galaxy_catalog = galsim.RealGalaxyCatalog(cat_name, dir=cat_dir)
+
+        return real_galaxy_catalog, index
 
 
 def parseDoubleSersic(tflux, gal):
@@ -90,6 +123,11 @@ def parseDoubleSersic(tflux, gal):
 
 
 def arrayToGSObj(imgArr, scale=1.0, norm=False):
+    # TODO : Check the scale here
+    # According to the GalSim Doxygen
+    # If provided, use this as the pixel scale for the Image; this will override
+    # the pixel scale stored by the provided Image, in any. If scale is None,
+    # then take the provided image's pixel scale. [default: None]
     """
     Convert an input 2-D array into a GalSim Image object
     """
@@ -106,6 +144,13 @@ def galSimDrawImage(galObj, size=0, method="auto", addPoisson=False):
     "Draw" a GalSim Object into an GalSim Image using certain method, and with
     certain size
     """
+    # TODO : Think about the scale here:
+    # By default scale=None
+    # According to GalSim Doxygen :
+    # If provided, use this as the pixel scale for the image. If scale is None
+    # and image != None, then take the provided image's pixel scale. If scale is
+    # None and image == None, then use the Nyquist scale. If scale <= 0
+    # (regardless of image), then use the Nyquist scale.
 
     # Generate an "Image" object for the model
     if size > 0:
@@ -320,16 +365,13 @@ def galSimFakeDoubleSersic(comp1, comp2, psfImage=None, trunc=0, returnObj=True,
     else:
         dserFinal = doubleSersic
 
-    # Pass the flux to the object
-    #dserFinal = dserFinal.withFlux(float(flux))
-
     # Make a PNG figure of the fake galaxy to check if everything is Ok
     # TODO: For test, should be removed later
     if plotFake:
         if devExp:
-            plotFakeGalaxy(dserFinal, galID=(comp1['ID']*100), suffix='devexp')
+            plotFakeGalaxy(dserFinal, galID=comp1['ID'], suffix='devexp')
         else:
-            plotFakeGalaxy(dserFinal, galID=(comp1['ID']*100), suffix='double')
+            plotFakeGalaxy(dserFinal, galID=comp1['ID'], suffix='double')
 
     # Now, by default, the function will just return the GSObj
     if returnObj:
@@ -339,18 +381,45 @@ def galSimFakeDoubleSersic(comp1, comp2, psfImage=None, trunc=0, returnObj=True,
                                addPoisson=addPoisson)
 
 
-def galSimRealGalaxy(realID, psfImage=None):
+def galSimRealGalaxy(flux, real_galaxy_catalog, index=None, psfImage=None,
+                     random=False, returnObj=True, plotFake=False,
+                     drawMethod='auto', addPoisson=False):
 
     """
     Real galaxy
     """
 
-    # TODO
+    if index is None:
+        random = True
+    realObj = galsim.RealGalaxy(real_galaxy_catalog, index=index, random=random)
+    index = realObj.index
 
-    return None
+    # Pass the flux to the object
+    realObj = realObj.withFlux(flux)
+
+    # Convolve the Sersic model using the provided PSF image
+    if psfImage is not None:
+        # Convert the PSF Image Array into a GalSim Object
+        # Norm=True by default
+        psfObj   = arrayToGSObj(psfImage, norm=True)
+        realFinal = galsim.Convolve([realObj, psfObj])
+    else:
+        realFinal = realFinal
+
+    # Make a PNG figure of the fake galaxy to check if everything is Ok
+    # TODO: For test, should be removed later
+    if plotFake:
+        plotFakeGalaxy(realFinal, galID=index, suffix='realga')
+
+    # Now, by default, the function will just return the GSObj
+    if returnObj:
+        return realFinal
+    else:
+        return galSimDrawImage(realFinal, method=drawMethod,
+                               addPoisson=addPoisson)
 
 
-def testMakeFake(galList, asciiTab=False, single=True, double=True, real=False):
+def testMakeFake(galList, asciiTab=False, single=True, double=True, real=True):
 
     # Make a fake Gaussian PSF
     psfGaussian = galsim.Gaussian(fwhm=2.0)
@@ -433,4 +502,36 @@ def testMakeFake(galList, asciiTab=False, single=True, double=True, real=False):
     # Test RealGalaxy
     if real:
 
-        return None
+        # Make a special PSF for real galaxy
+        psfReal      = galsim.Gaussian(fwhm=0.2)
+        psfRealImage = psfReal.drawImage().array
+        # TODO : Scale seems to be a problem, should check again !!
+
+        if asciiTab:
+            raise Exception("For now, only FITS input is allowed !!")
+        else:
+            galData = fits.open(galList)[1].data
+
+        for igal, gal in enumerate(galData):
+
+            (real_galaxy_catalog, index) = parseRealGalaxy(gal)
+            if index >= 0:
+                index = index
+                random = False
+            else:
+                index = None
+                random = True
+
+            flux = 10.0 ** ((27.0 - gal['mag']) / 2.5)
+
+            realArray = galSimRealGalaxy(flux, real_galaxy_catalog, index=index,
+                                         psfImage=psfRealImage, random=random,
+                                         plotFake=True, returnObj=False,
+                                         drawMethod='auto')
+
+            print '\n---------------------------------'
+            print " Input Flux : ", flux
+
+            print " Output Flux : ", np.sum(realArray)
+            print " Shape of the Output Array : ", realArray.shape
+            print '---------------------------------'
