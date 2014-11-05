@@ -4,6 +4,35 @@ import numpy as np
 import galsim
 import pyfits as fits
 
+
+def makeGalaxy( flux, gal, psfImage, galType='sersic'):
+    """
+    Function called by task to make galaxy images
+
+    INPUTS:
+    flux = calibrated total flux
+    gal = galaxy parameters in record (np.recarray)
+    psfImage = np.ndarray of psfImage
+    galType = type of galaxy we want to make, this has to agree with what's in the
+    record array, options now are: 'sersic' (single sersic), 
+    'dsersic' (double sersic), and 
+    'real' (for making galaxies from real HST images)
+    All the necessary keywords need to be in the fits catalog,
+    including maybe drawMethod and trunc...
+    """
+
+    drawMethod = 'auto'
+    trunc = 10.0 
+    if galType is 'sersic':
+        return galSimFakeSersic(flux, gal, psfImage=psfImage, drawMethod=drawMethod,
+                                trunc=trunc, returnObj=False)
+    if galType is 'dsersic':
+        return None
+        #return galSimFakeDoubleSersic(flux, gal, psfImage=psfImage, .....)
+    
+    
+
+
 def arrayToGSObj(imgArr, scale=1.0, norm=False):
     if norm:
         gsObj = galsim.InterpolatedImage(galsim.image.Image(imgArr), scale=scale,
@@ -196,6 +225,10 @@ def galSimFakeDoubleSersic(flux1, reffPix1, nSersic1, axisRatio1, posAng1,
         plotFakeGalaxy(galArray, galID=galID)
 
     return galArray
+
+
+
+
 
 
 def testMakeFake(galList, asciiTab=False):

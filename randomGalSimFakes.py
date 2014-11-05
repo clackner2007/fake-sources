@@ -18,6 +18,12 @@ class RandomGalSimFakesConfig(FakeSourcesConfig):
     #                               doc="Size of margin at edge that should not be added")
     seed = lsst.pex.config.Field(dtype=int, default=1,
                                  doc="Seed for random number generator")
+    galType = lsst.pex.config.ChoiceField(dtype=str, default='sersic',
+                                          allowed={'dsersic':'double sersic galaxies added',
+                                                   'sersic':'single sersic galaxies added',
+                                                   'real':'real HST galaxy images added'},
+                                          doc='type of GalSim galaxies to add')
+
 
 class RandomGalSimFakesTask(FakeSourcesTask):
     ConfigClass = RandomGalSimFakesConfig
@@ -57,32 +63,8 @@ class RandomGalSimFakesTask(FakeSourcesTask):
             #TODO: check for overlaps here and regenerate x,y if necessary
 
             psfImage = psf.computeKernelImage(lsst.afw.geom.Point2D(x, y))
-
-            # SONG: 1) Now "parse" the numpy record gal into parameters
-            #       Only works for single Sersic now
-            #       2) Truncation is possible, but not perfect; Basically, the
-            #       truncation in Sersic does not reduce the array size, just
-            #       truncate the flux to zero at r_trunc; The workaround is to
-            #       draw the object into an "Image" with the size we want
-            #       [Can still be quite tricky if we want the flux to be accurate]
-            trunc = 10.0  # trunc = 0 means no truncation, which is default
-            tsize = trunc * float(gal['reff_pix'])
-            #       3) If truncation is applied to galaxy with high Sersic
-            #       index, better changes the drawMethod="fft" instead of
-            #       "real_space", which turns out to be quite time-cosuming
-            method = "auto"
-            #       4) By default, returns a object without convolution
-            galObj = makeFake.galSimFakeSersic(flux, gal, trunc=trunc,
-                                               drawMethod=method)
-            # Song: Get the psfArray as you want;
-            psfArray = psfImage.getArray()
-            #       Convert it into a GSObj; Normalization is optional now
-            psfObj   = makeFake.arrayToGSObj(psfArray, norm=True)
-            #       Do the convolution, and return a numpy array with the right
-            #       size, using the appropriate method
-            galArray = makeFake.galSimConvolve(galObj, psfObj, size=tsize,
-                                               method=method)
-
+            
+            galArray = makeFake.makeGalaxy( flux, gal, psfImage.getArray(), self.config.galType )
             galImage = lsst.afw.image.ImageF(galArray.astype(np.float32))
             galBBox = galImage.getBBox()
             galImage = lsst.afw.math.offsetImage(galImage,
