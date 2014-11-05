@@ -33,12 +33,7 @@ class RandomGalSimFakesTask(FakeSourcesTask):
         print "RNG seed:", self.config.seed
         self.rng = lsst.afw.math.Random(self.config.seed)
         self.npRand = np.random.RandomState(self.config.seed)
-        # SONG: Use FITS catalog as input; works for the test
         self.galData = fits.open(self.config.galList)[1].data
-        #self.galData = np.loadtxt(self.config.galList, dtype={'names':['ID', 'mag', 'sersic_n',
-        #                                                               'reff_pix', 'b_a', 'pos_ang'],
-        #                                                      'formats':[int, float, float,
-        #                                                                 float, float, float]})
 
 
     def run(self, exposure, sources, background):
@@ -51,7 +46,6 @@ class RandomGalSimFakesTask(FakeSourcesTask):
         expBBox = exposure.getBBox()
 
         for igal, gal in enumerate(self.galData):
-            flux = exposure.getCalib().getFlux(gal['mag'])
 
             try:
                 galident = gal["ID"]
@@ -100,7 +94,6 @@ class RandomGalSimFakesTask(FakeSourcesTask):
             ccd =  lsst.afw.cameraGeom.cast_Ccd(detector)
             amp = ccd.findAmp(lsst.afw.geom.Point2I(int(x), int(y)))
             gain = amp.getElectronicParams().getGain()
-            #TODO: figure out an HSC way to do add the noise
             #TODO: this is gaussian noise right now, probably good enough
             varImage = lsst.afw.image.ImageF(galImage, True)
             varImage /= gain
