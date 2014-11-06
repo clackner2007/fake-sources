@@ -37,6 +37,7 @@ def getFakeSources(rootdir, dataId, tol=1.0):
         s1 = sources.subset(matched)
         srcIndex[fid] = np.where(matched)[0]
 
+
     mapper = SchemaMapper(sources.schema)
     mapper.addMinimalSchema(sources.schema)
     newSchema = mapper.getOutputSchema()
@@ -49,6 +50,7 @@ def getFakeSources(rootdir, dataId, tol=1.0):
             newRec = srcList.addNew()
             newRec.assign(sources[ss], mapper)
             newRec.set('fakeId', ident)
+
     return srcIndex, srcList
 
 
