@@ -6,7 +6,6 @@ import lsst.afw.math
 import lsst.afw.cameraGeom
 import lsst.pex.config
 from lsst.pipe.tasks.fakes import FakeSourcesConfig, FakeSourcesTask
-# SONG: Import pyfits or something else?
 import pyfits as fits
 
 import makeFakeGalaxy as makeFake
@@ -71,7 +70,6 @@ class RandomGalSimFakesTask(FakeSourcesTask):
             #TODO: check for overlaps here and regenerate x,y if necessary
 
             psfImage = psf.computeKernelImage(lsst.afw.geom.Point2D(x, y))
-            
             galArray = makeFake.makeGalaxy( flux, gal, psfImage.getArray(), self.config.galType )
             galImage = lsst.afw.image.ImageF(galArray.astype(np.float32))
             galBBox = galImage.getBBox(lsst.afw.image.PARENT)
@@ -81,7 +79,7 @@ class RandomGalSimFakesTask(FakeSourcesTask):
                                                  'lanczos3')
             galBBox = galImage.getBBox(lsst.afw.image.PARENT)
 
- 
+            
            #check that we're within the larger exposure, otherwise crop
             if expBBox.contains(galImage.getBBox(lsst.afw.image.PARENT)) is False:
                 newBBox = galImage.getBBox(lsst.afw.image.PARENT)
