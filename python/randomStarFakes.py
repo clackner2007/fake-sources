@@ -4,6 +4,9 @@ import lsst.afw.math
 import lsst.pex.config
 from lsst.pipe.tasks.fakes import FakeSourcesConfig, FakeSourcesTask
 
+import FakeSourceLib as fsl
+import numpy as np
+
 class RandomStarFakeSourcesConfig(FakeSourcesConfig):
     nStars = lsst.pex.config.Field(dtype=int, default=1,
                                    doc="Number of stars to add")
@@ -21,6 +24,7 @@ class RandomStarFakeSourcesTask(FakeSourcesTask):
         FakeSourcesTask.__init__(self, **kwargs)
         print "RNG seed:", self.config.seed
         self.rng = lsst.afw.math.Random(self.config.seed)
+        self.npRand = np.random.RandomState(self.config.seed)
 
     def run(self, exposure, sources, background):
 
@@ -43,7 +47,7 @@ class RandomStarFakeSourcesTask(FakeSourcesTask):
             self.log.info("Adding fake at: %.1f,%.1f"% (x, y))
             psfImage = psf.computeImage(lsst.afw.geom.Point2D(x, y))
             psfImage *= flux
-            psfMaskedImage = lsst.afw.image.MaskedImageF(psfImage.convertF())
+            psfMaskedImage = fsl.addNoise(psfImage.convertF(), exposure.getDetector(), x, y, rand_gen=self.npRand)
             psfMaskedImage.getMask().set(self.bitmask)
             # TODO: add noise, set variance plane
             # the line below would work if the subimage call worked in PARENT coordinates.  Since it

@@ -9,7 +9,7 @@ from lsst.pipe.tasks.fakes import FakeSourcesConfig, FakeSourcesTask
 import pyfits as fits
 
 import makeFakeGalaxy as makeFake
-
+import FakeSourceLib as fsl
 
 class RandomGalSimFakesConfig(FakeSourcesConfig):
     galList = lsst.pex.config.Field(dtype=str, doc="catalog of galaxies to add")
@@ -88,24 +88,12 @@ class RandomGalSimFakesTask(FakeSourcesTask):
                 galImage = galImage.Factory(galImage, newBBox, lsst.afw.image.PARENT)
                 galBBox = newBBox
 
-            detector = exposure.getDetector()
-            ccd =  lsst.afw.cameraGeom.cast_Ccd(detector)
-            amp = ccd.findAmp(lsst.afw.geom.Point2I(int(x), int(y)))
-            gain = amp.getElectronicParams().getGain()
-            #TODO: this is gaussian noise right now, probably good enough
-            varImage = lsst.afw.image.ImageF(galImage, True)
-            varImage /= gain
-            noiseArray = self.npRand.normal(loc=0.0, 
-                                            scale=np.sqrt(np.abs(varImage.getArray())), 
-                                             size=(galBBox.getHeight(),
-                                                   galBBox.getWidth()))
-            noiseImage = lsst.afw.image.ImageF(noiseArray.astype(np.float32))
-            galImage += noiseImage
-
+            
+            galMaskedImage = fsl.addNoise(galImage, exposure.getDetector(), x, y, rand_gen=self.npRand)
+            
             md.set("FAKE%d" % gal['ID'], "%.3f, %.3f" % (x, y))
             self.log.info("Adding fake at: %.1f,%.1f"% (x, y))
 
-            galMaskedImage = lsst.afw.image.MaskedImageF(galImage, None, varImage)
             #TODO: set the mask
             galMaskedImage.getMask().set(self.bitmask)
             subMaskedImage = exposure.getMaskedImage().Factory(exposure.getMaskedImage(),
