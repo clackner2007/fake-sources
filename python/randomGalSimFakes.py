@@ -22,6 +22,8 @@ class RandomGalSimFakesConfig(FakeSourcesConfig):
                                                    'sersic':'single sersic galaxies added',
                                                    'real':'real HST galaxy images added'},
                                           doc='type of GalSim galaxies to add')
+    nGal = lsst.pex.config.Field(dtype=int, doc="""number of galaxies to add, if 0, then everything in catalog, 
+ otherwise a random subset of nGal from the catalog""", default=0)
 
 
 class RandomGalSimFakesTask(FakeSourcesTask):
@@ -44,8 +46,13 @@ class RandomGalSimFakesTask(FakeSourcesTask):
         md = exposure.getMetadata()
         expBBox = exposure.getBBox()
 
-        for igal, gal in enumerate(self.galData):
+        if self.config.nGal==0:
+            doGal = enumerate(self.galData)
+        else:
+            inds = self.npRand.choice(range(len(self.galData)), size=self.config.nGal, replace=False)
+            doGal = zip(inds, self.galData[inds])
 
+        for igal, gal in doGal:
             try:
                 galident = gal["ID"]
             except KeyError:
