@@ -77,7 +77,7 @@ def writeNumpyTable(fakeTable):
     return npTable
         
 
-def main(root, visit, ccds, galType='sersic'):
+def main(root, visit, ccds, galType='sersic', output='outputs/'):
     """
     main function for controlling fake source comparison
     """
@@ -97,7 +97,7 @@ def main(root, visit, ccds, galType='sersic'):
     
     npTable = writeNumpyTable(fakeTable)
     rerunName = root.split('/')[-2]
-    fitsTable = astropy.table.Table(npTable).write('outputs/'+rerunName+
+    fitsTable = astropy.table.Table(npTable).write(output+'/'+rerunName+
                                              '_galMags.txt', format='ascii')
 
 
@@ -115,5 +115,7 @@ if __name__=='__main__':
     parser.add_argument("--ccd", nargs='+', type=int, help="CCD(s)")
     parser.add_argument('-g', '--galtype', type=str, dest='galType',
                         choices=['exp', 'dev', 'sersic'])
+    parser.add_argument('-o', '--outputpath', dest='outpath',
+                        help='path for output')
     args = parser.parse_args()
-    main(args.root, args.visit, args.ccd, galType=args.galType)
+    main(args.root, args.visit, args.ccd, galType=args.galType, output=args.outpath)
