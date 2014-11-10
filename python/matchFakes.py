@@ -11,7 +11,8 @@ import argparse
 import re
 import collections
 
-def getFakeSources(butler, dataId, tol=1.0, zeropoint=True):
+def getFakeSources(butler, dataId, tol=1.0, zeropoint=True,
+                   visit=False, ccd=False):
     """Get list of sources which agree in position with fake ones with tol
     """
     
@@ -42,7 +43,12 @@ def getFakeSources(butler, dataId, tol=1.0, zeropoint=True):
     mapper.addMinimalSchema(sources.schema)
     newSchema = mapper.getOutputSchema()
     newSchema.addField('fakeId', type=int, doc='id of fake source matched to position')
-    newSchema.addField('zeropoint', type=float, doc='magnitude zeropoint')
+    if zeropoint:
+        newSchema.addField('zeropoint', type=float, doc='magnitude zeropoint')
+    if visit:
+        newSchema.addField('visit', type=float, doc='visit id')
+    if ccd:
+        newSchema.addField('ccd', type=float, doc='ccd id')
     srcList = SourceCatalog(newSchema)
     srcList.reserve(sum([len(s) for s in srcIndex.values()]))
 
@@ -51,9 +57,14 @@ def getFakeSources(butler, dataId, tol=1.0, zeropoint=True):
             newRec = srcList.addNew()
             newRec.assign(sources[ss], mapper)
             newRec.set('fakeId', ident)
-            newRec.set('zeropoint', zp)
+            if zeropoint:
+                newRec.set('zeropoint', zp)
+            if visit:
+                newRec.set('visit', dataId['visit'])
+            if ccd:
+                newRec.set('ccd', dataId['ccd'])
 
-    return srcIndex, srcList
+    return srcList
 
 
 def main():
