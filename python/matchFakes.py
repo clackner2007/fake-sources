@@ -11,14 +11,14 @@ import argparse
 import re
 import collections
 
-def getFakeSources(rootdir, dataId, tol=1.0):
+def getFakeSources(butler, dataId, tol=1.0, zeropoint=True):
     """Get list of sources which agree in position with fake ones with tol
     """
-    butler = dafPersist.Butler(rootdir)
     
     sources = butler.get('src', dataId)
     cal_md = butler.get('calexp_md', dataId)
-
+    if zeropoint:
+        zp = 2.5*np.log10(cal_md.get('FLUXMAG0'))
 
     fakeXY = collections.defaultdict(tuple)
     fakename = re.compile('FAKE([0-9]+)')
@@ -42,6 +42,7 @@ def getFakeSources(rootdir, dataId, tol=1.0):
     mapper.addMinimalSchema(sources.schema)
     newSchema = mapper.getOutputSchema()
     newSchema.addField('fakeId', type=int, doc='id of fake source matched to position')
+    newSchema.addField('zeropoint', type=float, doc='magnitude zeropoint')
     srcList = SourceCatalog(newSchema)
     srcList.reserve(sum([len(s) for s in srcIndex.values()]))
 
@@ -50,6 +51,7 @@ def getFakeSources(rootdir, dataId, tol=1.0):
             newRec = srcList.addNew()
             newRec.assign(sources[ss], mapper)
             newRec.set('fakeId', ident)
+            newRec.set('zeropoint', zp)
 
     return srcIndex, srcList
 
@@ -63,16 +65,14 @@ def main():
     parser.add_argument('ccd', help='id of ccd', type=int)
     args = parser.parse_args()
     
-    sind, slist = getFakeSources(args.rootDir, 
+    butler = dafPersist.Butler(args.rootDir)
+
+    sind, slist = getFakeSources(butler,
                                  {'visit':args.visit, 'ccd':args.ccd})
 
-    butler = dafPersist.Butler(args.rootDir)
-    md = butler.get('calexp_md', {'visit':args.visit,
-                                  'ccd':args.ccd})
-    zp = 2.5 * np.log10(md.get('FLUXMAG0'))
     print 'fakeId X Y cmodel_mag nChild kron_mag'
     for s in slist:
-        mag = lambda name:-2.5 * np.log10(s.get(name)) + zp
+        mag = lambda name:-2.5 * np.log10(s.get(name)) + s.get('zeropoint')
         print s.get('fakeId'), s.get('centroid.sdss')[0], s.get('centroid.sdss')[1], mag('cmodel.flux'), 
         print s.get('deblend.nchild'), mag('flux.kron')
 
