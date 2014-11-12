@@ -10,6 +10,17 @@ import numpy as np
 import argparse
 import re
 import collections
+import astropy.table
+import lsst.afw.geom.ellipses
+
+def getEllipse(quad):
+    """
+    returns the semi-major axis, axes ratio and PA for a given quadrupole moment
+    """
+    e = lsst.afw.geom.ellipses.Axes(quad)
+    return e.getA(), e.getB()/e.getA(), e.getTheta() * 180.0/np.pi
+
+
 
 def getFakeSources(butler, dataId, tol=1.0, zeropoint=True,
                    visit=False, ccd=False):
@@ -65,6 +76,33 @@ def getFakeSources(butler, dataId, tol=1.0, zeropoint=True,
                 newRec.set('ccd', dataId['ccd'])
 
     return srcList
+
+
+def getAstroTable(src, mags=True):
+    """
+    returns an astropy table with all the src entries
+    if the entries are complex objects, it breaks them down
+    """
+    
+    tab = astropy.table.Table()
+    for name in src.schema.getNames():
+        if type(src[0].get(name)) is lsst.afw.geom.ellipses.ellipsesLib.Quadrupole:
+            reff, q, theta = zip(*[getEllipse(s.get(name)) for s in src])
+            tab.add_column(astropy.table.Column(name=name+'_a', data=reff))
+            tab.add_column(astropy.table.Column(name=name+'_q', data=q))
+            tab.add_column(astropy.table.Column(name=name+'_theta', data=theta))
+        elif type(src[0].get(name)) is lsst.afw.coord.coordLib.IcrsCoord:
+            x, y= zip(*[(s.get(name).getRa().asDegrees(), 
+                         s.get(name).getDec().asDegrees()) for s in src])
+            tab.add_column(astropy.table.Column(name=name+'_ra', data=x))
+            tab.add_column(astropy.table.Column(name=name+'_dec', data=y))
+        else:
+            tab.add_column(astropy.table.Column(name=name, 
+                                                data=np.array([s.get(name) for s in src])))
+
+
+    return tab
+
 
 
 def main():
