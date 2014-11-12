@@ -125,7 +125,7 @@ def main():
     
     butler = dafPersist.Butler(args.rootDir)
 
-    sind, slist = getFakeSources(butler,
+    slist = getFakeSources(butler,
                                  {'visit':args.visit, 'ccd':args.ccd})
 
     print 'fakeId X Y cmodel_mag nChild kron_mag'
