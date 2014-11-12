@@ -33,7 +33,7 @@ def getMag(record, fluxType='cmodel'):
     return the magnitude and error
     """
     flux, fluxerr = record.get(fluxType), record.get(fluxType+'.err')
-    mag, magerr = -2.5 * np.log10(flux), 2.5*np.log(10.0)*fluxerr/flux
+    mag, magerr = -2.5 * np.log10(flux), 2.5/np.log(10.0)*fluxerr/flux
     mag += record.get('zeropoint')
     return mag, magerr
 
