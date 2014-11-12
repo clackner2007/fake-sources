@@ -21,8 +21,12 @@ def getMosaic(sources, exposure, idname):
     subImages=[]
     labels = []
     for src in sources:
-        subimg = lsst.afw.image.ImageF(img, src.getFootprint().getBBox(), 
+        footBBox = src.getFootprint().getBBox()
+        subimg = lsst.afw.image.ImageF(img, footBBox, 
                                        lsst.afw.image.PARENT, True)
+        footMask = lsst.afw.image.ImageU(footBBox)
+        src.getFootprint().insertIntoImage(footMask, 1, footBBox)
+        subimg *= footMask.convertF()
         subImages.append(subimg)
         labels.append('ID=%s'%str(src.get(idname)))
 
@@ -40,7 +44,7 @@ def getMosaic(sources, exposure, idname):
     
 
 
-def main(root, visit, ccd, fakes=False, noblends=True, listobj=16):
+def main(root, visit, ccd, fakes=False, blends=False, listobj=16):
 
     butler = lsst.daf.persistence.Butler(root)
     dataId = {'visit':visit, 'ccd':ccd}
@@ -49,9 +53,10 @@ def main(root, visit, ccd, fakes=False, noblends=True, listobj=16):
                                         zeropoint=True)
     else:
         src = butler.get('src', dataId)
-    if noblends:
+    if not blends:
         src = [s for s in src if (s.get('deblend.nchild')==0)&(s.get('parent')==0)]
-
+    else:
+        src = [s for s in src if (s.get('deblend.nchild')==0)]
 
     exposure = butler.get('calexp', dataId)
     
@@ -74,7 +79,10 @@ if __name__=='__main__':
                         help='show fake sources', dest='fake')
     parser.add_argument('-n', '--number', dest='num', help='number of objects to show',
                         default=16, type=int)
+    parser.add_argument('-b', '--blends', action='store_true', default=False,
+                        help='show blended systems')
     #parser.add_argument('-o', '--outputpath', dest='outpath',
     #                    help='path for output')
     args = parser.parse_args()
-    main(args.root, args.visit, args.ccd, fakes=args.fake, listobj=args.num)
+    main(args.root, args.visit, args.ccd, fakes=args.fake, listobj=args.num, 
+         blends=args.blends)
