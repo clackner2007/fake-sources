@@ -6,6 +6,7 @@ matches fakes based on position stored in the calibrated exposure image header
 
 import lsst.daf.persistence as dafPersist
 from lsst.afw.table import SourceCatalog, SchemaMapper
+import lsst.pex.exceptions
 import numpy as np
 import argparse
 import re
@@ -19,7 +20,6 @@ def getEllipse(quad):
     """
     e = lsst.afw.geom.ellipses.Axes(quad)
     return e.getA(), e.getB()/e.getA(), e.getTheta() * 180.0/np.pi
-
 
 
 def getFakeSources(butler, dataId, tol=1.0, zeropoint=True,
@@ -78,27 +78,36 @@ def getFakeSources(butler, dataId, tol=1.0, zeropoint=True,
     return srcList
 
 
-def getAstroTable(src, mags=True):
+def getAstroTable(srcIn, mags=True):
     """
     returns an astropy table with all the src entries
     if the entries are complex objects, it breaks them down
+    
+    if mags is True, returns the magnitudes for all the flux columns
+    (not implemented yet)
     """
     
     tab = astropy.table.Table()
+    src = srcIn.copy()
     for name in src.schema.getNames():
-        if type(src[0].get(name)) is lsst.afw.geom.ellipses.ellipsesLib.Quadrupole:
-            reff, q, theta = zip(*[getEllipse(s.get(name)) for s in src])
-            tab.add_column(astropy.table.Column(name=name+'_a', data=reff))
-            tab.add_column(astropy.table.Column(name=name+'_q', data=q))
-            tab.add_column(astropy.table.Column(name=name+'_theta', data=theta))
-        elif type(src[0].get(name)) is lsst.afw.coord.coordLib.IcrsCoord:
-            x, y= zip(*[(s.get(name).getRa().asDegrees(), 
-                         s.get(name).getDec().asDegrees()) for s in src])
-            tab.add_column(astropy.table.Column(name=name+'_ra', data=x))
-            tab.add_column(astropy.table.Column(name=name+'_dec', data=y))
-        else:
-            tab.add_column(astropy.table.Column(name=name, 
-                                                data=np.array([s.get(name) for s in src])))
+        try: 
+            tab.add_column(astropy.table.Column(name=name,
+                                                data=src.get(name)))
+        except lsst.pex.exceptions.LsstException:
+            if type(src[0].get(name)) is lsst.afw.geom.ellipses.ellipsesLib.Quadrupole:
+                reff, q, theta = zip(*[getEllipse(s.get(name)) for s in src])
+                tab.add_column(astropy.table.Column(name=name+'_a', data=reff))
+                tab.add_column(astropy.table.Column(name=name+'_q', data=q))
+                tab.add_column(astropy.table.Column(name=name+'_theta', data=theta))
+            elif type(src[0].get(name)) is lsst.afw.coord.coordLib.IcrsCoord:
+                x, y= zip(*[(s.get(name).getRa().asDegrees(), 
+                             s.get(name).getDec().asDegrees()) for s in src])
+                tab.add_column(astropy.table.Column(name=name+'_ra', data=x))
+                tab.add_column(astropy.table.Column(name=name+'_dec', data=y))
+            else:
+                tab.add_column(astropy.table.Column(name=name, 
+                                                    data=np.array([s.get(name) for s in src])))
+
 
 
     return tab
