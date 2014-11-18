@@ -5,7 +5,7 @@ import galsim
 import pyfits as fits
 
 
-def makeGalaxy(flux, gal, psfImage, galType='sersic', drawMethod='auto',
+def makeGalaxy(flux, gal, psfImage, galType='sersic', drawMethod='no_pixel',
                trunc=10.0):
     """
     Function called by task to make galaxy images
@@ -139,7 +139,8 @@ def arrayToGSObj(imgArr, scale=1.0, norm=False):
                                          scale=scale)
 
 
-def galSimDrawImage(galObj, size=0, method="auto", addPoisson=False):
+def galSimDrawImage(galObj, size=0, scale=1.0, method="no_pixel",
+                    addPoisson=False):
     """
     "Draw" a GalSim Object into an GalSim Image using certain method, and with
     certain size
@@ -155,9 +156,9 @@ def galSimDrawImage(galObj, size=0, method="auto", addPoisson=False):
     # Generate an "Image" object for the model
     if size > 0:
         imgTemp = galsim.image.Image(size, size)
-        galImg = galObj.drawImage(imgTemp, method=method)
+        galImg = galObj.drawImage(imgTemp, scale=scale, method=method)
     else:
-        galImg = galObj.drawImage(method=method)
+        galImg = galObj.drawImage(scale=scale, method=method)
 
     # Just an option for test
     if addPoisson:
@@ -167,7 +168,8 @@ def galSimDrawImage(galObj, size=0, method="auto", addPoisson=False):
     return galImg.array
 
 
-def galSimConvolve(galObj, psfObj, size=0, method="auto", returnObj=False):
+def galSimConvolve(galObj, psfObj, size=0, scale=1.0, method="auto",
+                   returnObj=False):
     """
     Just do convolution using GalSim
     Make sure the inputs are both GalSim GSObj
@@ -179,11 +181,11 @@ def galSimConvolve(galObj, psfObj, size=0, method="auto", returnObj=False):
     if returnObj:
         return outObj
     else:
-        outArr = galSimDrawImage(galObj, size=size, method=method)
+        outArr = galSimDrawImage(galObj, size=size, scale=scale, method=method)
         return outArr
 
 
-def galSimAdd(galObjList, size=0, method="auto", returnArr=False):
+def galSimAdd(galObjList, size=0, scale=1.0, method="auto", returnArr=False):
     """
     Just add a list of GSObjs together using GalSim
     Make sure all elements in the input list are GSObjs
@@ -194,7 +196,7 @@ def galSimAdd(galObjList, size=0, method="auto", returnArr=False):
     outObj = galsim.Add(galObjList)
 
     if returnArr:
-        outArr = galSimDrawImage(outObj, size=size, method=method)
+        outArr = galSimDrawImage(outObj, size=size, scale=scale, method=method)
         return outArr
     else:
         return outObj
@@ -219,14 +221,14 @@ def plotFakeGalaxy(galObj, galID=None, suffix=None, size=0, addPoisson=False):
     plt.figure(1, figsize=(8,8))
 
     # Use "fft" just to be fast
-    plt.imshow(np.arcsinh(galSimDrawImage(galObj, size=size, method="fft",
-                                         addPoisson=addPoisson)))
+    plt.imshow(np.arcsinh(galSimDrawImage(galObj, size=size, method="no_pixel",
+                                         addPoisson=addPoisson, scale=1.0)))
     plt.savefig(outPNG)
 
 
 def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
                      expAll=False, devAll=False, plotFake=False, trunc=0,
-                     drawMethod="auto", addPoisson=False):
+                     drawMethod="auto", addPoisson=False, scale=1.0):
     """
     Make a fake single Sersic galaxy using the galSim.Sersic function
 
@@ -309,13 +311,13 @@ def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
     if returnObj:
         return serFinal
     else:
-        return galSimDrawImage(serFinal, method=drawMethod,
+        return galSimDrawImage(serFinal, method=drawMethod, scale=scale,
                                addPoisson=addPoisson)
 
 
 def galSimFakeDoubleSersic(comp1, comp2, psfImage=None, trunc=0, returnObj=True,
                            devExp=False, plotFake=False, drawMethod='auto',
-                           addPoisson=False):
+                           addPoisson=False, scale=1.0):
     """
     Make a fake double Sersic galaxy using the galSim.Sersic function
 
@@ -377,13 +379,13 @@ def galSimFakeDoubleSersic(comp1, comp2, psfImage=None, trunc=0, returnObj=True,
     if returnObj:
         return dserFinal
     else:
-        return galSimDrawImage(dserFinal, method=drawMethod,
+        return galSimDrawImage(dserFinal, method=drawMethod, scale=scale,
                                addPoisson=addPoisson)
 
 
 def galSimRealGalaxy(flux, real_galaxy_catalog, index=None, psfImage=None,
                      random=False, returnObj=True, plotFake=False,
-                     drawMethod='auto', addPoisson=False):
+                     drawMethod='auto', addPoisson=False, scale=1.0):
 
     """
     Real galaxy
@@ -415,7 +417,7 @@ def galSimRealGalaxy(flux, real_galaxy_catalog, index=None, psfImage=None,
     if returnObj:
         return realFinal
     else:
-        return galSimDrawImage(realFinal, method=drawMethod,
+        return galSimDrawImage(realFinal, method=drawMethod, scale=scale,
                                addPoisson=addPoisson)
 
 
@@ -448,7 +450,7 @@ def testMakeFake(galList, asciiTab=False, single=True, double=True, real=True):
 
             galArray = galSimFakeSersic(flux, gal, psfImage=psfImage,
                                         plotFake=True, returnObj=False,
-                                        trunc=12.0, drawMethod="fft")
+                                        trunc=12.0, drawMethod="no_pixel")
 
             print " Output Flux : ", np.sum(galArray)
             print " Shape of the Output Array : ", galArray.shape
@@ -493,7 +495,7 @@ def testMakeFake(galList, asciiTab=False, single=True, double=True, real=True):
                                                  psfImage=psfImage,
                                                  trunc=12, returnObj=False,
                                                  devExp=True, plotFake=True,
-                                                 drawMethod='auto')
+                                                 drawMethod='no_pixel')
 
             print " Output Flux : ", np.sum(doubleArray)
             print " Shape of the Output Array : ", doubleArray.shape
@@ -527,7 +529,7 @@ def testMakeFake(galList, asciiTab=False, single=True, double=True, real=True):
             realArray = galSimRealGalaxy(flux, real_galaxy_catalog, index=index,
                                          psfImage=psfRealImage, random=random,
                                          plotFake=True, returnObj=False,
-                                         drawMethod='auto')
+                                         drawMethod='no_pixel')
 
             print '\n---------------------------------'
             print " Input Flux : ", flux
