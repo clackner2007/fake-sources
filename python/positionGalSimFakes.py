@@ -64,6 +64,7 @@ class PositionGalSimFakesTask(FakeSourcesTask):
             bboxI = exposure.getBBox(lsst.afw.image.PARENT)
             bboxI.grow(self.config.maxMargin)
             if not bboxI.contains(lsst.afw.geom.Point2I(galXY)):
+                self.log.info("Skipping fake %d"%galident)
                 continue
             
             #this is extrapolating for the PSF, probably not a good idea
@@ -82,17 +83,18 @@ class PositionGalSimFakesTask(FakeSourcesTask):
             if expBBox.contains(galImage.getBBox(lsst.afw.image.PARENT)) is False:
                 newBBox = galImage.getBBox(lsst.afw.image.PARENT)
                 newBBox.clip(expBBox)
+                if newBBox.getArea() <= 0:
+                    self.log.info("Skipping fake %d"%galident)
+                    continue
                 self.log.info("Cropping FAKE%d from %s to %s"%(galident, str(galBBox), str(newBBox)))
                 galImage = galImage.Factory(galImage, newBBox, lsst.afw.image.PARENT)
                 galBBox = newBBox
 
-            
             galMaskedImage = fsl.addNoise(galImage, exposure.getDetector(), rand_gen=self.npRand)
             
-            md.set("FAKE%d" % gal['ID'], "%.3f, %.3f" % (x, y))
-            self.log.info("Adding fake at: %.1f,%.1f"% (x, y))
+            md.set("FAKE%s" % str(galident), "%.3f, %.3f" % (galXY.getX(), galXY.getY()))
+            self.log.info("Adding fake %s at: %.1f,%.1f"% (str(galident), galXY.getX(), galXY.getY()))
 
-            #TODO: set the mask
             galMaskedImage.getMask().set(self.bitmask)
             subMaskedImage = exposure.getMaskedImage().Factory(exposure.getMaskedImage(),
                                                                galMaskedImage.getBBox(lsst.afw.image.PARENT),
