@@ -61,7 +61,7 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                 raise("No RA/DEC column in %s table"%self.config.galList)
 
             galXY = wcs.skyToPixel(galCoord)
-            bboxI = expBBox
+            bboxI = exposure.getBBox(lsst.afw.image.PARENT)
             bboxI.grow(self.config.maxMargin)
             if not bboxI.contains(lsst.afw.geom.Point2I(galXY)):
                 continue
@@ -87,8 +87,7 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                 galBBox = newBBox
 
             
-            galMaskedImage = fsl.addNoise(galImage, exposure.getDetector(), 
-                                          galXY.getX(), galXY.getY(), rand_gen=self.npRand)
+            galMaskedImage = fsl.addNoise(galImage, exposure.getDetector(), rand_gen=self.npRand)
             
             md.set("FAKE%d" % gal['ID'], "%.3f, %.3f" % (x, y))
             self.log.info("Adding fake at: %.1f,%.1f"% (x, y))
