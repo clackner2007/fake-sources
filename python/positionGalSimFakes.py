@@ -4,6 +4,7 @@ import lsst.afw.image
 import lsst.afw.geom
 import lsst.afw.math
 import lsst.afw.cameraGeom
+import lsst.afw.coord
 import lsst.pex.config
 from lsst.pipe.tasks.fakes import FakeSourcesConfig, FakeSourcesTask
 import pyfits as fits
@@ -11,10 +12,10 @@ import pyfits as fits
 import makeFakeGalaxy as makeFake
 import FakeSourceLib as fsl
 
-class RandomGalSimFakesConfig(FakeSourcesConfig):
+class PositionGalSimFakesConfig(FakeSourcesConfig):
     galList = lsst.pex.config.Field(dtype=str, doc="catalog of galaxies to add")
-    margin = lsst.pex.config.Field(dtype=int, default=None, optional=True,
-                                   doc="Size of margin at edge that should not be added")
+    maxMargin = lsst.pex.config.Field(dtype=int, default=600, optional=True,
+                                   doc="Size of margin = 1/2 of maximum galsim image size, in pixels")
     seed = lsst.pex.config.Field(dtype=int, default=1,
                                  doc="Seed for random number generator")
     galType = lsst.pex.config.ChoiceField(dtype=str, default='sersic',
@@ -22,12 +23,10 @@ class RandomGalSimFakesConfig(FakeSourcesConfig):
                                                    'sersic':'single sersic galaxies added',
                                                    'real':'real HST galaxy images added'},
                                           doc='type of GalSim galaxies to add')
-    nGal = lsst.pex.config.Field(dtype=int, doc="""number of galaxies to add, if 0, then everything in catalog, 
- otherwise a random subset of nGal from the catalog""", default=0)
+    
 
-
-class RandomGalSimFakesTask(FakeSourcesTask):
-    ConfigClass = RandomGalSimFakesConfig
+class PositionGalSimFakesTask(FakeSourcesTask):
+    ConfigClass = PositionGalSimFakesConfig
 
     def __init__(self, **kwargs):
         FakeSourcesTask.__init__(self, **kwargs)
@@ -39,20 +38,13 @@ class RandomGalSimFakesTask(FakeSourcesTask):
 
     def run(self, exposure, background):
 
-        self.log.info("Adding fake random galaxies")
+        self.log.info("Adding fake galaxies at real positions")
         psf = exposure.getPsf()
-        psfBBox = psf.computeImage().getBBox()
-        minMargin =  max(psfBBox.getWidth(), psfBBox.getHeight())/2 + 1
         md = exposure.getMetadata()
-        expBBox = exposure.getBBox()
+        expBBox = exposure.getBBox(lsst.afw.image.PARENT)
+        wcs = exposure.getWcs()
 
-        if self.config.nGal==0:
-            doGal = enumerate(self.galData)
-        else:
-            inds = self.npRand.choice(range(len(self.galData)), size=self.config.nGal, replace=False)
-            doGal = zip(inds, self.galData[inds])
-
-        for igal, gal in doGal:
+        for igal, gal in enumerate(self.galData):
             try:
                 galident = gal["ID"]
             except KeyError:
@@ -63,26 +55,26 @@ class RandomGalSimFakesTask(FakeSourcesTask):
             except KeyError:
                 raise KeyError("No mag column in %s table"%self.config.galList)
 
-            #don't put the galaxy within one PSF box of the edge
-            #or within the given pixel margin
-            if self.config.margin is not None:
-                margin = self.config.margin
-            else:
-                margin = minMargin
-            bboxI = (exposure.getBBox(lsst.afw.image.PARENT))
-            bboxI.grow(-margin)
-            bboxD = lsst.afw.geom.BoxD(bboxI)
-            x = self.rng.flat(bboxD.getMinX(), bboxD.getMaxX())
-            y = self.rng.flat(bboxD.getMinY(), bboxD.getMaxY())
-            #TODO: check for overlaps here and regenerate x,y if necessary
+            try:
+                galCoord = lsst.afw.coord.Coord(lsst.afw.geom.Point2D(gal['RA'], gal['DEC']))
+            except KeyError:
+                raise("No RA/DEC column in %s table"%self.config.galList)
 
-            psfImage = psf.computeKernelImage(lsst.afw.geom.Point2D(x, y))
+            galXY = wcs.skyToPixel(galCoord)
+            bboxI = exposure.getBBox(lsst.afw.image.PARENT)
+            bboxI.grow(self.config.maxMargin)
+            if not bboxI.contains(lsst.afw.geom.Point2I(galXY)):
+                self.log.info("Skipping fake %d"%galident)
+                continue
+            
+            #this is extrapolating for the PSF, probably not a good idea
+            psfImage = psf.computeKernelImage(galXY)
             galArray = makeFake.makeGalaxy( flux, gal, psfImage.getArray(), self.config.galType )
             galImage = lsst.afw.image.ImageF(galArray.astype(np.float32))
             galBBox = galImage.getBBox(lsst.afw.image.PARENT)
             galImage = lsst.afw.math.offsetImage(galImage,
-                                                 x - galBBox.getWidth()/2.0 + 0.5,
-                                                 y - galBBox.getHeight()/2.0 + 0.5,
+                                                 galXY.getX() - galBBox.getWidth()/2.0 + 0.5,
+                                                 galXY.getY() - galBBox.getHeight()/2.0 + 0.5,
                                                  'lanczos3')
             galBBox = galImage.getBBox(lsst.afw.image.PARENT)
 
@@ -91,19 +83,18 @@ class RandomGalSimFakesTask(FakeSourcesTask):
             if expBBox.contains(galImage.getBBox(lsst.afw.image.PARENT)) is False:
                 newBBox = galImage.getBBox(lsst.afw.image.PARENT)
                 newBBox.clip(expBBox)
+                if newBBox.getArea() <= 0:
+                    self.log.info("Skipping fake %d"%galident)
+                    continue
                 self.log.info("Cropping FAKE%d from %s to %s"%(galident, str(galBBox), str(newBBox)))
                 galImage = galImage.Factory(galImage, newBBox, lsst.afw.image.PARENT)
                 galBBox = newBBox
 
-            
             galMaskedImage = fsl.addNoise(galImage, exposure.getDetector(), rand_gen=self.npRand)
-            mask = galMaskedImage.getMask()
-            mask.set(self.bitmask)
             
-            md.set("FAKE%d" % gal['ID'], "%.3f, %.3f" % (x, y))
-            self.log.info("Adding fake at: %.1f,%.1f"% (x, y))
+            md.set("FAKE%s" % str(galident), "%.3f, %.3f" % (galXY.getX(), galXY.getY()))
+            self.log.info("Adding fake %s at: %.1f,%.1f"% (str(galident), galXY.getX(), galXY.getY()))
 
-            #TODO: set the mask
             galMaskedImage.getMask().set(self.bitmask)
             subMaskedImage = exposure.getMaskedImage().Factory(exposure.getMaskedImage(),
                                                                galMaskedImage.getBBox(lsst.afw.image.PARENT),
