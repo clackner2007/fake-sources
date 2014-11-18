@@ -6,6 +6,7 @@ matches fakes based on position stored in the calibrated exposure image header
 
 import lsst.daf.persistence as dafPersist
 from lsst.afw.table import SourceCatalog, SchemaMapper
+import lsst.afw.geom
 import lsst.pex.exceptions
 import numpy as np
 import argparse
@@ -54,6 +55,8 @@ def getFakeSources(butler, dataId, tol=1.0, zeropoint=True,
     mapper.addMinimalSchema(sources.schema)
     newSchema = mapper.getOutputSchema()
     newSchema.addField('fakeId', type=int, doc='id of fake source matched to position')
+    newSchema.addField('fakeOffset', type=lsst.afw.geom.Point2D,
+                       doc='offset from input fake position (pixels)')
     if zeropoint:
         newSchema.addField('zeropoint', type=float, doc='magnitude zeropoint')
     if visit:
@@ -68,6 +71,9 @@ def getFakeSources(butler, dataId, tol=1.0, zeropoint=True,
             newRec = srcList.addNew()
             newRec.assign(sources[ss], mapper)
             newRec.set('fakeId', ident)
+            newRec.set('fakeOffset', 
+                       lsst.afw.geom.Point2D(sources[ss].get('centroid.sdss').getX() - fakeXY[ident][0],
+                                             sources[ss].get('centroid.sdss').getY() - fakeXY[ident][1]))
             if zeropoint:
                 newRec.set('zeropoint', zp)
             if visit:
@@ -121,18 +127,22 @@ def main():
     parser.add_argument('rootDir', help='root dir of data repo')
     parser.add_argument('visit', help='id of visit', type=int)
     parser.add_argument('ccd', help='id of ccd', type=int)
+    parser.add_argument('-o', help='output/dir', default=None, dest='outdir')
     args = parser.parse_args()
     
     butler = dafPersist.Butler(args.rootDir)
 
     slist = getFakeSources(butler,
                                  {'visit':args.visit, 'ccd':args.ccd})
+    if args.outdir is not None:
+        table = getAstroTable(slist)
+        table.write(args.outdir+args.rootDir.strip('/').split('/')[-1]+'_matchFakes.fits', format='fits')
 
-    print 'fakeId X Y cmodel_mag nChild kron_mag'
-    for s in slist:
-        mag = lambda name:-2.5 * np.log10(s.get(name)) + s.get('zeropoint')
-        print s.get('fakeId'), s.get('centroid.sdss')[0], s.get('centroid.sdss')[1], mag('cmodel.flux'), 
-        print s.get('deblend.nchild'), mag('flux.kron')
+    # print 'fakeId X Y cmodel_mag nChild kron_mag'
+    # for s in slist:
+    #     mag = lambda name:-2.5 * np.log10(s.get(name)) + s.get('zeropoint')
+    #     print s.get('fakeId'), s.get('centroid.sdss')[0], s.get('centroid.sdss')[1], mag('cmodel.flux'), 
+    #     print s.get('deblend.nchild'), mag('flux.kron')
 
     
 if __name__=='__main__':
