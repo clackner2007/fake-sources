@@ -58,7 +58,7 @@ class DebugFakesTask(pipeBase.CmdLineTask):
     def run(self, dataRef, **kwargs):
         self.log.info("Processing %s" % (dataRef.dataId))
         exposure = dataRef.get('calexp', immediate=True)
-        self.fakes.run(exposure, sources=None, background=None)
+        self.fakes.run(exposure, None)
         dataRef.put(exposure, "calexp")
         return 0
 

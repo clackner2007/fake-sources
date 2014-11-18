@@ -16,6 +16,7 @@ class RandomStarFakeSourcesConfig(FakeSourcesConfig):
                                    doc="Size of margin at edge that should not be added")
     seed = lsst.pex.config.Field(dtype=int, default=0,
                                  doc="Seed for random number generator")
+  
 
 class RandomStarFakeSourcesTask(FakeSourcesTask):
     ConfigClass = RandomStarFakeSourcesConfig
@@ -26,7 +27,7 @@ class RandomStarFakeSourcesTask(FakeSourcesTask):
         self.rng = lsst.afw.math.Random(self.config.seed)
         self.npRand = np.random.RandomState(self.config.seed)
 
-    def run(self, exposure, sources, background):
+    def run(self, exposure, background):
 
         self.log.info("Adding fake random stars")
         psf = exposure.getPsf()
@@ -47,11 +48,14 @@ class RandomStarFakeSourcesTask(FakeSourcesTask):
             self.log.info("Adding fake at: %.1f,%.1f"% (x, y))
             psfImage = psf.computeImage(lsst.afw.geom.Point2D(x, y))
             psfImage *= flux
-            psfMaskedImage = fsl.addNoise(psfImage.convertF(), exposure.getDetector(), x, y, rand_gen=self.npRand)
-            psfMaskedImage.getMask().set(self.bitmask)
-            # TODO: add noise, set variance plane
-            # the line below would work if the subimage call worked in PARENT coordinates.  Since it
-            # doesn't at present, we have to do the longer call below.
+            psfMaskedImage = fsl.addNoise(psfImage.convertF(), exposure.getDetector(), 
+                                          x, y, rand_gen=self.npRand)
+            
+            mask = psfMaskedImage.getMask()
+            mask.set(self.bitmask)
+            
+            # the line below would work if the subimage call worked in PARENT coordinates.  
+            # Since it doesn't at present, we have to do the longer call below.
             # subMaskedImage = exposure.getMaskedImage()[psfImage.getBBox(lsst.afw.image.PARENT)]
             subMaskedImage = exposure.getMaskedImage().Factory(exposure.getMaskedImage(),
                                                                psfImage.getBBox(lsst.afw.image.PARENT),

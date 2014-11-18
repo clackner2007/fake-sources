@@ -37,7 +37,7 @@ class RandomGalSimFakesTask(FakeSourcesTask):
         self.galData = fits.open(self.config.galList)[1].data
 
 
-    def run(self, exposure, sources, background):
+    def run(self, exposure, background):
 
         self.log.info("Adding fake random galaxies")
         psf = exposure.getPsf()
@@ -97,6 +97,8 @@ class RandomGalSimFakesTask(FakeSourcesTask):
 
             
             galMaskedImage = fsl.addNoise(galImage, exposure.getDetector(), x, y, rand_gen=self.npRand)
+            mask = galMaskedImage.getMask()
+            mask.set(self.bitmask)
             
             md.set("FAKE%d" % gal['ID'], "%.3f, %.3f" % (x, y))
             self.log.info("Adding fake at: %.1f,%.1f"% (x, y))
