@@ -43,6 +43,7 @@ class PositionGalSimFakesTask(FakeSourcesTask):
         md = exposure.getMetadata()
         expBBox = exposure.getBBox(lsst.afw.image.PARENT)
         wcs = exposure.getWcs()
+        skyToPixelMatrix=wcs.getLinearTransform().invert().getMatrix()/3600.0
 
         for igal, gal in enumerate(self.galData):
             try:
@@ -69,7 +70,8 @@ class PositionGalSimFakesTask(FakeSourcesTask):
             
             #this is extrapolating for the PSF, probably not a good idea
             psfImage = psf.computeKernelImage(galXY)
-            galArray = makeFake.makeGalaxy( flux, gal, psfImage.getArray(), self.config.galType )
+            galArray = makeFake.makeGalaxy(flux, gal, psfImage.getArray(), self.config.galType,
+                                           transform = skyToPixelMatrix)
             galImage = lsst.afw.image.ImageF(galArray.astype(np.float32))
             galBBox = galImage.getBBox(lsst.afw.image.PARENT)
             galImage = lsst.afw.math.offsetImage(galImage,

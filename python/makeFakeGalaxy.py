@@ -6,7 +6,7 @@ import pyfits as fits
 
 
 def makeGalaxy(flux, gal, psfImage, galType='sersic', drawMethod='no_pixel',
-               trunc=10.0):
+               trunc=10.0, transform=None):
     """
     Function called by task to make galaxy images
 
@@ -24,13 +24,14 @@ def makeGalaxy(flux, gal, psfImage, galType='sersic', drawMethod='no_pixel',
 
     if galType is 'sersic':
         return galSimFakeSersic(flux, gal, psfImage=psfImage, trunc=trunc,
-                                drawMethod=drawMethod, returnObj=False)
+                                drawMethod=drawMethod, returnObj=False, 
+                                transform=transform)
 
     if galType is 'dsersic':
         (comp1, comp2) = parseDoubleSersic(flux, gal)
         return galSimFakeDoubleSersic(comp1, comp2, psfImage=psfImage,
                                       trunc=trunc, drawMethod=drawMethod,
-                                      returnObj=False)
+                                      returnObj=False, transform=transform)
 
     if galType is 'real':
         # TODO: For real galaxies, we need to decide which to use: index in the
@@ -44,7 +45,8 @@ def makeGalaxy(flux, gal, psfImage, galType='sersic', drawMethod='no_pixel',
             random = True
         return galSimRealGalaxy(flux, real_galaxy_catalog, index=index,
                                 psfImage=psfImage, random=random,
-                                returnObj=False, drawMethod=drawMethod)
+                                returnObj=False, drawMethod=drawMethod,
+                                transform=transform)
 
 def parseRealGalaxy(gal):
 
@@ -228,7 +230,7 @@ def plotFakeGalaxy(galObj, galID=None, suffix=None, size=0, addPoisson=False):
 
 def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
                      expAll=False, devAll=False, plotFake=False, trunc=0,
-                     drawMethod="auto", addPoisson=False, scale=1.0):
+                     drawMethod="auto", addPoisson=False, scale=1.0, transform=None):
     """
     Make a fake single Sersic galaxy using the galSim.Sersic function
 
@@ -290,6 +292,10 @@ def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
     if posAng != 0.0 or posAng != 180.0:
         serObj = serObj.rotate(posAng*galsim.degrees)
 
+    #do the transformation from sky to pixel coordinates, if given
+    if transform is not None:
+        serObj = serObj.transform(*tuple(transform.ravel()))
+
     # Convolve the Sersic model using the provided PSF image
     if psfImage is not None:
         # Convert the PSF Image Array into a GalSim Object
@@ -317,7 +323,7 @@ def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
 
 def galSimFakeDoubleSersic(comp1, comp2, psfImage=None, trunc=0, returnObj=True,
                            devExp=False, plotFake=False, drawMethod='auto',
-                           addPoisson=False, scale=1.0):
+                           addPoisson=False, scale=1.0, transform=None):
     """
     Make a fake double Sersic galaxy using the galSim.Sersic function
 
@@ -385,7 +391,7 @@ def galSimFakeDoubleSersic(comp1, comp2, psfImage=None, trunc=0, returnObj=True,
 
 def galSimRealGalaxy(flux, real_galaxy_catalog, index=None, psfImage=None,
                      random=False, returnObj=True, plotFake=False,
-                     drawMethod='auto', addPoisson=False, scale=1.0):
+                     drawMethod='auto', addPoisson=False, scale=1.0, transform=None):
 
     """
     Real galaxy
