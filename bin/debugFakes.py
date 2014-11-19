@@ -19,6 +19,7 @@ class DebugFakesConfig(pexConfig.Config):
         target = DummyFakeSourcesTask,
         doc = "Injection of fake sources for test purposes (retarget to enable)"
     )
+    display = pexConfig.Field(dtype=bool, doc='display exposure', default=False)
 
 butlerTarget = "raw"
 dataIdContainer  = {
@@ -60,6 +61,9 @@ class DebugFakesTask(pipeBase.CmdLineTask):
         exposure = dataRef.get('calexp', immediate=True)
         self.fakes.run(exposure, None)
         dataRef.put(exposure, "calexp")
+        if self.config.display:
+            ds9.mtv(exposure, settings={'scale':'zscale', 'zoom':'to fit',
+                                        'mask':'transparency 30', 'wcs':'wcs'})
         return 0
 
 
