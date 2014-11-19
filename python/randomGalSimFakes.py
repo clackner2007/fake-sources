@@ -77,7 +77,9 @@ class RandomGalSimFakesTask(FakeSourcesTask):
             #TODO: check for overlaps here and regenerate x,y if necessary
 
             psfImage = psf.computeKernelImage(lsst.afw.geom.Point2D(x, y))
-            galArray = makeFake.makeGalaxy( flux, gal, psfImage.getArray(), self.config.galType )
+            galArray = makeFake.makeGalaxy( flux, gal, psfImage.getArray(), self.config.galType,
+                                            transform=np.eye(2)/
+                                            exposure.getWcs().pixelscale().asArcseconds() )
             galImage = lsst.afw.image.ImageF(galArray.astype(np.float32))
             galBBox = galImage.getBBox(lsst.afw.image.PARENT)
             galImage = lsst.afw.math.offsetImage(galImage,
