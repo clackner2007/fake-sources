@@ -24,7 +24,7 @@ def makeGalaxy(flux, gal, psfImage, galType='sersic', drawMethod='no_pixel',
 
     if galType is 'sersic':
         return galSimFakeSersic(flux, gal, psfImage=psfImage, trunc=trunc,
-                                drawMethod=drawMethod, returnObj=False, 
+                                drawMethod=drawMethod, returnObj=False,
                                 transform=transform)
 
     if galType is 'dsersic':
@@ -230,7 +230,8 @@ def plotFakeGalaxy(galObj, galID=None, suffix=None, size=0, addPoisson=False):
 
 def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
                      expAll=False, devAll=False, plotFake=False, trunc=0,
-                     drawMethod="auto", addPoisson=False, scale=1.0, transform=None):
+                     drawMethod="auto", addPoisson=False, scale=1.0,
+                     transform=None):
     """
     Make a fake single Sersic galaxy using the galSim.Sersic function
 
@@ -364,6 +365,10 @@ def galSimFakeDoubleSersic(comp1, comp2, psfImage=None, trunc=0, returnObj=True,
     # Combine these two components
     doubleSersic = galSimAdd([serModel1, serModel2])
 
+    #do the transformation from sky to pixel coordinates, if given
+    if transform is not None:
+        doubleSersic = doubleSersic.transform(*tuple(transform.ravel()))
+
     # Convolve the Sersic model using the provided PSF image
     if psfImage is not None:
         # Convert the PSF Image Array into a GalSim Object
@@ -391,7 +396,8 @@ def galSimFakeDoubleSersic(comp1, comp2, psfImage=None, trunc=0, returnObj=True,
 
 def galSimRealGalaxy(flux, real_galaxy_catalog, index=None, psfImage=None,
                      random=False, returnObj=True, plotFake=False,
-                     drawMethod='auto', addPoisson=False, scale=1.0, transform=None):
+                     drawMethod='auto', addPoisson=False, scale=1.0,
+                     transform=None):
 
     """
     Real galaxy
@@ -404,6 +410,10 @@ def galSimRealGalaxy(flux, real_galaxy_catalog, index=None, psfImage=None,
 
     # Pass the flux to the object
     realObj = realObj.withFlux(flux)
+
+    #do the transformation from sky to pixel coordinates, if given
+    if transform is not None:
+        realObj = realObj.transform(*tuple(transform.ravel()))
 
     # Convolve the Sersic model using the provided PSF image
     if psfImage is not None:
