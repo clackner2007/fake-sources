@@ -63,7 +63,7 @@ class DebugFakesTask(pipeBase.CmdLineTask):
         dataRef.put(exposure, "calexp")
         if self.config.display:
             ds9.mtv(exposure, settings={'scale':'zscale', 'zoom':'to fit',
-                                        'mask':'transparency 30', 'wcs':'wcs'})
+                                        'mask':'transparency 80', 'wcs':'wcs'})
         return 0
 
 
