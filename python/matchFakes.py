@@ -61,7 +61,7 @@ def getFakeSources(butler, dataId, tol=1.0, extraCols=('zeropoint', 'visit', 'cc
 
     if includeMissing is true, then the pipeline looks at the fake sources
     added in the header and includes an entry in the table for sources without
-    any measurements.
+    any measurements, specifically the 'id' column will be 0
     """
     
     availExtras = {'zeropoint':{'type':float, 'doc':'zeropoint'}, 
@@ -177,7 +177,6 @@ def getAstroTable(srcIn, mags=True):
                                                     data=np.array([s.get(name) for s in src])))
         #report angles in degrees
         if isinstance(src[0].get(name), lsst.afw.geom.Angle):
-            print name
             tab[name] *= 180.0/np.pi
 
 
