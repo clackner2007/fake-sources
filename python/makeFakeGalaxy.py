@@ -290,8 +290,8 @@ def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
         serObj = serObj.shear(q=axisRatio, beta=0.0*galsim.degrees)
 
     # If necessary, apply the Position Angle (theta) using the Rotate method
-    if posAng != 0.0 or posAng != 180.0:
-        serObj = serObj.rotate(posAng*galsim.degrees)
+    #if posAng != 0.0 or posAng != 180.0:
+    serObj = serObj.rotate((90.0-posAng)*galsim.degrees)
 
     #do the transformation from sky to pixel coordinates, if given
     if transform is not None:

@@ -45,6 +45,7 @@ class RandomGalSimFakesTask(FakeSourcesTask):
         minMargin =  max(psfBBox.getWidth(), psfBBox.getHeight())/2 + 1
         md = exposure.getMetadata()
         expBBox = exposure.getBBox()
+        scalingMatrix = np.array([[0.0,1.0],[1.0,0.0]]) / exposure.getWcs().pixelScale().asArcseconds()
 
         if self.config.nGal==0:
             doGal = enumerate(self.galData)
@@ -78,8 +79,7 @@ class RandomGalSimFakesTask(FakeSourcesTask):
 
             psfImage = psf.computeKernelImage(lsst.afw.geom.Point2D(x, y))
             galArray = makeFake.makeGalaxy( flux, gal, psfImage.getArray(), self.config.galType,
-                                            transform=np.eye(2)/
-                                            exposure.getWcs().pixelscale().asArcseconds() )
+                                            transform = scalingMatrix)
             galImage = lsst.afw.image.ImageF(galArray.astype(np.float32))
             galBBox = galImage.getBBox(lsst.afw.image.PARENT)
             galImage = lsst.afw.math.offsetImage(galImage,
