@@ -92,9 +92,9 @@ def parseDoubleSersic(tflux, gal):
     galID = gal["ID"]
     # Effective radius
     try:
-        reff1, reff2 = float(gal["reff_pix1"]), float(gal["reff_pix2"])
+        reff1, reff2 = float(gal["reff1"]), float(gal["reff2"])
     except KeyError:
-        raise KeyError("reff_pix1 or reff_pix2 is found in the record!!")
+        raise KeyError("reff1 or reff2 is found in the record!!")
     # Sersic index
     try:
         nser1, nser2 = float(gal["sersic_n1"]), float(gal["sersic_n2"])
@@ -114,11 +114,11 @@ def parseDoubleSersic(tflux, gal):
 
     comp1 = np.array((galID, flux1, nser1, reff1, ba1, pa1),
                      dtype=[('ID','int'), ('mag','float'), ('sersic_n','float'),
-                            ('reff_pix','float'), ('b_a','float'),
+                            ('reff','float'), ('b_a','float'),
                             ('theta','float')])
     comp2 = np.array((galID, flux2, nser2, reff2, ba2, pa2),
                      dtype=[('ID','int'), ('mag','float'), ('sersic_n','float'),
-                            ('reff_pix','float'), ('b_a','float'),
+                            ('reff','float'), ('b_a','float'),
                             ('theta','float')])
 
     return comp1, comp2
@@ -255,13 +255,13 @@ def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
 
     # Convert the numpy.float32 into normal float format
     nSersic   = float(gal["sersic_n"])
-    reffPix   = float(gal["reff_pix"])
+    reff   = float(gal["reff"])
     axisRatio = float(gal["b_a"])
     posAng    = float(gal["theta"])
 
-    # Truncate the flux at trunc x reffPix
+    # Truncate the flux at trunc x reff
     if trunc > 0:
-        trunc = int(trunc * reffPix)
+        trunc = int(trunc * reff)
 
     # Make sure Sersic index is not too large
     if nSersic > 6.0:
@@ -273,17 +273,17 @@ def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
     # Make the Sersic model based on flux, re, and Sersic index
     if nSersic == 1.0 or expAll:
         if scaleRad:
-            serObj = galsim.Exponential(scale_radius=reffPix)
+            serObj = galsim.Exponential(scale_radius=reff)
         else:
-            serObj = galsim.Exponential(half_light_radius=reffPix)
+            serObj = galsim.Exponential(half_light_radius=reff)
         if expAll:
             print " * This model is treated as a n=1 Exponential disk : %d" % (gal["ID"])
     elif nSersic == 4.0 or devAll:
-        serObj = galsim.DeVaucouleurs(half_light_radius=reffPix, trunc=trunc)
+        serObj = galsim.DeVaucouleurs(half_light_radius=reff, trunc=trunc)
         if devAll:
             print " * This model is treated as a n=4 De Vaucouleurs model: %d" % (gal["ID"])
     else:
-        serObj = galsim.Sersic(nSersic, half_light_radius=reffPix, trunc=trunc)
+        serObj = galsim.Sersic(nSersic, half_light_radius=reff, trunc=trunc)
 
     # If necessary, apply the Axis Ratio (q=b/a) using the Shear method
     if axisRatio < 1.0:
@@ -449,7 +449,7 @@ def testMakeFake(galList, asciiTab=False, single=True, double=True, real=True):
             galData = np.loadtxt(galList, dtype=[('ID','int'),
                                                  ('mag','float'),
                                                  ('sersic_n','float'),
-                                                 ('reff_pix','float'),
+                                                 ('reff','float'),
                                                  ('b_a','float'),
                                                  ('theta','float')])
         else:
@@ -461,7 +461,7 @@ def testMakeFake(galList, asciiTab=False, single=True, double=True, real=True):
 
             print '\n---------------------------------'
             print " Input Flux : ", flux
-            print " Input Parameters : ", gal["sersic_n"], gal["reff_pix"]
+            print " Input Parameters : ", gal["sersic_n"], gal["reff"]
             print "                    ", gal["b_a"], gal["theta"]
 
             galArray = galSimFakeSersic(flux, gal, psfImage=psfImage,
@@ -499,11 +499,11 @@ def testMakeFake(galList, asciiTab=False, single=True, double=True, real=True):
             print " Flux for Component 1 : ", comp1['mag']
             print " Flux for Component 2 : ", comp2['mag']
             print " Comp 1 Parameters : %5.2f  %8.2f" % (comp1["sersic_n"],
-                                                         comp1["reff_pix"])
+                                                         comp1["reff"])
             print "                     %5.2f  %8.2f" % (comp1["b_a"],
                                                          comp1["theta"])
             print " Comp 2 Parameters : %5.2f  %8.2f" % (comp2["sersic_n"],
-                                                         comp2["reff_pix"])
+                                                         comp2["reff"])
             print "                     %5.2f  %8.2f" % (comp2["b_a"],
                                                          comp2["theta"])
 
