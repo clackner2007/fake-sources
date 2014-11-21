@@ -2,17 +2,14 @@
 
 import argparse
 import lsst.daf.persistence as dafPersist
-import lsst.afw.image as afwImage
 
 def main(butler, dataId, coaddType='deepCoadd'):
 
     coadd = butler.get(coaddType, **dataId)
-    visitInputs = coadd.getInfo().getCoaddInputs().visits
-
     ccdInputs = coadd.getInfo().getCoaddInputs().ccds
 
-    for v, ccd in zip(ccdInputs.get("visit"), ccdInputs.get("ccd")):
-        print "%d  %d" % (v, ccd)
+    for i in ccdInputs:
+        print "%d  %d" % (i.get("visit"), i.get("ccd"))
 
 
 if __name__ == '__main__':
