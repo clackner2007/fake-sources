@@ -49,7 +49,7 @@ def matchToFakeCatalog(sources, fakeCatalog):
 
 
 def getFakeSources(butler, dataId, tol=1.0, extraCols=('zeropoint', 'visit', 'ccd'),
-                   includeMissing=False):
+                   includeMissing=False, footprints=False):
     """Get list of sources which agree in pixel position with fake ones with tol
     
     this returns a sourceCatalog of all the matched fake objects,
@@ -73,11 +73,11 @@ def getFakeSources(butler, dataId, tol=1.0, extraCols=('zeropoint', 'visit', 'cc
     if not np.in1d(extraCols, availExtras.keys()).all():
         print "extraCols must be in ",availExtras
 
-    sources = butler.get('src', dataId)
+    sources = butler.get('src', dataId, flags=lsst.afw.table.SOURCE_IO_NO_FOOTPRINTS)
     cal_md = butler.get('calexp_md', dataId)
 
     if 'pixelScale' or 'thetaNorth' in extraCols:
-        wcs = butler.get('calexp', dataId).getWcs()
+        wcs = lsst.afw.image.makeWcs(cal_md)
         availExtras['pixelScale']['value'] =  wcs.pixelScale().asArcseconds()
         availExtras['thetaNorth']['value'] = lsst.afw.geom.Angle(
             np.arctan2(*tuple(wcs.getLinearTransform().invert()
@@ -144,7 +144,7 @@ def getFakeSources(butler, dataId, tol=1.0, extraCols=('zeropoint', 'visit', 'cc
     return srcList
 
 
-def getAstroTable(srcIn, mags=True):
+def getAstroTable(src, mags=True):
     """
     returns an astropy table with all the src entries
     if the entries are complex objects, it breaks them down:
@@ -156,7 +156,6 @@ def getAstroTable(srcIn, mags=True):
     """
     
     tab = astropy.table.Table()
-    src = srcIn.copy()
     for name in src.schema.getNames():
         try: 
             tab.add_column(astropy.table.Column(name=name,
@@ -199,7 +198,8 @@ def getAstroTable(srcIn, mags=True):
 
 
 
-def returnMatchTable(rootDir, visit, ccdList, outdir=None, fakeCat=None):
+def returnMatchTable(rootDir, visit, ccdList, outdir=None, fakeCat=None,
+                     overwrite=False):
     """
     driver (main function) for return match to fakes
     INPUT: rootDir = rerun directory
@@ -208,6 +208,7 @@ def returnMatchTable(rootDir, visit, ccdList, outdir=None, fakeCat=None):
            outdir = output directory for matched file, None means no output written
            fakeCat = fake catalog to match to, None means the fake sources are just
                      extracted from the header of the CCDs based on position but no matching is done
+           overwrite = whether to overwrite the existing output file, default is False
     OUTPUT: returns an astropy.table.Table with all the entries from the source catalog for 
             objects which match in pixel position to the fake sources
     """
@@ -231,7 +232,8 @@ def returnMatchTable(rootDir, visit, ccdList, outdir=None, fakeCat=None):
         table = matchToFakeCatalog(table, args.fakeCat)
 
     if outdir is not None:        
-        table.write(args.outdir+args.rootDir.strip('/').split('/')[-1]+'_matchFakes.fits', format='fits')
+        table.write(outdir+rootDir.strip('/').split('/')[-1]+'_matchFakes.fits', format='fits',
+                    overwrite=overwrite)
 
     return table
 
@@ -244,6 +246,9 @@ if __name__=='__main__':
     parser.add_argument('--ccd', nargs='+', help='id of ccd(s)', type=int)
     parser.add_argument('-o', help='output/dir', default=None, dest='outdir')
     parser.add_argument('-f', help='fake catalog', default=None, dest='fakeCat')
+    parser.add_argument('-w', '--overwrite', help='over write output file', 
+                        dest='ow', default=False, action='store_true')
     args = parser.parse_args()
 
-    returnMatchTable(args.rootDir, args.visit, args.ccd, args.outdir, args.fakeCat)
+    returnMatchTable(args.rootDir, args.visit, args.ccd, args.outdir, args.fakeCat,
+                     overwrite=args.ow)
