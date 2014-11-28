@@ -1,16 +1,21 @@
 This project is to add fake stellar and galaxy sources to the HSC data processing. 
 
 ####Setup
-Currently, this is only enabled in a special version of processCcd.py. In order to get this code working at master.ipmu, you'll need to setup:
+This code depends on the HSC pipeline (version 3.3.3 or later), and needs to have galsim built against the pipeline python. For some of the additional scripts (makeRaDec, matchFakes) the astropy package is also necessary. If you just have a list of sources however, you don't need it. This is already setup on master at IPMU, so if you are running there, you just need to setup the following:
+In order to get this code working at master.ipmu, you'll need to setup:
 ```bash
-$ setup -v -r /home/bot/sandbox/bbot
+$ export PYTHONPATH=/home/clackner/.local/lib/python2.7/site-packages:${PYTHONPATH}
+$ setup -v -r hscPipe 3.3.3
 $ setup -v -j astrometry_net_data ps1_pv1.2c
-$ setup -v -j -r ~clackner/sandbox/ptas-bosch
 $ setup -v -r path/to/fake-sources/
 ``` 
 
 ####Running
-To run, you need to override the configure in the pipeline. The override is in config-random. You'll need to import the relevant file and then set retarget to the task you want to run. You can then set any other configurables here. The command to run it within the hsc pipeline is:
+To run, you need to override the default configuration in the pipeline to include fake sources. We have XX different tasks you can implement with the override config. They are:
+  1. randomStarFakes: adds stars of a single brightness to random positions in a CCD
+  2. randomGalSimFakes: adds galsim galaxies from a catalog to random positions in a CCD
+  3. positionGalSimFakes: adds galsim galaxies from a catalog to fixed sky positions, also given in the catalog.
+Examples of how to use these tasks and standard configurations are given in the test/stars and test/galaxies directories. The command to run these for a small set of CCDs would is:
 ```bash
 $ hscProcessCcd.py /to/data/ --rerun=/to/rerun --id visit=XXX ccd=YY -C config_random
 ```
@@ -20,6 +25,7 @@ If you want to add check that the fake source adding is working without going th
 ```bash
 $ debugFakes.py /to/data/ --rerun=rerun1:rerun2 --id visit=XXX ccd=YY -C config_debug
 ```
+Note that this will fail if rerun1 doesn't have the visit/ccd you are trying to process already in it.
 
 ####Make Random RA, DEC catalog 
 
