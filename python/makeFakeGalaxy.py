@@ -261,7 +261,7 @@ def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
 
     # Truncate the flux at trunc x reff
     if trunc > 0:
-        trunc = int(trunc * reff)
+        trunc = trunc * reff 
 
     # Make sure Sersic index is not too large
     if nSersic > 6.0:
