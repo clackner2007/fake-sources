@@ -191,5 +191,5 @@ def makeRaDecCat(nRand, dataId=None, rangeRaDec=None, rad=None,
         else:
             raise Exception('Can not find input catalog %s!' % inputCat)
 
-    return None #randomRaDec
+    return randomRaDec
 
