@@ -21,4 +21,33 @@ If you want to add check that the fake source adding is working without going th
 $ debugFakes.py /to/data/ --rerun=rerun1:rerun2 --id visit=XXX ccd=YY -C config_debug
 ```
 
+####Make Random RA, DEC catalog 
 
+* Right now, makeRaDecCat.py accepts either a dataId ({visit,ccd} or
+  {tract,patch,filter}) or a range of {RA,Dec} as input. 
+* To use it on single frame or coadd images, a rootDir for the data is also
+  required 
+* The rangeRaDec can be either a list or a numpy array in the format of 
+  (raMin, raMax, decMin, decMax)
+* The code will return a list of {RA,Dec} pairs; It also accepts an input fits
+  catalog, and will add two columns to the catalog (RA, Dec).  Make sure the
+  number of galaxies in the input catalog is equal or smaller than the number of
+  random RA,Dec pairs (This can be improved later).  The output catalog will
+  have a '_radec' suffix.  
+* And, an optional 'rad' parameter is available as the minimum allowed
+  separation (in unit of arcsec) between any of these random RA, Dec pairs. 
+
+```python 
+> rangeRaDec = [123.4, 123.8, 12.0, 13.0]
+> inputCat = 'fakeExp.fits'
+> randomRaDec = makeRaDecCat(50, rangeRaDec=rangeRaDec, rad=10.0, inputCat=inputCat)
+```
+or 
+
+```python 
+> dataId = {tract:0, patch:'4,5', filter:'HSC-I'}
+> rootDir = '/lustre/Subaru/SSP/rerun/song/cosmos-i2' 
+> inputCat = 'fakeExp.fits'
+> randomRaDec = makeRaDecCat(50, dataId=dataId, rad=10.0, inputCat=inputCat,
+>                            rootDir=rootDir)
+```
