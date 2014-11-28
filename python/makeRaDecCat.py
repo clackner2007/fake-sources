@@ -137,13 +137,13 @@ def makeRaDecCat(nRand, dataId=None, rangeRaDec=None, rad=None,
 
         if type(rangeRaDec) is dict:
             rKeys = rangeRaDec.keys()
-            if 'raMin' in rKeys and 'raMax' in rKeys and 'decMin' in rKeys and 'decMax' in rKeys:
-                randomRaDec = getRandomRaDec(nRand, rangeRaDec['minRa'],
-                                            rangeRaDec['maxRa'],
-                                            rangeRaDec['minDec'],
-                                            rangeRaDec['maxDec'], rad=rad)
-            else:
-                raise KeyError('Please provide the correct rangeRaDec!')
+            #if 'raMin' in rKeys and 'raMax' in rKeys and 'decMin' in rKeys and 'decMax' in rKeys:
+            randomRaDec = getRandomRaDec(nRand, rangeRaDec['minRa'],
+                                         rangeRaDec['maxRa'],
+                                         rangeRaDec['minDec'],
+                                         rangeRaDec['maxDec'], rad=rad)
+            #else:
+            #    raise KeyError('Please provide the correct rangeRaDec!')
         elif type(rangeRaDec) is list or type(rangeRaDec).__module__ == 'numpy':
             if len(rangeRaDec) >= 4:
                 randomRaDec = getRandomRaDec(nRand, rangeRaDec[0],
