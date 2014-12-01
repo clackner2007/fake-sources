@@ -21,7 +21,7 @@ Examples of how to use these tasks and standard configurations are given in the 
 ```bash
 $ hscProcessCcd.py /to/data/ --rerun=/to/rerun --id visit=XXX ccd=YY -C config_XXX
 ```
-More detailed instructions on how to run these examples is found in the tests folder [here](tests/instruction.md).
+More detailed instructions on how to run these examples is found in the tests folder [here](tests/instructions.md).
 
 ####Debugging
 If you want to add check that the fake source adding is working without going through all the measurements, use debugFakes, which takes a calibrated exposure from a completed rerun (rerun1) and writes the exposure with fakes added to rerun2.
