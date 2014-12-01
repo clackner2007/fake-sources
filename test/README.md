@@ -26,6 +26,7 @@ The task randomGalFimFakes adds fake galaxies to random positions of a given CCD
 The galaxy profiles are computed by GalSim. Right now, the profile are truncated at 10x reff, but that's subject to change. 
 
 The configuration for the test case of this task is in `test/galaxies/config_gal_test`. The available configuration parameters are:
+
 name | description
 ---------| -------------
 retarget | name of fake sources task to use
@@ -39,3 +40,16 @@ The extra, non-fake-related parameters in the config are used to turn on cmodel 
 
 The test task adds 50 exponential galaxies to chip 50 in visit 1236 (COSMOS i-band). To run it, use the command `$ test_gal_run.sh /path/to/data /path/to/rerun`. As with the stars, the test task outputs a catalog (`test_exp_matchFakes.fits`) of measured parameters of the fake sources (measurements that match the added fakes in pixel position.
 
+####Adding fake galaxies at fixed RA/DEC
+The task positionGalSimFakes.py similar to the randomGalSimFakes.py, except the input catalog includes an ra/dec position where the source is added. This means that this task can be used in adding fake sources for coadd processing. In this case, the input catalog position angle, theta, refers to degrees counter-clockwise from North, the standard definition. The available configuration parameters are:
+
+name | description
+---------| -------------
+galList | file for galaxy catalog, including columns ra and dec
+galType | type of galaxy profile to make, used by makeFakes code, options are sersic, dsersic, and real
+maxMargin | size of buffer around CCD (in pixels) in which to look for sources that partially overlap with the current CCD
+seed | seed for random generator for the Poisson noise added to the galaxy images
+
+An example configuration file is given in `test/galaxies/config_pos`. This takes as input a list of 3 galaxies which are in the ccd 50 of visit 1236. The galaxy input parameters are galaxy_test_pos.fits. Random galaxy positions in an ra/dec range or for a visit/ccd or tract/patch can be generated with makeRaDecCat.py.
+
+TODO: write up how to run coadds.
