@@ -4,8 +4,6 @@ We've implemented three test cases for the the tasks below. You can run these to
 ###Adding stars at random positions
 The task randomStarFakeSourcesTask adds fake stars of a given magnitude to an individual CCD at random positions. The sample configuration file is in `test/stars/config_star_test`. The available configuration parameters are:
 
-name | description
-----| ----
 retarget | name of fake sources task to use
 magnitude | magnitude of stars to add
 nStars | number of stars to add ,default is 1
