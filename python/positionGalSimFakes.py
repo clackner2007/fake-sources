@@ -70,8 +70,14 @@ class PositionGalSimFakesTask(FakeSourcesTask):
             
             #this is extrapolating for the PSF, probably not a good idea
             psfImage = psf.computeKernelImage(galXY)
-            galArray = makeFake.makeGalaxy(flux, gal, psfImage.getArray(), self.config.galType,
-                                           transform = skyToPixelMatrix)
+            try:
+                galArray = makeFake.makeGalaxy(flux, gal, psfImage.getArray(), 
+                                               self.config.galType, 
+                                               transform = skyToPixelMatrix)
+            except (KeyError, ValueError, RuntimeError):
+                self.log.info("Skipping fake %d"%galident)
+                continue
+
             galImage = lsst.afw.image.ImageF(galArray.astype(np.float32))
             galBBox = galImage.getBBox(lsst.afw.image.PARENT)
             galImage = lsst.afw.math.offsetImage(galImage,
