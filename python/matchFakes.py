@@ -217,6 +217,7 @@ def returnMatchTable(rootDir, visit, ccdList, outdir=None, fakeCat=None,
     slist = None
 
     for ccd in ccdList:
+        print 'doing ccd %d'%ccd
         temp = getFakeSources(butler,
                               {'visit':visit, 'ccd':ccd}, includeMissing=True,
                               extraCols=('visit', 'ccd', 'zeropoint', 'pixelScale', 'thetaNorth'))
