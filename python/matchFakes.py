@@ -174,10 +174,12 @@ def getAstroTable(src, mags=True):
             else:
                 tab.add_column(astropy.table.Column(name=name, 
                                                     data=np.array([s.get(name) for s in src])))
-        #report angles in degrees
+            #report angles in degrees
         if isinstance(src[0].get(name), lsst.afw.geom.Angle):
-            tab[name] *= 180.0/np.pi
-
+            tab.remove_column(name)
+            tab.add_column(astropy.table.Column(data=[s.get(name).asDegrees()
+                                                      for s in src],
+                                                dtype=float, name=name))
 
     if mags:
         #this is a horrible hack, but I don't think we can use the slots, since 
@@ -187,7 +189,8 @@ def getAstroTable(src, mags=True):
                 re.match('^flux\.[a-z]+.apcorr$', col) or
                 re.match('^cmodel.+flux$', col) or 
                 re.match('^cmodel.+flux.apcorr$', col)):
-                mag, magerr = getMag(tab[col], tab[col+'.err'], tab['zeropoint'])
+                mag, magerr = getMag(tab[col], tab[col+'.err'], 
+                                     tab['zeropoint'] if not re.search('apcorr', col) else 0.0)
             
                 tab.add_column(astropy.table.Column(name=re.sub('flux', 'mag', col),
                                                     data=mag))
@@ -227,16 +230,17 @@ def returnMatchTable(rootDir, visit, ccdList, outdir=None, fakeCat=None,
             slist.extend(temp, True)
         del temp
 
-    table = getAstroTable(slist, mags=True)
+    astroTable = getAstroTable(slist, mags=True)
     
     if fakeCat is not None:
-        table = matchToFakeCatalog(table, args.fakeCat)
+        astroTable = matchToFakeCatalog(astroTable, args.fakeCat)
 
     if outdir is not None:        
-        table.write(outdir+rootDir.strip('/').split('/')[-1]+'_matchFakes.fits', format='fits',
-                    overwrite=overwrite)
+        astroTable.write(outdir+rootDir.strip('/').split('/')[-1]+'_matchFakes.fits', 
+                         format='fits',
+                         overwrite=overwrite)
 
-    return table
+    return astroTable
 
     
 if __name__=='__main__':
