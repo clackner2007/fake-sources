@@ -73,8 +73,14 @@ def getFakeSources(butler, dataId, tol=1.0, extraCols=('zeropoint', 'visit', 'cc
     if not np.in1d(extraCols, availExtras.keys()).all():
         print "extraCols must be in ",availExtras
 
-    sources = butler.get('src', dataId, flags=lsst.afw.table.SOURCE_IO_NO_FOOTPRINTS)
-    cal_md = butler.get('calexp_md', dataId)
+    butlerPrepend=''
+    if 'filter' in dataId:
+        butlerPrepend='deepCoadd_'
+
+    sources = butler.get(butlerPrepend+'src', dataId, 
+                         flags=lsst.afw.table.SOURCE_IO_NO_FOOTPRINTS)
+    cal_md = butler.get(butlerPrepend+'calexp_md', dataId)
+    
 
     if 'pixelScale' or 'thetaNorth' in extraCols:
         wcs = lsst.afw.image.makeWcs(cal_md)
@@ -202,12 +208,12 @@ def getAstroTable(src, mags=True):
 
 
 def returnMatchTable(rootDir, visit, ccdList, outdir=None, fakeCat=None,
-                     overwrite=False):
+                     overwrite=False, filt=None):
     """
     driver (main function) for return match to fakes
     INPUT: rootDir = rerun directory
-           visit = visit id (int)
-           ccdList = list of ccds to look at 
+           visit = visit id (int) (or tracts)
+           ccdList = list of ccds to look at (or patches)
            outdir = output directory for matched file, None means no output written
            fakeCat = fake catalog to match to, None means the fake sources are just
                      extracted from the header of the CCDs based on position but no matching is done
@@ -220,10 +226,19 @@ def returnMatchTable(rootDir, visit, ccdList, outdir=None, fakeCat=None,
     slist = None
 
     for ccd in ccdList:
-        print 'doing ccd %d'%ccd
-        temp = getFakeSources(butler,
-                              {'visit':visit, 'ccd':ccd}, includeMissing=True,
-                              extraCols=('visit', 'ccd', 'zeropoint', 'pixelScale', 'thetaNorth'))
+        if not filt:
+            print 'doing ccd %d'%int(ccd)
+            temp = getFakeSources(butler,
+                                  {'visit':visit, 'ccd':int(ccd)}, includeMissing=True,
+                                  extraCols=('visit', 'ccd', 
+                                             'zeropoint', 'pixelScale', 'thetaNorth'))
+        else:
+            print 'doing patch %s'%ccd
+            temp = getFakeSources(butler,
+                                  {'tract':visit, 'patch':ccd,
+                                   'filter':filt},
+                                  includeMissing=True,
+                                  extraCols=('zeropoint', 'pixelScale', 'thetaNorth'))
         if slist is None:
             slist = temp.copy(True)
         else:
@@ -247,13 +262,18 @@ if __name__=='__main__':
         #TODO: this should use the LSST/HSC conventions
     parser = argparse.ArgumentParser()
     parser.add_argument('rootDir', help='root dir of data repo')
-    parser.add_argument('visit', help='id of visit', type=int)
-    parser.add_argument('--ccd', nargs='+', help='id of ccd(s)', type=int)
+    parser.add_argument('visit', 
+                        help='id of visit (or tract, if filter is specified)', type=int)
+    parser.add_argument('-f', '--filter', dest='filt',
+                        help='name of filter, if none assume single visit',
+                        default=None)
+    parser.add_argument('--ccd', nargs='+', help='id of ccd(s) or patches')
     parser.add_argument('-o', help='output/dir', default=None, dest='outdir')
-    parser.add_argument('-f', help='fake catalog', default=None, dest='fakeCat')
+    parser.add_argument('-c', help='fake catalog', default=None, dest='fakeCat')
     parser.add_argument('-w', '--overwrite', help='over write output file', 
                         dest='ow', default=False, action='store_true')
     args = parser.parse_args()
 
+    
     returnMatchTable(args.rootDir, args.visit, args.ccd, args.outdir, args.fakeCat,
-                     overwrite=args.ow)
+                     overwrite=args.ow, filt=args.filt)
