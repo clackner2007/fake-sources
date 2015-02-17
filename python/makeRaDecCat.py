@@ -184,7 +184,14 @@ def makeRaDecCat(nRand, dataId=None, rangeRaDec=None, rad=None,
                 decCol = astropy.table.Column(name='Dec', data=decArr)
                 galCat.add_columns([raCol, decCol])
             else:
-                raise Exception('There are not enough random RA, Dec!')
+                import random
+                indGal = np.arange(nGal)
+                galCatRand = galCat[random.sample(indGal, nRand)]
+                raArr, decArr = np.array(zip(*randomRaDec))
+                raCol  = astropy.table.Column(name='RA',  data=raArr)
+                decCol = astropy.table.Column(name='Dec', data=decArr)
+                galCatRand.add_columns([raCol, decCol])
+                galCat = galCatRand
 
             galCat.write(outCat, format='fits', overwrite=True)
 
