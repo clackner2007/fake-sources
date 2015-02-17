@@ -276,7 +276,7 @@ def getAstroTable(src, mags=True):
 
 
 
-def returnMatchTable(rootDir, visit, ccdList, outdir=None, fakeCat=None,
+def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
                      overwrite=False, filt=None):
     """
     driver (main function) for return match to fakes
@@ -322,8 +322,8 @@ def returnMatchTable(rootDir, visit, ccdList, outdir=None, fakeCat=None,
     if fakeCat is not None:
         astroTable = matchToFakeCatalog(astroTable, fakeCat)
 
-    if outdir is not None:        
-        astroTable.write(outdir+rootDir.strip('/').split('/')[-1]+'_matchFakes.fits', 
+    if outfile is not None:        
+        astroTable.write(outfile+'.fits', 
                          format='fits',
                          overwrite=overwrite)
 
@@ -340,12 +340,12 @@ if __name__=='__main__':
                         help='name of filter, if none assume single visit',
                         default=None)
     parser.add_argument('--ccd', nargs='+', help='id of ccd(s) or patches')
-    parser.add_argument('-o', help='output/dir', default=None, dest='outdir')
+    parser.add_argument('-o', help='outputfilename', default=None, dest='outfile')
     parser.add_argument('-c', help='fake catalog', default=None, dest='fakeCat')
     parser.add_argument('-w', '--overwrite', help='over write output file', 
                         dest='ow', default=False, action='store_true')
     args = parser.parse_args()
 
     
-    returnMatchTable(args.rootDir, args.visit, args.ccd, args.outdir, args.fakeCat,
+    returnMatchTable(args.rootDir, args.visit, args.ccd, args.outfile, args.fakeCat,
                      overwrite=args.ow, filt=args.filt)
