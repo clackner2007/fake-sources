@@ -302,7 +302,7 @@ def returnMatchTable(rootDir, visit, ccdList, outdir=None, fakeCat=None,
                                   includeMissing=True,
                                   extraCols=('visit', 'ccd', 
                                              'zeropoint', 'pixelScale', 
-                                             'thetaNorth'))
+                                             'thetaNorth'), radecMatch=fakeCat)
         else:
             print 'doing patch %s'%ccd
             temp = getFakeSources(butler,
