@@ -47,9 +47,82 @@ def matchToFakeCatalog(sources, fakeCatalog):
     return astropy.table.join(sources, fakes, keys='fakeId', join_type='left')
 
 
+def getFakeMatchesHeader(cal_md, sources, tol=1.0):
+    """
+    returns the fake matches based on the information in the header
+    
+    returns a tuple with:
+    the positions in pixels of the fake sources added to the chip
+    the match is in a dictionary of the form: {fakeid:[ind_of_match_in_sources,...],...}
+
+    look within a tolerance of 1 pixel in each direction
+    """
+    fakeXY = collections.defaultdict(tuple)
+    fakename = re.compile('FAKE([0-9]+)')
+    for card in cal_md.names():
+        m = fakename.match(card)
+        if m is not None:
+            x,y = map(float, (cal_md.get(card)).split(','))
+            fakeXY[int(m.group(1))] = (x,y)
+
+    srcX, srcY = sources.getX(), sources.getY()
+    srcIndex = collections.defaultdict(list)
+    for fid, fcoord  in fakeXY.items():
+        distX = srcX - fcoord[0]
+        distY = srcY - fcoord[1]
+        matched = (np.abs(distX) < tol) & (np.abs(distY) < tol)
+        srcIndex[fid] = np.where(matched)[0]
+
+    return fakeXY, srcIndex
+
+
+def getFakeMatchesRaDec( sources, radecCatFile, bbox, wcs, tol=1.0):
+    """
+    Returns the fake matches based on an radec match to the catalog of fake sources inputed.
+    
+    Args:
+    sources: source table object
+    radecCatFile: filename for fits file of fake object table, including ra/dec
+    bbox: Bounding Box of exposure (ccd or patch) within which to match fakes
+    wcs: Wcs of source image
+    
+    KeywordArgs:
+    tol: tolerance within which to match sources, given in PIXELS
+
+    Returns:
+    fakeXY: set of pixel positions of fake sources
+    srcIdx: matches to fake sources in a dictionary of the form {fakeid:[ind_of_match_in_sources,...],...}
+
+    Raise:
+    IOError: couldn't open radecCatFile
+    """
+    
+    fakeXY = collections.defaultdict(tuple)
+    try:
+        fakeCat = astropy.table.Table().read(radecCatFile)
+    except IOError:
+        raise
+    
+    for fakeSrc in fakeCat:
+        fakeCoord = wcs.skyToPixel(lsst.afw.geom.Angle(fakeSrc['RA'], lsst.afw.geom.degrees),
+                                   lsst.afw.geom.Angle(fakeSrc['Dec'], lsst.afw.geom.degrees))
+        if bbox.contains(fakeCoord):
+            fakeXY[int(fakeSrc['ID'])] = (fakeCoord.getX(), fakeCoord.getY())
+        
+    srcX, srcY = sources.getX(), sources.getY()
+    srcIndex = collections.defaultdict(list)
+    for fid, fcoord in fakeXY.items():
+        distX = srcX - fcoord[0]
+        distY = srcY - fcoord[1]
+        matched = (np.abs(distX) < tol) & (np.abs(distY) < tol)
+        srcIndex[fid] = np.where(matched)[0]
+    
+    return fakeXY, srcIndex
+
+
 
 def getFakeSources(butler, dataId, tol=1.0, extraCols=('zeropoint', 'visit', 'ccd'),
-                   includeMissing=False, footprints=False):
+                   includeMissing=False, footprints=False, radecMatch=None):
     """Get list of sources which agree in pixel position with fake ones with tol
     
     this returns a sourceCatalog of all the matched fake objects,
@@ -62,6 +135,10 @@ def getFakeSources(butler, dataId, tol=1.0, extraCols=('zeropoint', 'visit', 'cc
     if includeMissing is true, then the pipeline looks at the fake sources
     added in the header and includes an entry in the table for sources without
     any measurements, specifically the 'id' column will be 0
+
+    radecMatch is the fakes table. if it's not None(default), then do an ra/dec 
+    match with the input catalog instead of looking in the header for where the 
+    sources where added
     """
     
     availExtras = {'zeropoint':{'type':float, 'doc':'zeropoint'}, 
@@ -73,17 +150,18 @@ def getFakeSources(butler, dataId, tol=1.0, extraCols=('zeropoint', 'visit', 'cc
     if not np.in1d(extraCols, availExtras.keys()).all():
         print "extraCols must be in ",availExtras
 
-    butlerPrepend=''
-    if 'filter' in dataId:
-        butlerPrepend='deepCoadd_'
+    if not 'filter' in dataId:
+        sources = butler.get('src', dataId, 
+                             flags=lsst.afw.table.SOURCE_IO_NO_FOOTPRINTS)
+        cal = butler.get('calexp', dataId)
+        cal_md = butler.get('calexp_md', dataId)
+    else:
+        sources = butler.get('deepCoadd_src', dataId, flags=lsst.afw.table.SOURCE_IO_NO_FOOTPRINTS)
+        cal = butler.get('deepCoadd', dataId)
+        cal_md = butler.get('deepCoadd_md', dataId)
 
-    sources = butler.get(butlerPrepend+'src', dataId, 
-                         flags=lsst.afw.table.SOURCE_IO_NO_FOOTPRINTS)
-    cal_md = butler.get(butlerPrepend+'calexp_md', dataId)
-    
-
-    if 'pixelScale' or 'thetaNorth' in extraCols:
-        wcs = lsst.afw.image.makeWcs(cal_md)
+    if ('pixelScale' in extraCols) or ('thetaNorth' in extraCols):
+        wcs = cal.getWcs()
         availExtras['pixelScale']['value'] =  wcs.pixelScale().asArcseconds()
         availExtras['thetaNorth']['value'] = lsst.afw.geom.Angle(
             np.arctan2(*tuple(wcs.getLinearTransform().invert()
@@ -95,23 +173,14 @@ def getFakeSources(butler, dataId, tol=1.0, extraCols=('zeropoint', 'visit', 'cc
     if 'zeropoint' in extraCols:
         availExtras['zeropoint']['value'] = 2.5*np.log10(cal_md.get('FLUXMAG0'))
 
-
-    fakeXY = collections.defaultdict(tuple)
-    fakename = re.compile('FAKE([0-9]+)')
-    for card in cal_md.names():
-        m = fakename.match(card)
-        if m is not None:
-            x,y = map(float, (cal_md.get(card)).split(','))
-            fakeXY[int(m.group(1))] = (x,y)
-
-    srcX, srcY = sources.getX(), sources.getY()
-    srcIndex = collections.defaultdict(list)
-    for fid, fcoord  in fakeXY.items():
-        matched = ((np.abs(srcX-fcoord[0]) < tol) & 
-                   (np.abs(srcY-fcoord[1]) < tol))
-        s1 = sources.subset(matched)
-        srcIndex[fid] = np.where(matched)[0]
-
+        
+    if radecMatch is None:
+        fakeXY, srcIndex = getFakeMatchesHeader(cal_md, sources, tol=tol)
+    else:
+        fakeXY, srcIndex = getFakeMatchesRaDec(sources, radecMatch, 
+                                               lsst.afw.geom.Box2D(cal.getBBox(lsst.afw.image.PARENT)),
+                                               cal.getWcs(), 
+                                               tol=tol)
 
     mapper = SchemaMapper(sources.schema)
     mapper.addMinimalSchema(sources.schema)
@@ -226,19 +295,22 @@ def returnMatchTable(rootDir, visit, ccdList, outdir=None, fakeCat=None,
     slist = None
 
     for ccd in ccdList:
-        if not filt:
+        if filt is None:
             print 'doing ccd %d'%int(ccd)
             temp = getFakeSources(butler,
-                                  {'visit':visit, 'ccd':int(ccd)}, includeMissing=True,
+                                  {'visit':visit, 'ccd':int(ccd)}, 
+                                  includeMissing=True,
                                   extraCols=('visit', 'ccd', 
-                                             'zeropoint', 'pixelScale', 'thetaNorth'))
+                                             'zeropoint', 'pixelScale', 
+                                             'thetaNorth'))
         else:
             print 'doing patch %s'%ccd
             temp = getFakeSources(butler,
                                   {'tract':visit, 'patch':ccd,
                                    'filter':filt},
-                                  includeMissing=True,
-                                  extraCols=('zeropoint', 'pixelScale', 'thetaNorth'))
+                                  includeMissing=True, extraCols=('thetaNorth', 'pixelScale',
+                                                                  'zeropoint'),
+                                  radecMatch=fakeCat)
         if slist is None:
             slist = temp.copy(True)
         else:
@@ -248,7 +320,7 @@ def returnMatchTable(rootDir, visit, ccdList, outdir=None, fakeCat=None,
     astroTable = getAstroTable(slist, mags=True)
     
     if fakeCat is not None:
-        astroTable = matchToFakeCatalog(astroTable, args.fakeCat)
+        astroTable = matchToFakeCatalog(astroTable, fakeCat)
 
     if outdir is not None:        
         astroTable.write(outdir+rootDir.strip('/').split('/')[-1]+'_matchFakes.fits', 
