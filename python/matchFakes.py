@@ -322,10 +322,14 @@ def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
     if fakeCat is not None:
         astroTable = matchToFakeCatalog(astroTable, fakeCat)
 
-    if outfile is not None:        
-        astroTable.write(outfile+'.fits', 
-                         format='fits',
-                         overwrite=overwrite)
+    if outfile is not None:
+        try:
+            astroTable.write(outfile+'.fits', 
+                             format='fits',
+                             overwrite=overwrite)
+        except IOError:
+            print "Try setting the option -w to overwrite the file if it already exists."
+            raise
 
     return astroTable
 
