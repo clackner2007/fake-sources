@@ -17,7 +17,7 @@ class PositionStarFakesConfig(FakeSourcesConfig):
                                  doc="Seed for random number generator")
 
 class PositionStarFakesTask(FakeSourcesTask):
-    ConfigClass = PositionGalSimFakesConfig
+    ConfigClass = PositionStarFakesConfig
 
     def __init__(self, **kwargs):
         FakeSourcesTask.__init__(self, **kwargs)
