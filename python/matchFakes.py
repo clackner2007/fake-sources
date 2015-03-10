@@ -121,7 +121,7 @@ def getFakeMatchesRaDec( sources, radecCatFile, bbox, wcs, tol=1.0):
 
 
 
-def getFakeSources(butler, dataId, tol=1.0, extraCols=('zeropoint', 'visit', 'ccd'),
+def getFakeSources(butler, dataId, tol=3.0, extraCols=('zeropoint', 'visit', 'ccd'),
                    includeMissing=False, footprints=False, radecMatch=None):
     """Get list of sources which agree in pixel position with fake ones with tol
     
@@ -188,6 +188,7 @@ def getFakeSources(butler, dataId, tol=1.0, extraCols=('zeropoint', 'visit', 'cc
     newSchema.addField('fakeId', type=int, doc='id of fake source matched to position')
     newSchema.addField('fakeOffset', type=lsst.afw.geom.Point2D,
                        doc='offset from input fake position (pixels)')
+
     for extraName in set(extraCols).intersection(availExtras):
         newSchema.addField(extraName, type=availExtras[extraName]['type'],
                            doc=availExtras[extraName]['doc'])
@@ -196,8 +197,9 @@ def getFakeSources(butler, dataId, tol=1.0, extraCols=('zeropoint', 'visit', 'cc
     srcList.reserve(sum([len(s) for s in srcIndex.values()]) + 
                     (0 if not includeMissing else srcIndex.values().count([])))
 
+    centroidKey = sources.schema.find('centroid.sdss').getKey()
     for ident, sindlist in srcIndex.items():
-        if includeMissing and len(sindlist)==0:
+        if includeMissing and (len(sindlist)==0):
             newRec = srcList.addNew()
             newRec.set('fakeId', ident)
             newRec.set('id', 0)
@@ -206,8 +208,10 @@ def getFakeSources(butler, dataId, tol=1.0, extraCols=('zeropoint', 'visit', 'cc
             newRec.assign(sources[ss], mapper)
             newRec.set('fakeId', ident)
             newRec.set('fakeOffset', 
-                       lsst.afw.geom.Point2D(sources[ss].get('centroid.sdss').getX() - fakeXY[ident][0],
-                                             sources[ss].get('centroid.sdss').getY() - fakeXY[ident][1]))
+                       lsst.afw.geom.Point2D(sources[ss].get(centroidKey).getX() - 
+                                             fakeXY[ident][0],
+                                             sources[ss].get(centroidKey).getY() - 
+                                             fakeXY[ident][1]))
 
     if includeMissing:
         srcList = srcList.copy(deep=True)
@@ -232,27 +236,29 @@ def getAstroTable(src, mags=True):
     
     tab = astropy.table.Table()
     for name in src.schema.getNames():
+        #for reasons I don't understand a lookup by name is much slower than a lookup by key
+        nameKey = src.schema.find(name).getKey()
         try: 
             tab.add_column(astropy.table.Column(name=name,
-                                                data=src.get(name)))
+                                                data=src.get(nameKey)))
         except lsst.pex.exceptions.LsstException:
-            if type(src[0].get(name)) is lsst.afw.geom.ellipses.ellipsesLib.Quadrupole:
-                reff, q, theta = zip(*[getEllipse(s.get(name)) for s in src])
+            if type(src[0].get(nameKey)) is lsst.afw.geom.ellipses.ellipsesLib.Quadrupole:
+                reff, q, theta = zip(*[getEllipse(s.get(nameKey)) for s in src])
                 tab.add_column(astropy.table.Column(name=name+'_a', data=reff))
                 tab.add_column(astropy.table.Column(name=name+'_q', data=q))
                 tab.add_column(astropy.table.Column(name=name+'_theta', data=theta))
-            elif type(src[0].get(name)) is lsst.afw.coord.coordLib.IcrsCoord:
-                x, y= zip(*[(s.get(name).getRa().asDegrees(), 
-                             s.get(name).getDec().asDegrees()) for s in src])
+            elif type(src[0].get(nameKey)) is lsst.afw.coord.coordLib.IcrsCoord:
+                x, y= zip(*[(s.get(nameKey).getRa().asDegrees(), 
+                             s.get(nameKey).getDec().asDegrees()) for s in src])
                 tab.add_column(astropy.table.Column(name=name+'_ra', data=x))
                 tab.add_column(astropy.table.Column(name=name+'_dec', data=y))
             else:
                 tab.add_column(astropy.table.Column(name=name, 
-                                                    data=np.array([s.get(name) for s in src])))
+                                                    data=np.array([s.get(nameKey) for s in src])))
             #report angles in degrees
-        if isinstance(src[0].get(name), lsst.afw.geom.Angle):
+        if isinstance(src[0].get(nameKey), lsst.afw.geom.Angle):
             tab.remove_column(name)
-            tab.add_column(astropy.table.Column(data=[s.get(name).asDegrees()
+            tab.add_column(astropy.table.Column(data=[s.get(nameKey).asDegrees()
                                                       for s in src],
                                                 dtype=float, name=name))
 
