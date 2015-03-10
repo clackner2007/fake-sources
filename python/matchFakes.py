@@ -121,7 +121,7 @@ def getFakeMatchesRaDec( sources, radecCatFile, bbox, wcs, tol=1.0):
 
 
 
-def getFakeSources(butler, dataId, tol=3.0, extraCols=('zeropoint', 'visit', 'ccd'),
+def getFakeSources(butler, dataId, tol=1.0, extraCols=('zeropoint', 'visit', 'ccd'),
                    includeMissing=False, footprints=False, radecMatch=None):
     """Get list of sources which agree in pixel position with fake ones with tol
     
@@ -283,7 +283,7 @@ def getAstroTable(src, mags=True):
 
 
 def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
-                     overwrite=False, filt=None):
+                     overwrite=False, filt=None, tol=1.0):
     """
     driver (main function) for return match to fakes
     INPUT: rootDir = rerun directory
@@ -308,7 +308,7 @@ def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
                                   includeMissing=True,
                                   extraCols=('visit', 'ccd', 
                                              'zeropoint', 'pixelScale', 
-                                             'thetaNorth'), radecMatch=fakeCat)
+                                             'thetaNorth'), radecMatch=fakeCat, tol=tol)
         else:
             print 'doing patch %s'%ccd
             temp = getFakeSources(butler,
@@ -316,7 +316,7 @@ def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
                                    'filter':filt},
                                   includeMissing=True, extraCols=('thetaNorth', 'pixelScale',
                                                                   'zeropoint'),
-                                  radecMatch=fakeCat)
+                                  radecMatch=fakeCat, tol=tol)
         if slist is None:
             slist = temp.copy(True)
         else:
@@ -352,10 +352,12 @@ if __name__=='__main__':
     parser.add_argument('--ccd', nargs='+', help='id of ccd(s) or patches')
     parser.add_argument('-o', help='outputfilename', default=None, dest='outfile')
     parser.add_argument('-c', help='fake catalog', default=None, dest='fakeCat')
-    parser.add_argument('-w', '--overwrite', help='over write output file', 
+    parser.add_argument('-w', '--overwrite', help='overwrite output file', 
                         dest='ow', default=False, action='store_true')
+    parser.add_argument('-t', '--tolerance', type=float, dest='tol', default=1.0,
+                        help='matching radius in PIXELS (default=1.0)')
     args = parser.parse_args()
 
     
     returnMatchTable(args.rootDir, args.visit, args.ccd, args.outfile, args.fakeCat,
-                     overwrite=args.ow, filt=args.filt)
+                     overwrite=args.ow, filt=args.filt, tol=args.tol)
