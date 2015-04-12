@@ -44,21 +44,24 @@ def getMosaic(sources, exposure, idname):
     
 
 
-def main(root, visit, ccd, fakes=False, blends=False, listobj=16):
+def main(root, visit, ccd, fakes=None, blends=False, listobj=16, filt=None):
 
     butler = lsst.daf.persistence.Butler(root)
-    dataId = {'visit':visit, 'ccd':ccd}
-    if fakes:
+    dataId = {'visit':visit, 'ccd':int(ccd)} if filt is None else {'tract':visit, 'patch':ccd,
+                                                                   'filter':filt}
+                                                              
+    if fakes is not None:
         src = matchFakes.getFakeSources(butler, dataId,
-                                        zeropoint=True)
+                                        extraCols=('zeropoint'),
+                                        radecMatch=fakes)
     else:
-        src = butler.get('src', dataId)
+        src = butler.get('src' if filt is None else 'deepCoadd-src', dataId)
     if not blends:
         src = [s for s in src if (s.get('deblend.nchild')==0)&(s.get('parent')==0)]
     else:
         src = [s for s in src if (s.get('deblend.nchild')==0)]
 
-    exposure = butler.get('calexp', dataId)
+    exposure = butler.get('calexp' if filt is None else 'deepCoadd', dataId)
     
     if type(listobj) is int:
         listobj = numpy.random.choice(range(len(src)), listobj, False)
@@ -73,10 +76,11 @@ if __name__=='__main__':
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('root', help="Root directory of data repository")
-    parser.add_argument("visit", type=int, help="Visit")
-    parser.add_argument("ccd", type=int, help="CCD")
-    parser.add_argument('-f', '--fake', default=False, action='store_true',
-                        help='show fake sources', dest='fake')
+    parser.add_argument("visit", type=int, help="Visit or tract")
+    parser.add_argument("ccd", type=str, help="CCD or patch")
+    parser.add_argument('-d', '--band', default=None, help='HSC filter, used with tract/patch')
+    parser.add_argument('-f', '--fake', default=None, 
+                        help='show fake sources, using -f as catalog')
     parser.add_argument('-n', '--number', dest='num', help='number of objects to show',
                         default=16, type=int)
     parser.add_argument('-b', '--blends', action='store_true', default=False,
@@ -85,4 +89,4 @@ if __name__=='__main__':
     #                    help='path for output')
     args = parser.parse_args()
     main(args.root, args.visit, args.ccd, fakes=args.fake, listobj=args.num, 
-         blends=args.blends)
+         blends=args.blends, filt=args.band)
