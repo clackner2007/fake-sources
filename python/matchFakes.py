@@ -150,16 +150,23 @@ def getFakeSources(butler, dataId, tol=1.0, extraCols=('zeropoint', 'visit', 'cc
     if not np.in1d(extraCols, availExtras.keys()).all():
         print "extraCols must be in ",availExtras
 
-    if not 'filter' in dataId:
-        sources = butler.get('src', dataId, 
-                             flags=lsst.afw.table.SOURCE_IO_NO_FOOTPRINTS)
-        cal = butler.get('calexp', dataId)
-        cal_md = butler.get('calexp_md', dataId)
-    else:
-        sources = butler.get('deepCoadd_src', dataId, flags=lsst.afw.table.SOURCE_IO_NO_FOOTPRINTS)
-        cal = butler.get('deepCoadd', dataId)
-        cal_md = butler.get('deepCoadd_md', dataId)
-
+    try:
+        if not 'filter' in dataId:
+            sources = butler.get('src', dataId, 
+                                 flags=lsst.afw.table.SOURCE_IO_NO_FOOTPRINTS,
+                                 immediate=True)
+            cal = butler.get('calexp', dataId, immediate=True)
+            cal_md = butler.get('calexp_md', dataId, immediate=True)
+        else:
+            sources = butler.get('deepCoadd_src', dataId, 
+                                 flags=lsst.afw.table.SOURCE_IO_NO_FOOTPRINTS,
+                                 immediate=True)
+            cal = butler.get('deepCoadd', dataId, immediate=True)
+            cal_md = butler.get('deepCoadd_md', dataId, immediate=True)
+    except (lsst.pex.exceptions.LsstException, RuntimeError) as e:
+        print "skipping", dataId
+        return None
+        
     if ('pixelScale' in extraCols) or ('thetaNorth' in extraCols):
         wcs = cal.getWcs()
         availExtras['pixelScale']['value'] =  wcs.pixelScale().asArcseconds()
@@ -317,6 +324,8 @@ def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
                                   includeMissing=True, extraCols=('thetaNorth', 'pixelScale',
                                                                   'zeropoint'),
                                   radecMatch=fakeCat, tol=tol)
+        if temp is None:
+            continue
         if slist is None:
             slist = temp.copy(True)
         else:
