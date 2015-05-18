@@ -6,22 +6,33 @@ All the fake sources are added with the appropriate amount of Poisson noise. Whe
 This code depends on the HSC pipeline (version 3.3.3 or later), and needs to have galsim built against the pipeline python. For some of the additional scripts (makeRaDec, matchFakes) the astropy package is also necessary. If you just have a list of sources however, you don't need it. This is already setup on master at IPMU, so if you are running there, you just need to setup the following:
 ```bash
 $ export PYTHONPATH=/home/clackner/.local/lib/python2.7/site-packages:${PYTHONPATH}
-$ setup -v -r hscPipe 3.3.3
+$ setup -v -r hscPipe 3.3.3 (or whichever later version)
 $ setup -v -j astrometry_net_data ps1_pv1.2c
 $ setup -v -r path/to/fake-sources/
 ``` 
+The first export is only to get astropy on PYTHONPATH, so adjust according to your local installation.
 
 ####Running
 To run, you need to override the default configuration in the pipeline to include fake sources. We have 3 different tasks you can implement with the override config. They are:
   1. randomStarFakes: adds stars of a single brightness to random positions in a CCD
   2. randomGalSimFakes: adds galsim galaxies from a catalog to random positions in a CCD
   3. positionGalSimFakes: adds galsim galaxies from a catalog to fixed sky positions, also given in the catalog.
+  4. positionStarFakes: adds PSF sources from a catalog to fixed sky positions 
 
 Examples of how to use these tasks and standard configurations are given in the test/stars and test/galaxies. The command to run these for a small set of CCDs would is:
 ```bash
 $ hscProcessCcd.py /to/data/ --rerun=/to/rerun --id visit=XXX ccd=YY -C config_XXX
 ```
-More detailed instructions on how to run these examples is found in the tests folder [here](test/README.md).
+More detailed instructions on how to run these examples is found in the tests folder [here](test/README.md). This also works with reduceFrames.py, if you want to add fake sources to an entire frame at once.
+
+#####Adding fakes for coadds
+Once the fake sources have been injected at the visit (individual exposure) level, they will be processed as regular sources while making coadds, as they are in the calibrated images. However, if you want to multiband detection, you need to add the fake sources (with reasonable colors) to all the bands, unless you want to test dropouts. This can be accomplished by having one input source catalog per band, with the same source positions, but different magnitudes. 
+
+If you aren't interested in looking at the source measurement on the individual visits, you should still add the sources to the single visits, and then run the stacking, detection and measurement on the visits with fakes. `runAddFakes.py` is a simple task that takes already processed data and creates a new rerun with fake sources added to the calibrated frames. You'll need to retarget the `fakes` task to make it actually add fake sources. To run it:
+```bash
+$ runAddFakes.py /path/to/root --rerun rerun/input:rerun/output-fakes --queue queue -id visit=visit1^visit2... -C fakes_config
+```
+where `fakes_config` needs to at least include a line `root.fakes.retarget(someFakes.someFakesTask)`. Examples of configurations for the various tasks are in the test directory.
 
 ####Debugging
 If you want to add check that the fake source adding is working without going through all the measurements, use debugFakes, which takes a calibrated exposure from a completed rerun (rerun1) and writes the exposure with fakes added to rerun2.
