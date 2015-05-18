@@ -11,6 +11,26 @@ import lsst.pex.config
 Helper functions for making fake sources
 """
 
+def cropFakeImage(fakeImage, expBBox):
+    """
+    Crops the Fake image to fit inside the exposure BBox
+    Note that the bboxes need to have the correct offsets applied
+    Args:
+    fakeImage: fake image object
+    expBBox: bounding box for CCD exposure (integer type, BBoxI) and with offsets applied
+
+    Returns:
+    new cropped fake image
+    """
+    
+    fakeBBox = fakeImage.getBBox(lsst.afw.image.PARENT)
+    if not expBBox.contains(fakeBBox):
+        newBBox = fakeImage.getBBox(lsst.afw.image.PARENT)
+        newBBox.clip(expBBox)
+        fakeImage = fakeImage.Factory(fakeImage, newBBox, lsst.afw.image.PARENT)
+
+        #TODO: finish this up
+
 
 def addNoise(galImage, detector, rand_gen=None):
     """
