@@ -1,7 +1,9 @@
-# File: makeFakeGalaxy.py
+#!/usr/bin/env python
+# encoding: utf-8
 
-import numpy as np
 import galsim
+import warnings
+import numpy as np
 import pyfits as fits
 
 
@@ -300,11 +302,10 @@ def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
         try:
             g1 = float(gal['g1'])
             g2 = float(gal['g2'])
+            serObj = serObj.shear(g1=g1, g2=g2)
         except ValueError:
             # TODO: Should check other options
-            g1 = 0.05
-            g2 = 0.05
-        serObj = serObj.shear(g1=g1, g2=g2)
+            warnings.warn("Can not find g1 or g2 in the input! No shear has been added!")
 
     #do the transformation from sky to pixel coordinates, if given
     if transform is not None:
