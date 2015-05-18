@@ -6,7 +6,7 @@ import pyfits as fits
 
 
 def makeGalaxy(flux, gal, psfImage, galType='sersic', drawMethod='no_pixel',
-               trunc=10.0, transform=None):
+               trunc=10.0, transform=None, addShear=False):
     """
     Function called by task to make galaxy images
 
@@ -25,13 +25,15 @@ def makeGalaxy(flux, gal, psfImage, galType='sersic', drawMethod='no_pixel',
     if galType is 'sersic':
         return galSimFakeSersic(flux, gal, psfImage=psfImage, trunc=trunc,
                                 drawMethod=drawMethod, returnObj=False,
-                                transform=transform)
+                                transform=transform, addShear=addShear)
 
     if galType is 'dsersic':
+        # TODO: addShear option is not available for double Sersic yet
         (comp1, comp2) = parseDoubleSersic(flux, gal)
         return galSimFakeDoubleSersic(comp1, comp2, psfImage=psfImage,
                                       trunc=trunc, drawMethod=drawMethod,
-                                      returnObj=False, transform=transform)
+                                      returnObj=False, transform=transform,
+                                      addShear=addShear)
 
     if galType is 'real':
         # TODO: For real galaxies, we need to decide which to use: index in the
@@ -231,7 +233,7 @@ def plotFakeGalaxy(galObj, galID=None, suffix=None, size=0, addPoisson=False):
 def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
                      expAll=False, devAll=False, plotFake=False, trunc=0,
                      drawMethod="auto", addPoisson=False, scale=1.0,
-                     transform=None):
+                     transform=None, addShear=False):
     """
     Make a fake single Sersic galaxy using the galSim.Sersic function
 
@@ -261,7 +263,7 @@ def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
 
     # Truncate the flux at trunc x reff
     if trunc > 0:
-        trunc = trunc * reff 
+        trunc = trunc * reff
 
     # Make sure Sersic index is not too large
     if nSersic > 6.0:
@@ -292,6 +294,17 @@ def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
     # If necessary, apply the Position Angle (theta) using the Rotate method
     #if posAng != 0.0 or posAng != 180.0:
     serObj = serObj.rotate((90.0-posAng)*galsim.degrees)
+
+    # If necessary, apply addtion shear (e.g. for weak lensing test)
+    if addShear:
+        try:
+            g1 = float(gal['g1'])
+            g2 = float(gal['g2'])
+        except ValueError:
+            # TODO: Should check other options
+            g1 = 0.05
+            g2 = 0.05
+        serObj = serObj.shear(g1=g1, g2=g2)
 
     #do the transformation from sky to pixel coordinates, if given
     if transform is not None:
@@ -324,7 +337,8 @@ def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
 
 def galSimFakeDoubleSersic(comp1, comp2, psfImage=None, trunc=0, returnObj=True,
                            devExp=False, plotFake=False, drawMethod='auto',
-                           addPoisson=False, scale=1.0, transform=None):
+                           addPoisson=False, scale=1.0, transform=None,
+                           addShear=False):
     """
     Make a fake double Sersic galaxy using the galSim.Sersic function
 
@@ -355,12 +369,14 @@ def galSimFakeDoubleSersic(comp1, comp2, psfImage=None, trunc=0, returnObj=True,
     #                    and, the second component as an n=1 Exponential disk
     if devExp:
         serModel1 = galSimFakeSersic(flux1, comp1, returnObj=True, devAll=True,
-                                     trunc=trunc)
+                                     trunc=trunc, addShear=addShear)
         serModel2 = galSimFakeSersic(flux2, comp2, returnObj=True, expAll=True,
-                                     trunc=trunc)
+                                     trunc=trunc, addShear=addShear)
     else:
-        serModel1 = galSimFakeSersic(flux1, comp1, returnObj=True, trunc=trunc)
-        serModel2 = galSimFakeSersic(flux2, comp2, returnObj=True, trunc=trunc)
+        serModel1 = galSimFakeSersic(flux1, comp1, returnObj=True, trunc=trunc,
+                                     addShear=addShear)
+        serModel2 = galSimFakeSersic(flux2, comp2, returnObj=True, trunc=trunc,
+                                     addShear=addShear)
 
     # Combine these two components
     doubleSersic = galSimAdd([serModel1, serModel2])
