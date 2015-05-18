@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+"""
+Command-line task that adds fake sources to an already existing (calibrated) exposure.
+By default, the fakes is targeted to a dummy task that does nothing, so fakes needs to be retargeted to a task that actually adds sources. 
+This task creates a new rerun with fake sources added to the CORR files. You have the option of displaying the outputs in ds9 immediately after creation, but be careful if you multiprocess with that. This is really designed for debugging. If you want a task that adds fakes and scales well use runAddFakes.py
+"""
 
 import numpy
 import lsst.pipe.base  as pipeBase
