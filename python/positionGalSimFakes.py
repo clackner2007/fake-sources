@@ -23,6 +23,8 @@ class PositionGalSimFakesConfig(FakeSourcesConfig):
                                                    'sersic':'single sersic galaxies added',
                                                    'real':'real HST galaxy images added'},
                                           doc='type of GalSim galaxies to add')
+    addShear = lsst.pex.config.Field(dtype=bool, default=False,
+                                     doc='include shear in the galaxies')
     
 
 class PositionGalSimFakesTask(FakeSourcesTask):
@@ -73,7 +75,8 @@ class PositionGalSimFakesTask(FakeSourcesTask):
             try:
                 galArray = makeFake.makeGalaxy(flux, gal, psfImage.getArray(), 
                                                self.config.galType, 
-                                               transform = skyToPixelMatrix)
+                                               transform = skyToPixelMatrix,
+                                               addShear=self.config.addShear)
             except (KeyError, ValueError, RuntimeError):
                 self.log.info("Skipping fake %d"%galident)
                 continue
