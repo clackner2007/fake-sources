@@ -101,7 +101,7 @@ class addFakesTask(BatchPoolTask):
         return None if we are skipping the CCD
         """
         cache.result = None
-        if dataId["ccd"] in self.config.ignoreCcdList:
+        if (dataId["ccd"] in self.config.ignoreCcdList) or (dataId['ccd'] > 103):
             self.log.warn("Ignoring %s: CCD in ignoreCcdList" % (dataId,))
             return None
         dataRef = hscButler.getDataRef(cache.butler, dataId)
