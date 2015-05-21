@@ -67,7 +67,7 @@ class PositionGalSimFakesTask(FakeSourcesTask):
             bboxI = exposure.getBBox(lsst.afw.image.PARENT)
             bboxI.grow(self.config.maxMargin)
             if not bboxI.contains(lsst.afw.geom.Point2I(galXY)):
-                self.log.info("Skipping fake %d"%galident)
+                #self.log.info("Skipping fake %d"%galident)
                 continue
             
             #this is extrapolating for the PSF, probably not a good idea
