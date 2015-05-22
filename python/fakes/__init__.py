@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 """
 __init__.py
-blank but makes fakes a package
+blank init to make pacakge
 """
 
-from fakes import *

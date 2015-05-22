@@ -1,4 +1,4 @@
-import randomStarFakes
+import fakes.randomStarFakes as randomStarFakes
 
 root.fakes.retarget(randomStarFakes.RandomStarFakeSourcesTask)
 root.fakes.nStars=NSTARS

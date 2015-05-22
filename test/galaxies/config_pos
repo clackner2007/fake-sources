@@ -1,4 +1,4 @@
-import positionGalSimFakes
+from fakes import positionGalSimFakes
 
 root.fakes.retarget(positionGalSimFakes.PositionGalSimFakesTask)
 root.fakes.galList = 'galaxy_test_pos.fits'
