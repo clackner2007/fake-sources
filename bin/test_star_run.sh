@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #################
-#test script for galaxies
+#test script for stars
 #
 # this adds 100 stars of magnitude 22 to a given visit and CCD
 # at random positions
@@ -18,5 +18,5 @@ ccd=50
 configFile=$FAKES_DIR/test/stars/config_star_test
 
 hscProcessCcd.py $rootDir --rerun=$rerunDir --id visit=$visit ccd=$ccd -C $configFile
-python $FAKES_DIR/python/matchFakes.py $rootDir/rerun/$rerunDir $visit --ccd $ccd -o './'
+runMatchFakes.py $rootDir/rerun/$rerunDir $visit --ccd $ccd -o star_test
 #put plotting here

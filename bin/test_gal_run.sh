@@ -20,5 +20,5 @@ ccd=50
 configFile=$FAKES_DIR/test/galaxies/config_gal_test
 
 hscProcessCcd.py $rootDir --rerun=$rerunDir --id visit=$visit ccd=$ccd -C $configFile
-python $FAKES_DIR/python/matchFakes.py $rootDir/rerun/$rerunDir $visit --ccd $ccd -o './' -f $FAKES_DIR/test/galaxies/test_exp_data.fits
+runMatchFakes.py $rootDir/rerun/$rerunDir $visit --ccd $ccd -o gal_test -c $FAKES_DIR/test/galaxies/test_exp_data.fits -p 
 #put plotting here

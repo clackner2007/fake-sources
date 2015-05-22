@@ -10,7 +10,7 @@ import lsst.pex.config     as pexConfig
 import lsst.afw.image      as afwImage
 import lsst.afw.cameraGeom as camGeom
 import astropy.table
-import makeRaDecCat
+import fakes.makeRaDecCat as makeRaDecCat
 
 class MakeFakeInputsConfig(pexConfig.Config):    
     coaddName = pexConfig.ChoiceField(
