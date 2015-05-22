@@ -290,7 +290,7 @@ def getAstroTable(src, mags=True):
 
 
 def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
-                     overwrite=False, filt=None, tol=1.0):
+                     overwrite=False, filt=None, tol=1.0, pixMatch=False):
     """
     driver (main function) for return match to fakes
     INPUT: rootDir = rerun directory
@@ -300,6 +300,8 @@ def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
            fakeCat = fake catalog to match to, None means the fake sources are just
                      extracted from the header of the CCDs based on position but no matching is done
            overwrite = whether to overwrite the existing output file, default is False
+           pixMatch = do pixel matching instead of ra/dec matching even if there is
+                     a catalog supplied
     OUTPUT: returns an astropy.table.Table with all the entries from the source catalog for 
             objects which match in pixel position to the fake sources
     """
@@ -315,15 +317,19 @@ def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
                                   includeMissing=True,
                                   extraCols=('visit', 'ccd', 
                                              'zeropoint', 'pixelScale', 
-                                             'thetaNorth'), radecMatch=fakeCat, tol=tol)
+                                             'thetaNorth'), 
+                                  radecMatch=fakeCat if not pixMatch else None, 
+                                  tol=tol)
         else:
             print 'doing patch %s'%ccd
             temp = getFakeSources(butler,
                                   {'tract':visit, 'patch':ccd,
                                    'filter':filt},
-                                  includeMissing=True, extraCols=('thetaNorth', 'pixelScale',
+                                  includeMissing=True, extraCols=('thetaNorth', 
+                                                                  'pixelScale',
                                                                   'zeropoint'),
-                                  radecMatch=fakeCat, tol=tol)
+                                  radecMatch=fakeCat if not pixMatch else None, 
+                                  tol=tol)
         if temp is None:
             continue
         if slist is None:
