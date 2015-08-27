@@ -1,0 +1,199 @@
+1)  Assign random (RA, DEC) to fake objects in the input catalog:
+
+You need:
+[a]: Rerun that includes the data you want, e.g.:  —rerun=yasuda/SSP3.7.3_20150518
+[b]: Choice of tract and filter, e.g: —id tract=0 filter=‘HSC-I’
+[c]: Input catalog.  In your case, let’s start with the catalog I gave you:
+inputCat=‘murata_fakemodels.fits’
+[d]: Number of fake objects you want on each patch, default is 500 now:  e.g.:
+rhoFakes=300
+[e]: Where do you want to put the output catalog:  e.g.:  outDir=‘/home/murata/‘
+
+> makeSourceList.py /lustre/Subaru/SSP/  --rerun=yasuda/SSP3.7.3_20150518 --id tract=8280
+filter='HSC-I' patch='4,4' -c inputCat='/home/song/data/cosmos/murata_fakemodels.fits'
+rhoFakes=300
+
+
+In my example, this will generate an output catalog called src_8280_radec.fits;  This is
+the input for the next step.  The normal command line output would be something like the
+following ones:
+
+> 2015-06-05T06:41:45: : Config override file does not exist:
+'/home/bot/sandbox/bbot/obs_subaru/config/makeFakeInputs.py'
+> 2015-06-05T06:41:45: : Config override file does not exist: '/home/bot/sandbox/bbot/obs_subaru/config/hsc/makeFakeInputs.py'
+> 2015-06-05T06:41:45: : input=/lustre/Subaru/SSP
+> 2015-06-05T06:41:45: : calib=None
+> 2015-06-05T06:41:45: : output=/lustre/Subaru/SSP/rerun/yasuda/SSP3.7.3_20150518
+> 2015-06-05T06:41:45: CameraMapper: Loading registry registry from /lustre/Subaru/SSP/rerun/yasuda/SSP3.7.3_20150518/_parent/registry.sqlite3
+> 2015-06-05T06:41:45: CameraMapper: Loading calibRegistry registry from /lustre/Subaru/SSP/CALIB/calibRegistry.sqlite3
+> {'filter': 'HSC-I', 'tract': 8278, 'patch': '4,4'}
+
+
+
+1.5)  Get a list of visits that go into the patch (or tract) you want.
+
+There is an issue I did not mention earlier.  In Claire and my tests, we are only using the data in COSMOS field, which has a very small dither pattern. It was easy for us to select the visits we want.
+
+In you case, you need to find out which Visits contribute to the Patch you want.   Below is an example, but you should also check information here:
+
+> http://hsca.ipmu.jp:8080/question/214/inputs-to-a-coadd/
+> http://hsca.ipmu.jp:8080/question/308/getting-coadd-inputs-faster/
+
+Say, you want to test: Tract: 8278, Patch: (4,4).   Script like the below one will let you know all the visits that went into your patch:
+
+> import lsst.daf.persistence as dafPersist
+> import bumpy as np
+> root = '/lustre/Subaru/SSP/rerun/yasuda/SSP3.7.3’
+> butler = dafPersist.Butler(root)
+> coadd = butler.get("deepCoadd", dataId = {"tract”: 8280, "patch”: “4,4", "filter”: “HSC-I"}, immediate = True)
+> ccdInputs = coadd.getInfo().getCoaddInputs().ccds
+> visit = np.unique(ccdInputs.get("visit”))
+>
+> line=‘'
+> for v in visit:
+>       line = line + str(v) + ‘^'
+> print line[:-2]
+
+The output line will be something like:
+
+> '16244^16240^16222'
+
+These three visits should cover a large fraction of the tract you want, but at the outer region of the tract, other visits should also contribute.  If you just want to test a few patch at the centre of a tract at first, this could be fine (You should check this!).
+
+But, if you want to do a careful test for the entire tract, you want to do above for each of patch in the tract, and combine the unique ones into a list, so they will only be reduced once.
+
+And, as example, I actually choose an interesting case.  In the next step, if you use `—id  visit=16244^16240^16222` as input, the process will fail because the image for one CCD in visit=16240 is missing in Yasuda-san’s rerun.   This is rare, but it happens.  Basically the Pipeline failed to reduce the image of this particular CCD for some reasons….Unfortunately, there is no easy solution…..Whenever we met this problem, we just noticed Yasuda-san, so he can reduce the data again…In the following test, I am only using two visits.
+
+So, as explained below, always, always check the summary file from the next step, and if you see something like:
+
+>     return _persistenceLib.Persistence_unsafeRetrieve(self, *args)
+> LsstCppException: 0: lsst::afw::fits::FitsError thrown at src/fits.cc:1074 in lsst::afw::fits::Fits::Fits(const string&, const string&, int)
+> 0: Message: cfitsio error: could not open the named file (104) : Opening file '/lustre/Subaru/SSP/rerun/song/test_new/01062/HSC-I/corr/CORR-0016240-009.fits' with mode ‘r'
+
+Then you know that this image: CORR-0016240-009.fits is missing
+
+2) Generate fake models, put them on single-visit images that go into your tract
+
+You need:
+[a]: Rerun that includes the data you want, e.g.:  yasuda/SSP3.7.3_20150518
+[b]: Rerun that put the output data, e.g.:  murata/test_shear
+[c]: Configuration file,  the file contains:
+
+> from fakes import positionGalSimFakes
+> root.fakes.retarget(positionGalSimFakes.PositionGalSimFakesTask)
+> root.fakes.galList = 'src_8278_radec.fits'
+> root.fakes.galType = 'sersic'
+> root.fakes.maxMargin = 150
+> root.fakes.addShear = True
+
+
+You also need to provide:
+
+[a]: Name of the job:  e.g.: —job testAdd
+[b]: Number of the nodes and processors the job is going to use: e.g.: —nodes 3 —procs 12
+[c]: Always make sure that —clobber-config is there in the parameter list
+
+> runAddFakes.py /lustre/Subaru/SSP/ --rerun yasuda/SSP3.7.3_20150518:song/test_new --queue small --job testAdd --nodes 4 --procs 12  --id visit=16244^16222 --clobber-config -C config_addfake
+
+This will submit a job to Master on your behalf, and you can check the status of the job by using the `qstat` command.   You will see the number of your job at the end of the command line output, it should be something like: `23201.master`
+
+At the end of the run (either run through or failed), you will get a number of files that summarize the command line output for every processor.   The files named like `testAdd.analysis10.26597`;  There is a global output file, always named like: `testAdd.o23201` (Your job name and job number).   This is the most useful one.   In case of error for your run, always check the information contained in this file.
+
+And, after this, the reduced single CCD images with our fake objects on them should be stored in your own rerun.
+
+2.5)  Check the fake objects on the image
+
+At this point, you may want to check the fake galaxies on the single CCD image.  Atttached `compFakeGalaxy.py` is a stupid script I wrote long time before.  It generates a three-panel figure.  Left is the original image, middle is the one with fake objects on it, and the right one is the difference between them, so you should be able to see the fake galaxies on this one clearly.
+
+You should be able to run it on Master by:
+
+> python compFakeGalaxy.py origin_rerun new_rerun visit ccd
+
+For example:
+
+> python compFakeGalaxy.py ‘yasuda/SSP3.7.3_20150518’ ‘song/test_new’  16244 40
+
+
+3) Do the stack, and measure the objects on the coadd:
+
+* Note that eventually we need to replace the stack.py with multiband.py.  But I need to ask Paul about how to turn off the force photometry.
+
+You need:
+
+[1]: Your new rerun of single visits with fake objects on them, e.g.: --rerun=song/test_new
+[2]: Information about the tract/patch you want to test, e.g.: --id tract=8280 filter=HSC-I --selectId visit=16244^16222
+[3]: The same as above, you need to decide how many cores you want to use, e.g.:  --queue small --nodes 4 --procs 9 --job testStack
+[4]: Configuration file.  In case you want to turn off the CModel measurements, the config-file should look like:
+
+> from fakes import detectOnlyFakes
+>
+> root.processCoadd.detectCoaddSources.detection.retarget(detectOnlyFakes.OnlyFakesDetectionTask)
+>
+> root.processCoadd.calibrate.measurement.algorithms.names=['flux.psf', 'flags.pixel', 'flux.gaussian', 'flux.aperture', 'flux.naive', 'centroid.naive', 'flux.sinc', 'shape.sdss', 'shape.hsm.moments', 'multishapelet.psf', 'correctfluxes', 'classification.extendedness', 'skycoord', 'shape.hsm.psfMoments']
+>
+> root.processCoadd.measurement.algorithms.names=['flux.psf', 'flags.pixel', 'shape.hsm.moments', 'flux.aperture', 'flux.naive', 'focalplane', 'flux.gaussian', 'centroid.naive', 'flux.sinc', 'shape.sdss', 'jacobian', 'shape.hsm.regauss', 'flux.kron', 'correctfluxes', 'classification.extendedness', 'skycoord', 'shape.hsm.psfMoments']
+>
+> root.processCoadd.calibrate.measurement.slots.modelFlux='flux.gaussian'
+> root.processCoadd.measurement.slots.modelFlux='flux.gaussian'
+
+The following command will also submit a job on your behalf, so you also need to use `qstat` to follow it, and check the output summary files:
+
+> stack.py /lustre/Subaru/SSP/  --rerun=song/test_new --id tract=8280 filter=HSC-I --selectId visit=16244^16222 --queue small --nodes 4 --procs 9 --job testStack --clobber-config -C config2 --config doOverwriteOutput=True doOverwriteCoadd=True makeCoaddTempExp.doOverwrite=True
+
+After this process, coadd images with fake objects on them are stored in you rerun, it should be under this folder:
+
+> /lustre/Subaru/SSP/rerun/song/test_new/deepCoadd/HSC-I/8280
+
+
+3.5) Check the fake galaxies on the coadd image
+
+I attached a newer version of showInDs9.py code form Claire.  This one can be applied to coadd image.  At this point, you can already use it to check your fake objects.   Under Master, you can do it by:
+
+> ./showInDs9 new_rerun tract patch  --filter filter
+
+For example:
+
+> ./showInDs9 ‘/lustre/Subaru/SSP/rerun/song/test_add’  8280 ‘4,4’  --fitler ‘HSC-I’
+
+will open up a DS9 window, and display the coadd image with information from the mask plane.  The blue pixels belong to detected objects;  Green regions are some bad data (interpolated pixels..);  Red squares are the regions around the fake objects; any object (both real and fake one) inside these squares will be measured by the pipeline.
+
+
+4) Extract a matched catalog:
+
+You need:
+[1]: Your input fake object catalog, e.g.:  src_8280_radec.fits
+[2]: Name of the output catalog, e.g.:  test_fake_matched
+[3]: Your rerun that contains the coadd images with fake objects, e.g.: /lustre/Subaru/SSP/rerun/song/test_new
+
+Options:
+[1] -t : tolerance, matching radius in pixels
+[2] -w: overwrite the output files
+
+> runMatchFakes.py -t 2.0 -w -c src_8280_radec.fits -o test_fake_matched -f HSC-I /lustre/Subaru/SSP/rerun/song/test_new 8280
+
+This depends on the astropy python package.  You should be able to install a new version by yourself (e.g. using pip install  —user), or you can setup against mine by including this in your e.g. .bashrc file.
+
+> export PYTHONPATH='/home/song/lib/python2.7/site-packages/':$PYTHONPATH
+> export PYTHONPATH='/home/song/.local/lib/python2.7/site-packages/':$PYTHONPATH
+
+
+After running this, you will see a lot of command line output like: ‘doing patch 4,4’
+
+And, in the end, you should have an output catalog file:  `test_fake_matched.fits`
+
+All the information you need should be in this catalog.  Be careful about one thing: We do not attempt to avoid overlap between real and fake object.  So, it is very likely that a fraction of the fake objects are blended with the real ones.   During the matching process, the code will return every matched objects within the matching radius (the -t parameter).  So, for single fake object, there could be more than 1 matches in the catalog, since we can not easily tell what’s going on here.
+
+You should bear this in mind, and eventually we need to have a better way to deal with it.  But right now, you can start by ignoring all the blended fake objects:
+
+> deblend.nchild == 0 && parent == 0
+
+Also, the ones without any match are also kept in the catalog, you should be able to get rid out them by adding:
+
+> deblend.nchild == 0 && parent == 0  && id > 0
+
+After this, I think you can start examining measurements of fake objects.
+
+Another thing to be careful about is,  in my example, I only consider the three visits that contribute to Patch=“4,4”, but the match is always done for the entire Tract.   In this case, you may want to select just the objects within the Patch=‘4,4’.
+
+In your case, I think you need work out how to get ALL the visits that went into your tract.
+'"))'
