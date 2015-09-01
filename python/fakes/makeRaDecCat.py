@@ -9,6 +9,19 @@ The inputs can be:
 import numpy as np
 from numpy.random import uniform
 
+
+def polyReadWkb(wkbName, load=True):
+
+    wkbFile = open(wkbName, 'r')
+    polyWkb = wkbFile.read().decode('hex')
+    wkbFile.close()
+
+    if load is True:
+        return wkb.loads(polyWkb)
+    else:
+        return polyWkb
+
+
 def getImageRaDecRange(rootDir, dataId, dataType='calexp'):
     """
     Get the Ra,Dec range for certain single frame or coadded image using the WCS
@@ -108,8 +121,8 @@ def plotRandomRaDec(randomRaDec, rangeRaDec=None):
     return None
 
 def makeRaDecCat(nRand, dataId=None, rangeRaDec=None, rad=None,
-                 rootDir='/lustre/Subaru/SSP/rerun/song/cosmos-i2',
-                 inputCat=None, plot=False):
+                 rootDir='/lustre/Subaru/SSP/rerun/yasuda/SSP3.8.5_20150725/',
+                 inputCat=None, plot=False, acpMask=None, rejMask=None):
     """
     Generate nRand random RA,Dec pairs in a desired region of sky
     The region can be defined by:
@@ -157,8 +170,35 @@ def makeRaDecCat(nRand, dataId=None, rangeRaDec=None, rad=None,
     else:
         raise Exception("Need to provide either dataId or rangeRaDec")
 
+    """
+    Add by Song Huang 15-09-01
+    Filter the random catalog through two masks
+    """
+    if acpMask is not None or regMask is not None:
+        try:
+            from shapely import wkb
+            from shapely.geometry import Polygon, LineString, Point
+        except ImportError:
+            raise Exception('Please install the Shapely library before using this function')
+        raArr, decArr = np.array(zip(*randomRaDec))
+        if os.path.isfile(acpMask):
+            acpRegs = polyReadWkb(acpMask)
+            inside = map(lambda x, y: acpRegs.contains(Point(x, y)), raArr, decArr)
+        else:
+            inside = np.isfinite(raArr)
+        if os.path.isfile(rejMask):
+            regRegs = polyReadWkb(rejMask)
+            masked = map(lambda x, y: rejRegs.contains(Point(x, y)), raArr, decArr)
+        else:
+            masked = np.isnan(raArr)
+
+        useful = map(lambda x, y: x and (not y), inside, masked)
+        randomUse = zip(raArr[useful], decArr[useful])
+    else:
+        randomUse = randomRaDec
+
     if plot:
-        plotRandomRaDec(randomRaDec, rangeRaDec=rangeRaDec)
+        plotRandomRaDec(randomUse, rangeRaDec=rangeRaDec)
 
     if inputCat is not None:
 
@@ -173,13 +213,13 @@ def makeRaDecCat(nRand, dataId=None, rangeRaDec=None, rad=None,
             nGal   = len(galCat)
 
             if nGal == nRand:
-                raArr, decArr = np.array(zip(*randomRaDec))
+                raArr, decArr = np.array(zip(*randomUse))
                 raCol  = astropy.table.Column(name='RA',  data=raArr)
                 decCol = astropy.table.Column(name='Dec', data=decArr)
                 galCat.add_columns([raCol, decCol])
             elif nGal < nRand:
                 import random
-                raArr, decArr = np.array(zip(*random.sample(randomRaDec, nGal)))
+                raArr, decArr = np.array(zip(*random.sample(randomUse, nGal)))
                 raCol  = astropy.table.Column(name='RA',  data=raArr)
                 decCol = astropy.table.Column(name='Dec', data=decArr)
                 galCat.add_columns([raCol, decCol])
@@ -187,7 +227,7 @@ def makeRaDecCat(nRand, dataId=None, rangeRaDec=None, rad=None,
                 import random
                 indGal = np.arange(nGal)
                 galCatRand = galCat[random.sample(indGal, nRand)]
-                raArr, decArr = np.array(zip(*randomRaDec))
+                raArr, decArr = np.array(zip(*randomUse))
                 raCol  = astropy.table.Column(name='RA',  data=raArr)
                 decCol = astropy.table.Column(name='Dec', data=decArr)
                 galCatRand.add_columns([raCol, decCol])
@@ -198,5 +238,5 @@ def makeRaDecCat(nRand, dataId=None, rangeRaDec=None, rad=None,
         else:
             raise Exception('Can not find input catalog %s!' % inputCat)
 
-    return randomRaDec
+    return randomUse
 
