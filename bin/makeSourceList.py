@@ -13,18 +13,6 @@ import astropy.table
 import fakes.makeRaDecCat as makeRaDecCat
 
 
-def polyReadWkb(wkbName, load=True):
-
-    wkbFile = open(wkbName, 'r')
-    polyWkb = wkbFile.read().decode('hex')
-    wkbFile.close()
-
-    if load is True:
-        return wkb.loads(polyWkb)
-    else:
-        return polyWkb
-
-
 class MakeFakeInputsConfig(pexConfig.Config):
     coaddName = pexConfig.ChoiceField(
         dtype   = str,
@@ -56,6 +44,17 @@ class MakeFakeInputsTask(pipeBase.CmdLineTask):
     _DefaultName='makeFakeInputs'
     ConfigClass = MakeFakeInputsConfig
 
+    def polyReadWkb(self, wkbName, load=True):
+
+        wkbFile = open(wkbName, 'r')
+        polyWkb = wkbFile.read().decode('hex')
+        wkbFile.close()
+
+        if load is True:
+            return wkb.loads(polyWkb)
+        else:
+            return polyWkb
+
     def run(self, dataRef):
         print dataRef.dataId
         skyMap = dataRef.get('deepCoadd_skyMap', immediate=True)
@@ -85,19 +84,30 @@ class MakeFakeInputsTask(pipeBase.CmdLineTask):
                 raise Exception('Please install the Shapely library before using this function')
 
             if os.path.isfile(self.config.acpMask):
-                acpRegs = polyReadWkb(self.config.acpMask)
-                inside = map(lambda x, y: acpRegs.contains(Point(x, y)), raArr, decArr)
+                print "## Filter through : %s" % self.config.acpMask
+                acpWkb = open(self.config.acpMask, 'r')
+                acpRegs = wkb.loads(acpWkb.read().decode('hex'))
+                acpWkb.close()
+                inside = np.asarray(map(lambda x, y: acpRegs.contains(Point(x, y)),
+                                    raArr, decArr))
             else:
                 inside = np.isfinite(raArr)
 
             if os.path.isfile(self.config.rejMask):
-                regRegs = polyReadWkb(self.config.rejMask)
-                masked = map(lambda x, y: rejRegs.contains(Point(x, y)), raArr, decArr)
+                print "## Filter through : %s" % self.config.rejMask
+                rejWkb = open(self.config.rejMask, 'r')
+                rejRegs = wkb.loads(rejWkb.read().decode('hex'))
+                rejWkb.close()
+                masked = np.asarray(map(lambda x, y: rejRegs.contains(Point(x, y)),
+                                    raArr, decArr))
             else:
                 masked = np.isnan(raArr)
 
-            useful = map(lambda x, y: x and (not y), inside, masked)
+            useful = np.asarray(map(lambda x, y: x and (not y), inside, masked))
             ra, dec = raArr[useful], decArr[useful]
+
+            print "## %d out of %d objects left" % (len(ra), len(raArr))
+            nFakes = len(ra)
         else:
             ra, dec = raArr, decArr
 
