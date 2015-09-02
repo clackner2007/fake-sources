@@ -67,13 +67,11 @@ class MakeFakeInputsTask(pipeBase.CmdLineTask):
         Tracts in the Deep and Wide layers are defined to have overlaps of 1 arcmin
         between the two adjacent Tracts: 1 arcmin ~ 0.01667 deg
         """
-        print ra0, ra1
         if self.config.innerTract:
-            ra0 += 0.01667
-            ra1 -= 0.01667
-            dec0 += 0.01667
-            dec1 -= 0.01667
-            print ra0, ra1
+            ra0 += 0.0167
+            ra1 -= 0.0167
+            dec0 += 0.0167
+            dec1 -= 0.0167
         raArr, decArr = np.array(zip(*makeRaDecCat.getRandomRaDec(nFakes, ra0, ra1,
                                                                   dec0, dec1,
                                                                   rad=self.config.rad)))
