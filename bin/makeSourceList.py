@@ -37,23 +37,15 @@ class MakeFakeInputsConfig(pexConfig.Config):
     rejMask = pexConfig.Field(doc='region to mask out',
                               dtype=str,
                               optional=True, default=None)
+    innerTract = pexConfig.Field(doc='only add to the inner Tract region or not',
+                              dtype=bool,
+                              optional=True, default=False)
 
 class MakeFakeInputsTask(pipeBase.CmdLineTask):
     """a task to make an input catalog of fake sources for a dataId"""
 
     _DefaultName='makeFakeInputs'
     ConfigClass = MakeFakeInputsConfig
-
-    def polyReadWkb(self, wkbName, load=True):
-
-        wkbFile = open(wkbName, 'r')
-        polyWkb = wkbFile.read().decode('hex')
-        wkbFile.close()
-
-        if load is True:
-            return wkb.loads(polyWkb)
-        else:
-            return polyWkb
 
     def run(self, dataRef):
         print dataRef.dataId
@@ -66,12 +58,23 @@ class MakeFakeInputsTask(pipeBase.CmdLineTask):
         ra_vert, dec_vert = zip(*tract.getVertexList())
         ra_vert = sorted(ra_vert)
         dec_vert = sorted(dec_vert)
-        raArr, decArr = np.array(zip(*makeRaDecCat.getRandomRaDec(nFakes,
-                                                            ra_vert[0].asDegrees(),
-                                                            ra_vert[-1].asDegrees(),
-                                                            dec_vert[0].asDegrees(),
-                                                            dec_vert[-1].asDegrees(),
-                                                            rad=self.config.rad)))
+        ra0 = ra_vert[0].asDegrees()
+        ra1 = ra_vert[-1].asDegrees()
+        dec0 = dec_vert[0].asDegrees()
+        dec1 = dec_vert[-1].asDegrees()
+        """
+        Added by Song Huang 2016-09-02
+        Tracts in the Deep and Wide layers are defined to have overlaps of 1 arcmin
+        between the two adjacent Tracts: 1 arcmin ~ 0.01667 deg
+        """
+        if self.config.innerTract:
+            ra0 += 0.01667
+            ra1 -= 0.01667
+            dec0 += 0.01667
+            dec1 -= 0.01667
+        raArr, decArr = np.array(zip(*makeRaDecCat.getRandomRaDec(nFakes, ra0, ra1,
+                                                                  dec0, dec1,
+                                                                  rad=self.config.rad)))
         """
         Added by Song Huang 2016-09-01
         Filter the random RA, DEC using two filters
