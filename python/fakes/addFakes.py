@@ -2,14 +2,22 @@ import sys
 import math
 import collections
 
+import lsst.pex.config
 import lsst.afw.cameraGeom as afwCg
 import hsc.pipe.base.butler as hscButler
+
 from lsst.pipe.base import Struct, ArgumentParser
-import lsst.pex.config
 from hsc.pipe.base.pool import abortOnError, NODE, Pool, Debugger
 from hsc.pipe.base.parallel import BatchPoolTask
 
 from lsst.pipe.tasks.fakes import DummyFakeSourcesTask
+
+"""
+DummyFakeSourcesTask:
+
+A stand-in for FakeSourcesTask that doesn't do anything, to be used as the default
+(to disable fake injection) anywhere FakeSourcesTask could be used.
+"""
 
 Debugger().enabled = True
 
@@ -18,16 +26,16 @@ class addFakesConfig(lsst.pex.config.Config):
         target = DummyFakeSourcesTask,
         doc = "Injection of fake sources into processed visits (retarget to enable)"
     )
-    ignoreCcdList =lsst.pex.config.ListField(dtype=int, default=[], 
+    ignoreCcdList = lsst.pex.config.ListField(dtype=int, default=[],
                                              doc="List of CCDs to ignore when processing")
 
 class addFakesTask(BatchPoolTask):
     """Add fakes to entire exposure at once"""
 
-    RunnerClass=hscButler.ButlerTaskRunner
+    RunnerClass = hscButler.ButlerTaskRunner
     ConfigClass = addFakesConfig
     _DefaultName = "AddFakes"
-    
+
     # we need to kill each of these methods so the users won't
     # mess with persisted configs and version info
     def _getConfigName(self):
@@ -43,14 +51,14 @@ class addFakesTask(BatchPoolTask):
         """
         super(addFakesTask, self).__init__(*args, **kwargs)
         self.makeSubtask("fakes")
-        
+
     @classmethod
     def batchWallTime(cls, time, parsedCmd, numNodes, numProcs):
         """
         over-ridden method that gives the requested wall time for the method
         Probably not necessary here as this task is fast
         """
-        numCcds = sum(1 for raft in parsedCmd.butler.get("camera") 
+        numCcds = sum(1 for raft in parsedCmd.butler.get("camera")
                       for ccd in afwCg.cast_Raft(raft))
         numCycles = int(math.ceil(numCcds/float(numNodes*numProcs)))
         numExps = len(cls.RunnerClass.getTargetList(parsedCmd))
@@ -72,19 +80,19 @@ class addFakesTask(BatchPoolTask):
     def run(self, expRef, butler):
         """
         sets up the pool and scatters the processing of the individual CCDs,
-        
+
         in processCcd, apparently all nodes (master and slaves) run this
         method, but I don't really get that
-        
+
         on the gather, we just check that any of the sources ran
         """
-        
+
         pool = Pool(self._DefaultName)
         pool.cacheClear()
         pool.storeSet(butler=butler)
-        
+
         dataIdList = dict([(ccdRef.get("ccdExposureId"), ccdRef.dataId)
-                           for ccdRef in expRef.subItems("ccd") if 
+                           for ccdRef in expRef.subItems("ccd") if
                            ccdRef.datasetExists("raw")])
         dataIdList = collections.OrderedDict(sorted(dataIdList.items()))
 
@@ -105,12 +113,12 @@ class addFakesTask(BatchPoolTask):
             self.log.warn("Ignoring %s: CCD in ignoreCcdList" % (dataId,))
             return None
         dataRef = hscButler.getDataRef(cache.butler, dataId)
-        
+
         ccdId = dataRef.get("ccdExposureId")
         with self.logOperation("processing %s (ccdId=%d)" %(dataId, ccdId)):
             exposure = dataRef.get('calexp', immediate=True)
             self.fakes.run(exposure,None)
             dataRef.put(exposure,"calexp")
-            
+
         return 0
 

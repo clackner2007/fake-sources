@@ -10,7 +10,7 @@ import lsst.afw.detection as afwDetect
 #to a fake object), you will need to deal with the fact that the configuration
 #for a retargeted subtask (like this one) blows away any overrides in setDefault of
 #the parent task (processCoadd in this case) and, it seems any camera specific
-#overrides in $OBS_SUBARU/config/hsc/processCcd.py. 
+#overrides in $OBS_SUBARU/config/hsc/processCcd.py.
 #See https://dev.lsstcorp.org/trac/ticket/2282 for more details
 #I think you need something like cmdLineTask.applyOverrides to deal with this
 class OnlyFakesDetectionConfig(measAlg.SourceDetectionTask.ConfigClass):

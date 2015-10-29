@@ -25,7 +25,7 @@ class PositionGalSimFakesConfig(FakeSourcesConfig):
                                           doc='type of GalSim galaxies to add')
     addShear = lsst.pex.config.Field(dtype=bool, default=False,
                                      doc='include shear in the galaxies')
-    
+
 
 class PositionGalSimFakesTask(FakeSourcesTask):
     ConfigClass = PositionGalSimFakesConfig
@@ -45,7 +45,7 @@ class PositionGalSimFakesTask(FakeSourcesTask):
         md = exposure.getMetadata()
         expBBox = exposure.getBBox(lsst.afw.image.PARENT)
         wcs = exposure.getWcs()
-        skyToPixelMatrix=wcs.getLinearTransform().invert().getMatrix()/3600.0
+        skyToPixelMatrix = wcs.getLinearTransform().invert().getMatrix() / 3600.0
 
         for igal, gal in enumerate(self.galData):
             try:
@@ -67,18 +67,18 @@ class PositionGalSimFakesTask(FakeSourcesTask):
             bboxI = exposure.getBBox(lsst.afw.image.PARENT)
             bboxI.grow(self.config.maxMargin)
             if not bboxI.contains(lsst.afw.geom.Point2I(galXY)):
-                #self.log.info("Skipping fake %d"%galident)
+                self.log.info("BBox Error: Skipping fake %d"%galident)
                 continue
-            
+
             #this is extrapolating for the PSF, probably not a good idea
             psfImage = psf.computeKernelImage(galXY)
             try:
-                galArray = makeFake.makeGalaxy(flux, gal, psfImage.getArray(), 
-                                               self.config.galType, 
+                galArray = makeFake.makeGalaxy(flux, gal, psfImage.getArray(),
+                                               self.config.galType,
                                                transform = skyToPixelMatrix,
                                                addShear=self.config.addShear)
             except (KeyError, ValueError, RuntimeError):
-                self.log.info("Skipping fake %d"%galident)
+                self.log.info("GalSim Error: Skipping fake %d"%galident)
                 continue
 
             galImage = lsst.afw.image.ImageF(galArray.astype(np.float32))
@@ -89,20 +89,22 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                                                  'lanczos3')
             galBBox = galImage.getBBox(lsst.afw.image.PARENT)
 
-            
-           #check that we're within the larger exposure, otherwise crop
+
+            #check that we're within the larger exposure, otherwise crop
             if expBBox.contains(galImage.getBBox(lsst.afw.image.PARENT)) is False:
                 newBBox = galImage.getBBox(lsst.afw.image.PARENT)
                 newBBox.clip(expBBox)
                 if newBBox.getArea() <= 0:
-                    self.log.info("Skipping fake %d"%galident)
+                    self.log.info("newBBox AreaError: Skipping fake %d"%galident)
                     continue
                 self.log.info("Cropping FAKE%d from %s to %s"%(galident, str(galBBox), str(newBBox)))
                 galImage = galImage.Factory(galImage, newBBox, lsst.afw.image.PARENT)
                 galBBox = newBBox
 
-            galMaskedImage = fsl.addNoise(galImage, exposure.getDetector(), rand_gen=self.npRand)
-            
+            galMaskedImage = fsl.addNoise(galImage, exposure.getDetector(),
+                                          rand_gen=self.npRand)
+
+            # Put information of the added fake galaxies into the header
             md.set("FAKE%s" % str(galident), "%.3f, %.3f" % (galXY.getX(), galXY.getY()))
             self.log.info("Adding fake %s at: %.1f,%.1f"% (str(galident), galXY.getX(), galXY.getY()))
 
