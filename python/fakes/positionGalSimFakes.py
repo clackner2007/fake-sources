@@ -86,21 +86,21 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                 self.log.info("GalSim Key Error: Skipping fake $d" % galident)
                 self.log.info("  Mag, nSer, Reff, b/a: %5.2f, %f5.2f, %6.2f, %4.1f" % (
                     gal['mag'], gal['sersic_n'], gal['reff'], gal['b_a']))
-                self.log.info(kerr)
+                self.log.info(kerr.message)
                 dum = os.system("echo %d >> runAddFake.skipped" % galident)
                 continue
             except ValueError as verr:
                 self.log.info("GalSim Value Error: Skipping fake $d" % galident)
                 self.log.info("  Mag, nSer, Reff, b/a: %5.2f, %f5.2f, %6.2f, %4.1f" % (
                     gal['mag'], gal['sersic_n'], gal['reff'], gal['b_a']))
-                self.log.info(verr)
+                self.log.info(verr.message)
                 dum = os.system("echo %d >> runAddFake.skipped" % galident)
                 continue
             except RuntimeError as rerr:
                 self.log.info("GalSim Runtime Error: Skipping fake $d" % galident)
                 self.log.info("  Mag, nSer, Reff, b/a: %5.2f, %f5.2f, %6.2f, %4.1f" % (
                     gal['mag'], gal['sersic_n'], gal['reff'], gal['b_a']))
-                self.log.info(rerr)
+                self.log.info(rerr.message)
                 dum = os.system("echo %d >> runAddFake.skipped" % galident)
                 continue
 
