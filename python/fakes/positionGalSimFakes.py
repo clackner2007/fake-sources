@@ -31,7 +31,6 @@ class PositionGalSimFakesConfig(FakeSourcesConfig):
 
 class PositionGalSimFakesTask(FakeSourcesTask):
     ConfigClass = PositionGalSimFakesConfig
-    skipLog = 'runAddFake.skipped'
 
     def __init__(self, **kwargs):
         FakeSourcesTask.__init__(self, **kwargs)
@@ -51,6 +50,7 @@ class PositionGalSimFakesTask(FakeSourcesTask):
         skyToPixelMatrix = wcs.getLinearTransform().invert().getMatrix() / 3600.0
 
         """ Deal with the skipped ones """
+        skipLog = 'runAddFake.skipped'
         if not os.path.isfile(skipLog):
             dum = os.system('touch ' + skipLog)
 
