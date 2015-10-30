@@ -132,7 +132,7 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                     self.log.info("BBoxEdge Error: Skipping fake %d"%galident)
                     with open(skipLog, "a") as slog:
                         fcntl.flock(slog, fcntl.LOCK_EX)
-                        slog.write("%8d , bboxEdge\n")
+                        slog.write("%8d , bboxEdge\n"%galident)
                         fcntl.flock(slog, fcntl.LOCK_UN)
                     continue
                 self.log.info("Cropping FAKE%d from %s to %s"%(galident, str(galBBox), str(newBBox)))
