@@ -1,4 +1,5 @@
 import os
+import fcntl
 import numpy as np
 
 import lsst.afw.image
@@ -30,6 +31,7 @@ class PositionGalSimFakesConfig(FakeSourcesConfig):
 
 class PositionGalSimFakesTask(FakeSourcesTask):
     ConfigClass = PositionGalSimFakesConfig
+    skipLog = 'runAddFake.skipped'
 
     def __init__(self, **kwargs):
         FakeSourcesTask.__init__(self, **kwargs)
@@ -49,8 +51,8 @@ class PositionGalSimFakesTask(FakeSourcesTask):
         skyToPixelMatrix = wcs.getLinearTransform().invert().getMatrix() / 3600.0
 
         """ Deal with the skipped ones """
-        if not os.path.isfile('runAddFake.skipped'):
-            dum = os.system('touch runAddFake.skipped')
+        if not os.path.isfile(skipLog):
+            dum = os.system('touch ' + skipLog)
 
         for igal, gal in enumerate(self.galData):
             try:
@@ -87,21 +89,30 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                 self.log.info("       Mag, nSer, Reff, b/a: %5.2f, %5.2f, %6.2f, %4.1f"%(
                     gal['mag'], gal['sersic_n'], gal['reff'], gal['b_a']))
                 self.log.info(kerr.message)
-                dum = os.system('echo "%d , galsimK" >> runAddFake.skipped'%galident)
+                with open(skipLog, "a") as slog:
+                    fcntl.flock(slog, fcntl.LOCK_EX)
+                    slog.write("%8d , galsimK\n")
+                    fcntl.flock(slog, fcntl.LOCK_UN)
                 continue
             except ValueError as verr:
                 self.log.info("GalSim Value Error: Skipping fake $d"%galident)
                 self.log.info("       Mag, nSer, Reff, b/a: %5.2f, %5.2f, %6.2f, %4.1f"%(
                     gal['mag'], gal['sersic_n'], gal['reff'], gal['b_a']))
                 self.log.info(verr.message)
-                dum = os.system('echo "%d , galsimV" >> runAddFake.skipped'%galident)
+                with open(skipLog, "a") as slog:
+                    fcntl.flock(slog, fcntl.LOCK_EX)
+                    slog.write("%8d , galsimV\n")
+                    fcntl.flock(slog, fcntl.LOCK_UN)
                 continue
             except RuntimeError as rerr:
                 self.log.info("GalSim Runtime Error: Skipping fake $d"%galident)
                 self.log.info("       Mag, nSer, Reff, b/a: %5.2f, %5.2f, %6.2f, %4.1f"%(
                     gal['mag'], gal['sersic_n'], gal['reff'], gal['b_a']))
                 self.log.info(rerr.message)
-                dum = os.system('echo "%d , galsimR" >> runAddFake.skipped'%galident)
+                with open(skipLog, "a") as slog:
+                    fcntl.flock(slog, fcntl.LOCK_EX)
+                    slog.write("%8d , galsimR\n")
+                    fcntl.flock(slog, fcntl.LOCK_UN)
                 continue
 
             galImage = lsst.afw.image.ImageF(galArray.astype(np.float32))
@@ -119,7 +130,10 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                 newBBox.clip(expBBox)
                 if newBBox.getArea() <= 0:
                     self.log.info("BBoxEdge Error: Skipping fake %d"%galident)
-                    dum = os.system('echo "%d , bboxEdge" >> runAddFake.skipped'%galident)
+                    with open(skipLog, "a") as slog:
+                        fcntl.flock(slog, fcntl.LOCK_EX)
+                        slog.write("%8d , bboxEdge\n")
+                        fcntl.flock(slog, fcntl.LOCK_UN)
                     continue
                 self.log.info("Cropping FAKE%d from %s to %s"%(galident, str(galBBox), str(newBBox)))
                 galImage = galImage.Factory(galImage, newBBox, lsst.afw.image.PARENT)
