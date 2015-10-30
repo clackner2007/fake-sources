@@ -91,7 +91,7 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                 self.log.info(kerr.message)
                 with open(skipLog, "a") as slog:
                     fcntl.flock(slog, fcntl.LOCK_EX)
-                    slog.write("%8d , galsimK\n")
+                    slog.write("%8d , galsimK\n"%galident)
                     fcntl.flock(slog, fcntl.LOCK_UN)
                 continue
             except ValueError as verr:
@@ -101,7 +101,7 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                 self.log.info(verr.message)
                 with open(skipLog, "a") as slog:
                     fcntl.flock(slog, fcntl.LOCK_EX)
-                    slog.write("%8d , galsimV\n")
+                    slog.write("%8d , galsimV\n"%galident)
                     fcntl.flock(slog, fcntl.LOCK_UN)
                 continue
             except RuntimeError as rerr:
@@ -111,7 +111,7 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                 self.log.info(rerr.message)
                 with open(skipLog, "a") as slog:
                     fcntl.flock(slog, fcntl.LOCK_EX)
-                    slog.write("%8d , galsimR\n")
+                    slog.write("%8d , galsimR\n"%galident)
                     fcntl.flock(slog, fcntl.LOCK_UN)
                 continue
 
