@@ -286,6 +286,8 @@ def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
         serObj = galsim.DeVaucouleurs(half_light_radius=reff, trunc=trunc)
         if devAll:
             print " * This model is treated as a n=4 De Vaucouleurs model: %d" % (gal["ID"])
+    elif nSersic <= 0.9:
+        serObj = galsim.Sersic(nSersic, half_light_radius=reff)
     else:
         serObj = galsim.Sersic(nSersic, half_light_radius=reff, trunc=trunc)
 
