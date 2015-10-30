@@ -83,25 +83,25 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                                                transform = skyToPixelMatrix,
                                                addShear=self.config.addShear)
             except KeyError as kerr:
-                self.log.info("GalSim Key Error: Skipping fake $d" % galident)
-                self.log.info("  Mag, nSer, Reff, b/a: %5.2f, %f5.2f, %6.2f, %4.1f" % (
+                self.log.info("GalSim Key Error: Skipping fake $d"%galident)
+                self.log.info("       Mag, nSer, Reff, b/a: %5.2f, %5.2f, %6.2f, %4.1f"%(
                     gal['mag'], gal['sersic_n'], gal['reff'], gal['b_a']))
                 self.log.info(kerr.message)
-                dum = os.system("echo %d >> runAddFake.skipped" % galident)
+                dum = os.system('echo "%d , galsimK" >> runAddFake.skipped'%galident)
                 continue
             except ValueError as verr:
-                self.log.info("GalSim Value Error: Skipping fake $d" % galident)
-                self.log.info("  Mag, nSer, Reff, b/a: %5.2f, %f5.2f, %6.2f, %4.1f" % (
+                self.log.info("GalSim Value Error: Skipping fake $d"%galident)
+                self.log.info("       Mag, nSer, Reff, b/a: %5.2f, %5.2f, %6.2f, %4.1f"%(
                     gal['mag'], gal['sersic_n'], gal['reff'], gal['b_a']))
                 self.log.info(verr.message)
-                dum = os.system("echo %d >> runAddFake.skipped" % galident)
+                dum = os.system('echo "%d , galsimV" >> runAddFake.skipped'%galident)
                 continue
             except RuntimeError as rerr:
-                self.log.info("GalSim Runtime Error: Skipping fake $d" % galident)
-                self.log.info("  Mag, nSer, Reff, b/a: %5.2f, %f5.2f, %6.2f, %4.1f" % (
+                self.log.info("GalSim Runtime Error: Skipping fake $d"%galident)
+                self.log.info("       Mag, nSer, Reff, b/a: %5.2f, %5.2f, %6.2f, %4.1f"%(
                     gal['mag'], gal['sersic_n'], gal['reff'], gal['b_a']))
                 self.log.info(rerr.message)
-                dum = os.system("echo %d >> runAddFake.skipped" % galident)
+                dum = os.system('echo "%d , galsimR" >> runAddFake.skipped'%galident)
                 continue
 
             galImage = lsst.afw.image.ImageF(galArray.astype(np.float32))
@@ -119,7 +119,7 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                 newBBox.clip(expBBox)
                 if newBBox.getArea() <= 0:
                     self.log.info("BBoxEdge Error: Skipping fake %d"%galident)
-                    dum = os.system("echo %d >> runAddFake.skipped" % galident)
+                    dum = os.system('echo "%d , bboxEdge" >> runAddFake.skipped'%galident)
                     continue
                 self.log.info("Cropping FAKE%d from %s to %s"%(galident, str(galBBox), str(newBBox)))
                 galImage = galImage.Factory(galImage, newBBox, lsst.afw.image.PARENT)
