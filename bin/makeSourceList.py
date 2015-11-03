@@ -121,13 +121,32 @@ class MakeFakeInputsTask(pipeBase.CmdLineTask):
             galData = astropy.table.Table().read(self.config.inputCat)
             randInd = np.random.choice(range(len(galData)), size=nFakes)
             mergedData = galData[randInd]
+
             for colname in mergedData.columns:
                 outTab.add_column(astropy.table.Column(name=colname,
-                                                       data=mergedData[colname]))
+                                                   data=mergedData[colname]))
 
-        outTab.write(os.path.join(self.config.outDir,
-                                  'src_%d_radec.fits'%tractId),
-                     overwrite=True)
+            """ Modified by SH; to generate multiBand catalog at the same time"""
+            magList = [col for col in galData.colnames if 'mag_' in col]
+            if len(magList) >= 1:
+                for mag in magList:
+                    try:
+                        outTab.remove_column('mag')
+                    except KeyError:
+                        continue
+                    outTab.add_column(astropy.table.Column(name='mag',
+                                                        data=mergedData[mag]))
+                    outTab.write(os.path.join(self.config.outDir,
+                                'src_%d_radec_%s.fits'%(tractId,mag.split('_')[1].upper())),
+                                 overwrite=True)
+            else:
+                outTab.write(os.path.join(self.config.outDir,
+                                          'src_%d_radec.fits'%tractId),
+                             overwrite=True)
+        else:
+            outTab.write(os.path.join(self.config.outDir,
+                                      'src_%d_radec_only.fits'%tractId),
+                         overwrite=True)
 
 
     @classmethod
