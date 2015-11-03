@@ -129,16 +129,18 @@ class MakeFakeInputsTask(pipeBase.CmdLineTask):
             """ Modified by SH; to generate multiBand catalog at the same time"""
             magList = [col for col in galData.colnames if 'mag_' in col]
             if len(magList) >= 1:
+                print "Find magnitude in %d band(s)"%len(magList)
                 for mag in magList:
                     try:
                         outTab.remove_column('mag')
                     except KeyError:
-                        continue
+                        pass
                     outTab.add_column(astropy.table.Column(name='mag',
                                                         data=mergedData[mag]))
-                    outTab.write(os.path.join(self.config.outDir,
-                                'src_%d_radec_%s.fits'%(tractId,mag.split('_')[1].upper())),
-                                 overwrite=True)
+                    outFits = os.path.join(self.config.outDir,
+                            'src_%d_radec_%s.fits'%(tractId, mag.split('_')[1].upper()))
+                    print outFits
+                    outTab.write(outFits, overwrite=True)
             else:
                 outTab.write(os.path.join(self.config.outDir,
                                           'src_%d_radec.fits'%tractId),
