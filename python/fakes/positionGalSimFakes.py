@@ -85,7 +85,7 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                                                transform = skyToPixelMatrix,
                                                addShear=self.config.addShear)
             except KeyError as kerr:
-                self.log.info("GalSim Key Error: Skipping fake $d"%galident)
+                self.log.info("GalSim Key Error: Skipping fake %d"%galident)
                 self.log.info("       Mag, nSer, Reff, b/a: %5.2f, %5.2f, %6.2f, %4.1f"%(
                     gal['mag'], gal['sersic_n'], gal['reff'], gal['b_a']))
                 self.log.info(kerr.message)
@@ -95,7 +95,7 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                     fcntl.flock(slog, fcntl.LOCK_UN)
                 continue
             except ValueError as verr:
-                self.log.info("GalSim Value Error: Skipping fake $d"%galident)
+                self.log.info("GalSim Value Error: Skipping fake %d"%galident)
                 self.log.info("       Mag, nSer, Reff, b/a: %5.2f, %5.2f, %6.2f, %4.1f"%(
                     gal['mag'], gal['sersic_n'], gal['reff'], gal['b_a']))
                 self.log.info(verr.message)
@@ -105,7 +105,7 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                     fcntl.flock(slog, fcntl.LOCK_UN)
                 continue
             except RuntimeError as rerr:
-                self.log.info("GalSim Runtime Error: Skipping fake $d"%galident)
+                self.log.info("GalSim Runtime Error: Skipping fake %d"%galident)
                 self.log.info("       Mag, nSer, Reff, b/a: %5.2f, %5.2f, %6.2f, %4.1f"%(
                     gal['mag'], gal['sersic_n'], gal['reff'], gal['b_a']))
                 self.log.info(rerr.message)
