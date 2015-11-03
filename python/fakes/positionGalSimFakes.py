@@ -90,9 +90,12 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                     gal['mag'], gal['sersic_n'], gal['reff'], gal['b_a']))
                 self.log.info(kerr.message)
                 with open(skipLog, "a") as slog:
-                    fcntl.flock(slog, fcntl.LOCK_EX)
-                    slog.write("%8d , galsimK\n"%galident)
-                    fcntl.flock(slog, fcntl.LOCK_UN)
+                    try:
+                        fcntl.flock(slog, fcntl.LOCK_EX)
+                        slog.write("%8d , galsimK\n"%galident)
+                        fcntl.flock(slog, fcntl.LOCK_UN)
+                    except IOError:
+                        continue
                 continue
             except ValueError as verr:
                 self.log.info("GalSim Value Error: Skipping fake %d"%galident)
@@ -100,9 +103,12 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                     gal['mag'], gal['sersic_n'], gal['reff'], gal['b_a']))
                 self.log.info(verr.message)
                 with open(skipLog, "a") as slog:
-                    fcntl.flock(slog, fcntl.LOCK_EX)
-                    slog.write("%8d , galsimV\n"%galident)
-                    fcntl.flock(slog, fcntl.LOCK_UN)
+                    try:
+                        fcntl.flock(slog, fcntl.LOCK_EX)
+                        slog.write("%8d , galsimV\n"%galident)
+                        fcntl.flock(slog, fcntl.LOCK_UN)
+                    except IOError:
+                        continue
                 continue
             except RuntimeError as rerr:
                 self.log.info("GalSim Runtime Error: Skipping fake %d"%galident)
@@ -110,9 +116,12 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                     gal['mag'], gal['sersic_n'], gal['reff'], gal['b_a']))
                 self.log.info(rerr.message)
                 with open(skipLog, "a") as slog:
-                    fcntl.flock(slog, fcntl.LOCK_EX)
-                    slog.write("%8d , galsimR\n"%galident)
-                    fcntl.flock(slog, fcntl.LOCK_UN)
+                    try:
+                        fcntl.flock(slog, fcntl.LOCK_EX)
+                        slog.write("%8d , galsimR\n"%galident)
+                        fcntl.flock(slog, fcntl.LOCK_UN)
+                    except IOError:
+                        continue
                 continue
 
             galImage = lsst.afw.image.ImageF(galArray.astype(np.float32))
@@ -131,9 +140,12 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                 if newBBox.getArea() <= 0:
                     self.log.info("BBoxEdge Error: Skipping fake %d"%galident)
                     with open(skipLog, "a") as slog:
-                        fcntl.flock(slog, fcntl.LOCK_EX)
-                        slog.write("%8d , bboxEdge\n"%galident)
-                        fcntl.flock(slog, fcntl.LOCK_UN)
+                        try:
+                            fcntl.flock(slog, fcntl.LOCK_EX)
+                            slog.write("%8d , bboxEdge\n"%galident)
+                            fcntl.flock(slog, fcntl.LOCK_UN)
+                        except IOError:
+                            continue
                     continue
                 self.log.info("Cropping FAKE%d from %s to %s"%(galident, str(galBBox), str(newBBox)))
                 galImage = galImage.Factory(galImage, newBBox, lsst.afw.image.PARENT)
