@@ -1,5 +1,7 @@
+import os
 import sys
 import math
+import fcntl
 import collections
 
 import lsst.pex.config
@@ -30,11 +32,17 @@ class addFakesConfig(lsst.pex.config.Config):
                                              doc="List of CCDs to ignore when processing")
 
 class addFakesTask(BatchPoolTask):
+
     """Add fakes to entire exposure at once"""
 
     RunnerClass = hscButler.ButlerTaskRunner
     ConfigClass = addFakesConfig
     _DefaultName = "AddFakes"
+
+    """ Song Huang; Log to keep record of the missing CCDs """
+    missingLog = 'runAddFake.missingCCD'
+    if not os.path.isfile(missingLog):
+        dum = os.system('touch ' + missingLog)
 
     # we need to kill each of these methods so the users won't
     # mess with persisted configs and version info
@@ -112,13 +120,27 @@ class addFakesTask(BatchPoolTask):
         if (dataId["ccd"] in self.config.ignoreCcdList) or (dataId['ccd'] > 103):
             self.log.warn("Ignoring %s: CCD in ignoreCcdList" % (dataId,))
             return None
-        dataRef = hscButler.getDataRef(cache.butler, dataId)
 
-        ccdId = dataRef.get("ccdExposureId")
-        with self.logOperation("processing %s (ccdId=%d)" %(dataId, ccdId)):
-            exposure = dataRef.get('calexp', immediate=True)
-            self.fakes.run(exposure,None)
-            dataRef.put(exposure,"calexp")
-
-        return 0
+        """
+        Try to deal with missing CCDs gracefully
+        Song Huang
+        """
+        try:
+            dataRef = hscButler.getDataRef(cache.butler, dataId)
+            ccdId = dataRef.get("ccdExposureId")
+            with self.logOperation("processing %s (ccdId=%d)" %(dataId, ccdId)):
+                exposure = dataRef.get('calexp', immediate=True)
+                self.fakes.run(exposure,None)
+                dataRef.put(exposure,"calexp")
+            return 0
+        except Exception:
+            with open(self.missingLog, "a") as mlog:
+                try:
+                    fcntl.flock(mlog, fcntl.LOCK_EX)
+                    mlog.write("%s  ,  %d\n"%(dataId, ccdId))
+                    fcntl.flock(mlog, fcntl.LOCK_UN)
+                except IOError:
+                    pass
+            self.log.warn("Can not find data for CCD %s (ccdId=%d)" %(dataId, ccdId))
+            return None
 

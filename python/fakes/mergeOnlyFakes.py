@@ -18,7 +18,7 @@ import lsst.pipe.tasks.multiBand as mBand
 
 # Song Huang
 
-class OnlyFakesMergeConfig(mBand.MeasureMergedCoaddSourcesConfig.ConfigClass):
+class OnlyFakesMergeConfig(mBand.MeasureMergedCoaddSourcesTask.ConfigClass):
     dummyVar = pexConfig.Field(doc='Dummy config variable, does nothing',
                                dtype=bool, default=True)
 
