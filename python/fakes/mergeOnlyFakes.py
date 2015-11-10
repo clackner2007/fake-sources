@@ -8,6 +8,8 @@ import lsst.meas.algorithms as measAlg
 import lsst.afw.detection   as afwDetect
 import lsst.pipe.tasks.multiBand as mBand
 
+from lsst.pipe.tasks.coaddBase import getSkyInfo
+
 #WARNING: if you want to add configuration variables (maybe how close you are
 #to a fake object), you will need to deal with the fact that the configuration
 #for a retargeted subtask (like this one) blows away any overrides in setDefault of
@@ -39,6 +41,7 @@ class OnlyFakesMergeTask(mBand.MeasureMergedCoaddSourcesTask):
         fakebit = mask.getPlaneBitMask('FAKE')
 
         sources = self.readSources(patchRef)
+        self.log.info("Found %d sources"% len(sources))
         """ignore objects whose footprints do NOT overlap with the 'FAKE' mask"""
         removes = []
         for i_ss, ss in enumerate(sources):
@@ -50,6 +53,7 @@ class OnlyFakesMergeTask(mBand.MeasureMergedCoaddSourcesTask):
         removes = sorted(removes, reverse=True)
         for r in removes:
             del sources[r]
+        self.log.info("Found %d sources near fake footprints"% len(sources))
 
         if self.config.doDeblend:
             self.deblend.run(exposure, sources, exposure.getPsf())
