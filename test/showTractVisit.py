@@ -42,7 +42,7 @@ def main(rootDir, tract, visits, ccds=None, showPatch=False):
             ccdId = ccd.getId().getSerial()
 
             if (ccds is None or ccdId in ccds) and ccdId < 104:
-                dataId = {'tract': 0, 'visit': visit, 'ccd': ccdId}
+                dataId = {'tract':tract, 'visit': visit, 'ccd': ccdId}
                 try:
                     wcs = afwImage.makeWcs(butler.get("calexp_md", dataId))
                 except:
@@ -60,14 +60,14 @@ def main(rootDir, tract, visits, ccds=None, showPatch=False):
     ###################
     ### draw the skymap
     if showPatch:
-        skymap = butler.get('deepCoadd_skyMap', {'tract':0})
-        for tract in skymap:
-            for patch in tract:
-                ra, dec = bboxToRaDec(patch.getInnerBBox(), tract.getWcs())
-                #pyplot.fill(ra, dec, fill=False, edgecolor='k', lw=1, linestyle='dashed')
-                if xlim[1] < percent(ra) < xlim[0] and ylim[0] < percent(dec) < ylim[1]:
-                    pyplot.text(percent(ra), percent(dec, 0.9), str(patch.getIndex()),
-                                fontsize=6, horizontalalignment='center', verticalalignment='top')
+        skymap = butler.get('deepCoadd_skyMap', {'tract':tract})
+        tt = skymap[tract]
+        for patch in tt:
+            ra, dec = bboxToRaDec(patch.getInnerBBox(), tt.getWcs())
+            pyplot.fill(ra, dec, fill=False, edgecolor='k', lw=1, linestyle='dashed')
+            if xlim[1] < percent(ra) < xlim[0] and ylim[0] < percent(dec) < ylim[1]:
+                        pyplot.text(percent(ra), percent(dec, 0.9), str(patch.getIndex()),
+                                    fontsize=6, horizontalalignment='center', verticalalignment='top')
 
 
     ######################
@@ -78,7 +78,7 @@ def main(rootDir, tract, visits, ccds=None, showPatch=False):
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
     fig = pyplot.gcf()
-    fig.savefig("patches.png")
+    fig.savefig("%s_patches.png"%tract)
 
 
 
