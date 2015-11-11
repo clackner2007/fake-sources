@@ -19,10 +19,10 @@ def getExpArray(root, tract, patch, filter):
     # make a butler and specify your dataId
     butler = dafPersist.Butler(root)
     dataId = {'tract': tract, 'patch':patch, 'filter':filter}
-    prefix = "deepCoadd_"
+    dataType = "deepCoadd"
 
     # get the exposure from the butler
-    exposure = butler.get(prefix + 'calexp', dataId)
+    exposure = butler.get(dataType, dataId)
 
     # get the maskedImage from the exposure, and the image from the mimg
     mimg = exposure.getMaskedImage()
@@ -45,7 +45,7 @@ def main(root1, root2, tract, patch, filter, root=""):
     imgDiff = (imgAfter - imgBefore)
 
     # stretch it with arcsinh and make a png with pyplot
-    fig, axes = pyplot.subplots(1, 3, sharex=True, sharey=True, figsize=(16,5))
+    fig, axes = pyplot.subplots(1, 3, sharex=True, sharey=True, figsize=(16.5,5))
     pyplot.subplots_adjust(left=0.04, bottom=0.03, right=0.99, top=0.97,
                            wspace=0.01, hspace = 0.01)
 
@@ -71,4 +71,4 @@ if __name__ == '__main__':
     parser.add_argument("filter", help="Filter to show")
     args = parser.parse_args()
 
-    main(args.root1, args.root2, args.visit, args.ccd, args.filter, root=root)
+    main(args.root1, args.root2, args.tract, args.patch, args.filter, root=root)
