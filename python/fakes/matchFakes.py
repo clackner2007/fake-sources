@@ -34,14 +34,14 @@ def getEllipse(quad):
 def matchToFakeCatalog(sources, fakeCatalog):
     """
     match to the fake catalog and append those columns to the source table
-    
+
     this assumes the sources are an astropy table
     or it will throw a TypeError
     """
     if not isinstance(sources, astropy.table.Table):
         raise TypeError("expects and astropy table for sources, use getAstroTable to convert")
-    
-    
+
+
     fakes = astropy.table.Table().read(fakeCatalog)
     fakes.rename_column('ID', 'fakeId')
     return astropy.table.join(sources, fakes, keys='fakeId', join_type='left')
@@ -50,7 +50,7 @@ def matchToFakeCatalog(sources, fakeCatalog):
 def getFakeMatchesHeader(cal_md, sources, tol=1.0):
     """
     returns the fake matches based on the information in the header
-    
+
     returns a tuple with:
     the positions in pixels of the fake sources added to the chip
     the match is in a dictionary of the form: {fakeid:[ind_of_match_in_sources,...],...}
@@ -79,13 +79,13 @@ def getFakeMatchesHeader(cal_md, sources, tol=1.0):
 def getFakeMatchesRaDec( sources, radecCatFile, bbox, wcs, tol=1.0):
     """
     Returns the fake matches based on an radec match to the catalog of fake sources inputed.
-    
+
     Args:
     sources: source table object
     radecCatFile: filename for fits file of fake object table, including ra/dec
     bbox: Bounding Box of exposure (ccd or patch) within which to match fakes
     wcs: Wcs of source image
-    
+
     KeywordArgs:
     tol: tolerance within which to match sources, given in PIXELS
 
@@ -96,19 +96,19 @@ def getFakeMatchesRaDec( sources, radecCatFile, bbox, wcs, tol=1.0):
     Raise:
     IOError: couldn't open radecCatFile
     """
-    
+
     fakeXY = collections.defaultdict(tuple)
     try:
         fakeCat = astropy.table.Table().read(radecCatFile)
     except IOError:
         raise
-    
+
     for fakeSrc in fakeCat:
         fakeCoord = wcs.skyToPixel(lsst.afw.geom.Angle(fakeSrc['RA'], lsst.afw.geom.degrees),
                                    lsst.afw.geom.Angle(fakeSrc['Dec'], lsst.afw.geom.degrees))
         if bbox.contains(fakeCoord):
             fakeXY[int(fakeSrc['ID'])] = (fakeCoord.getX(), fakeCoord.getY())
-        
+
     srcX, srcY = sources.getX(), sources.getY()
     srcIndex = collections.defaultdict(list)
     for fid, fcoord in fakeXY.items():
@@ -116,19 +116,20 @@ def getFakeMatchesRaDec( sources, radecCatFile, bbox, wcs, tol=1.0):
         distY = srcY - fcoord[1]
         matched = (np.abs(distX) < tol) & (np.abs(distY) < tol)
         srcIndex[fid] = np.where(matched)[0]
-    
+
     return fakeXY, srcIndex
 
 
 
 def getFakeSources(butler, dataId, tol=1.0, extraCols=('zeropoint', 'visit', 'ccd'),
-                   includeMissing=False, footprints=False, radecMatch=None):
+                   includeMissing=False, footprints=False, radecMatch=None,
+                   multiband=False):
     """Get list of sources which agree in pixel position with fake ones with tol
-    
+
     this returns a sourceCatalog of all the matched fake objects,
     note, there will be duplicates in this list, since I haven't checked deblend.nchild,
     and I'm only doing a tolerance match, which could include extra sources
-    
+
     the outputs can include extraCols as long as they are one of:
       zeropoint, visit, ccd, thetaNorth, pixelScale
 
@@ -136,37 +137,42 @@ def getFakeSources(butler, dataId, tol=1.0, extraCols=('zeropoint', 'visit', 'cc
     added in the header and includes an entry in the table for sources without
     any measurements, specifically the 'id' column will be 0
 
-    radecMatch is the fakes table. if it's not None(default), then do an ra/dec 
-    match with the input catalog instead of looking in the header for where the 
+    radecMatch is the fakes table. if it's not None(default), then do an ra/dec
+    match with the input catalog instead of looking in the header for where the
     sources where added
     """
-    
-    availExtras = {'zeropoint':{'type':float, 'doc':'zeropoint'}, 
-                   'visit':{'type':int, 'doc':'visit id'}, 
+
+    availExtras = {'zeropoint':{'type':float, 'doc':'zeropoint'},
+                   'visit':{'type':int, 'doc':'visit id'},
                    'ccd':{'type':int, 'doc':'ccd id'},
                    'thetaNorth':{'type':lsst.afw.geom.Angle, 'doc':'angle to north'},
                    'pixelScale':{'type':float, 'doc':'pixelscale in arcsec/pixel'}}
-    
+
     if not np.in1d(extraCols, availExtras.keys()).all():
         print "extraCols must be in ",availExtras
 
     try:
         if not 'filter' in dataId:
-            sources = butler.get('src', dataId, 
+            sources = butler.get('src', dataId,
                                  flags=lsst.afw.table.SOURCE_IO_NO_FOOTPRINTS,
                                  immediate=True)
             cal = butler.get('calexp', dataId, immediate=True)
             cal_md = butler.get('calexp_md', dataId, immediate=True)
         else:
-            sources = butler.get('deepCoadd_src', dataId, 
-                                 flags=lsst.afw.table.SOURCE_IO_NO_FOOTPRINTS,
-                                 immediate=True)
+            if multiband:
+                sources = butler.get('deepCoadd_forced_src', dataId,
+                                     flags=lsst.afw.table.SOURCE_IO_NO_FOOTPRINTS,
+                                     immediate=True)
+            else:
+                sources = butler.get('deepCoadd_src', dataId,
+                                     flags=lsst.afw.table.SOURCE_IO_NO_FOOTPRINTS,
+                                     immediate=True)
             cal = butler.get('deepCoadd', dataId, immediate=True)
             cal_md = butler.get('deepCoadd_md', dataId, immediate=True)
     except (lsst.pex.exceptions.LsstException, RuntimeError) as e:
         print "skipping", dataId
         return None
-        
+
     if ('pixelScale' in extraCols) or ('thetaNorth' in extraCols):
         wcs = cal.getWcs()
         availExtras['pixelScale']['value'] =  wcs.pixelScale().asArcseconds()
@@ -180,13 +186,13 @@ def getFakeSources(butler, dataId, tol=1.0, extraCols=('zeropoint', 'visit', 'cc
     if 'zeropoint' in extraCols:
         availExtras['zeropoint']['value'] = 2.5*np.log10(cal_md.get('FLUXMAG0'))
 
-        
+
     if radecMatch is None:
         fakeXY, srcIndex = getFakeMatchesHeader(cal_md, sources, tol=tol)
     else:
-        fakeXY, srcIndex = getFakeMatchesRaDec(sources, radecMatch, 
+        fakeXY, srcIndex = getFakeMatchesRaDec(sources, radecMatch,
                                                lsst.afw.geom.Box2D(cal.getBBox(lsst.afw.image.PARENT)),
-                                               cal.getWcs(), 
+                                               cal.getWcs(),
                                                tol=tol)
 
     mapper = SchemaMapper(sources.schema)
@@ -201,7 +207,7 @@ def getFakeSources(butler, dataId, tol=1.0, extraCols=('zeropoint', 'visit', 'cc
                            doc=availExtras[extraName]['doc'])
 
     srcList = SourceCatalog(newSchema)
-    srcList.reserve(sum([len(s) for s in srcIndex.values()]) + 
+    srcList.reserve(sum([len(s) for s in srcIndex.values()]) +
                     (0 if not includeMissing else srcIndex.values().count([])))
 
     centroidKey = sources.schema.find('centroid.sdss').getKey()
@@ -214,10 +220,10 @@ def getFakeSources(butler, dataId, tol=1.0, extraCols=('zeropoint', 'visit', 'cc
             newRec = srcList.addNew()
             newRec.assign(sources[ss], mapper)
             newRec.set('fakeId', ident)
-            newRec.set('fakeOffset', 
-                       lsst.afw.geom.Point2D(sources[ss].get(centroidKey).getX() - 
+            newRec.set('fakeOffset',
+                       lsst.afw.geom.Point2D(sources[ss].get(centroidKey).getX() -
                                              fakeXY[ident][0],
-                                             sources[ss].get(centroidKey).getY() - 
+                                             sources[ss].get(centroidKey).getY() -
                                              fakeXY[ident][1]))
 
     if includeMissing:
@@ -234,18 +240,18 @@ def getAstroTable(src, mags=True):
     """
     returns an astropy table with all the src entries
     if the entries are complex objects, it breaks them down:
-      ellipse entries are broken into 
+      ellipse entries are broken into
            ellipse_a = semi-major axis
            ellipse_q = axis ratio (always < 1)
-           ellipse_theta = rotation of semi-major axis from chip x-axis in degrees 
+           ellipse_theta = rotation of semi-major axis from chip x-axis in degrees
     if mags is True, returns the magnitudes for all the flux columns
     """
-    
+
     tab = astropy.table.Table()
     for name in src.schema.getNames():
         #for reasons I don't understand a lookup by name is much slower than a lookup by key
         nameKey = src.schema.find(name).getKey()
-        try: 
+        try:
             tab.add_column(astropy.table.Column(name=name,
                                                 data=src.get(nameKey)))
         except lsst.pex.exceptions.LsstException:
@@ -255,12 +261,12 @@ def getAstroTable(src, mags=True):
                 tab.add_column(astropy.table.Column(name=name+'_q', data=q))
                 tab.add_column(astropy.table.Column(name=name+'_theta', data=theta))
             elif type(src[0].get(nameKey)) is lsst.afw.coord.coordLib.IcrsCoord:
-                x, y= zip(*[(s.get(nameKey).getRa().asDegrees(), 
+                x, y= zip(*[(s.get(nameKey).getRa().asDegrees(),
                              s.get(nameKey).getDec().asDegrees()) for s in src])
                 tab.add_column(astropy.table.Column(name=name+'_ra', data=x))
                 tab.add_column(astropy.table.Column(name=name+'_dec', data=y))
             else:
-                tab.add_column(astropy.table.Column(name=name, 
+                tab.add_column(astropy.table.Column(name=name,
                                                     data=np.array([s.get(nameKey) for s in src])))
             #report angles in degrees
         if isinstance(src[0].get(nameKey), lsst.afw.geom.Angle):
@@ -270,27 +276,28 @@ def getAstroTable(src, mags=True):
                                                 dtype=float, name=name))
 
     if mags:
-        #this is a horrible hack, but I don't think we can use the slots, since 
+        #this is a horrible hack, but I don't think we can use the slots, since
         #not all the fluxes end up in the slots
         for col in tab.colnames:
-            if (re.match('^flux\.[a-z]+$', col) or 
+            if (re.match('^flux\.[a-z]+$', col) or
                 re.match('^flux\.[a-z]+.apcorr$', col) or
-                re.match('^cmodel.+flux$', col) or 
+                re.match('^cmodel.+flux$', col) or
                 re.match('^cmodel.+flux.apcorr$', col)):
-                mag, magerr = getMag(tab[col], tab[col+'.err'], 
+                mag, magerr = getMag(tab[col], tab[col+'.err'],
                                      tab['zeropoint'] if not re.search('apcorr', col) else 0.0)
-            
+
                 tab.add_column(astropy.table.Column(name=re.sub('flux', 'mag', col),
                                                     data=mag))
                 tab.add_column(astropy.table.Column(name=re.sub('flux', 'mag', col+'.err'),
                                                     data=magerr))
-                
+
     return tab
 
 
 
 def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
-                     overwrite=False, filt=None, tol=1.0, pixMatch=False):
+                     overwrite=False, filt=None, tol=1.0, pixMatch=False,
+                     multiband=False):
     """
     driver (main function) for return match to fakes
     INPUT: rootDir = rerun directory
@@ -302,10 +309,11 @@ def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
            overwrite = whether to overwrite the existing output file, default is False
            pixMatch = do pixel matching instead of ra/dec matching even if there is
                      a catalog supplied
-    OUTPUT: returns an astropy.table.Table with all the entries from the source catalog for 
+           multiband = whether match to forced photometry catalogs from multiband process
+    OUTPUT: returns an astropy.table.Table with all the entries from the source catalog for
             objects which match in pixel position to the fake sources
     """
-    
+
     butler = dafPersist.Butler(rootDir)
     slist = None
 
@@ -313,23 +321,23 @@ def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
         if filt is None:
             print 'doing ccd %d'%int(ccd)
             temp = getFakeSources(butler,
-                                  {'visit':visit, 'ccd':int(ccd)}, 
+                                  {'visit':visit, 'ccd':int(ccd)},
                                   includeMissing=True,
-                                  extraCols=('visit', 'ccd', 
-                                             'zeropoint', 'pixelScale', 
-                                             'thetaNorth'), 
-                                  radecMatch=fakeCat if not pixMatch else None, 
+                                  extraCols=('visit', 'ccd',
+                                             'zeropoint', 'pixelScale',
+                                             'thetaNorth'),
+                                  radecMatch=fakeCat if not pixMatch else None,
                                   tol=tol)
         else:
             print 'doing patch %s'%ccd
             temp = getFakeSources(butler,
                                   {'tract':visit, 'patch':ccd,
                                    'filter':filt},
-                                  includeMissing=True, extraCols=('thetaNorth', 
+                                  includeMissing=True, extraCols=('thetaNorth',
                                                                   'pixelScale',
                                                                   'zeropoint'),
-                                  radecMatch=fakeCat if not pixMatch else None, 
-                                  tol=tol)
+                                  radecMatch=fakeCat if not pixMatch else None,
+                                  tol=tol, multiband=multiband)
         if temp is None:
             continue
         if slist is None:
@@ -339,13 +347,13 @@ def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
         del temp
 
     astroTable = getAstroTable(slist, mags=True)
-    
+
     if fakeCat is not None:
         astroTable = matchToFakeCatalog(astroTable, fakeCat)
 
     if outfile is not None:
         try:
-            astroTable.write(outfile+'.fits', 
+            astroTable.write(outfile+'.fits',
                              format='fits',
                              overwrite=overwrite)
         except IOError:
@@ -354,12 +362,12 @@ def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
 
     return astroTable
 
-    
+
 if __name__=='__main__':
         #TODO: this should use the LSST/HSC conventions
     parser = argparse.ArgumentParser()
     parser.add_argument('rootDir', help='root dir of data repo')
-    parser.add_argument('visit', 
+    parser.add_argument('visit',
                         help='id of visit (or tract, if filter is specified)', type=int)
     parser.add_argument('-f', '--filter', dest='filt',
                         help='name of filter, if none assume single visit',
@@ -367,12 +375,15 @@ if __name__=='__main__':
     parser.add_argument('--ccd', nargs='+', help='id of ccd(s) or patches')
     parser.add_argument('-o', help='outputfilename', default=None, dest='outfile')
     parser.add_argument('-c', help='fake catalog', default=None, dest='fakeCat')
-    parser.add_argument('-w', '--overwrite', help='overwrite output file', 
+    parser.add_argument('-w', '--overwrite', help='overwrite output file',
                         dest='ow', default=False, action='store_true')
+    parser.add_argument('-m', '--multiband', help='Match forced photometry catalog',
+                        dest='multiband', default=False, action='store_true')
     parser.add_argument('-t', '--tolerance', type=float, dest='tol', default=1.0,
                         help='matching radius in PIXELS (default=1.0)')
     args = parser.parse_args()
 
-    
+
     returnMatchTable(args.rootDir, args.visit, args.ccd, args.outfile, args.fakeCat,
-                     overwrite=args.ow, filt=args.filt, tol=args.tol)
+                     overwrite=args.ow, filt=args.filt, tol=args.tol,
+                     multiband=args.multiband)
