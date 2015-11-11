@@ -61,7 +61,7 @@ class PositionStarFakesTask(FakeSourcesTask):
             if not bboxI.contains(lsst.afw.geom.Point2I(starXY)):
                 self.log.info("Skipping fake %d"%starident)
                 continue
-            
+
             starImage = psf.computeImage(starXY)
             starImage *= flux
             starBBox = starImage.getBBox(lsst.afw.image.PARENT)
