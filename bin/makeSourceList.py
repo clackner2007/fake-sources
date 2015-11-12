@@ -124,10 +124,6 @@ class MakeFakeInputsTask(pipeBase.CmdLineTask):
         """ Song Huang
         Rename the input ID to modelID; and use the index as ID
         """
-        if ('ID' in outTab.colnames) and (self.config.uniqueID):
-            outTab.rename_column('ID', 'modelID')
-            outTab.add_column(astropy.table.Column(name="ID",
-                data=np.arange(len(outTab))))
         outTab.add_column(astropy.table.Column(name="RA", data=ra))
         outTab.add_column(astropy.table.Column(name="Dec", data=dec))
         if self.config.inputCat is not None:
@@ -138,6 +134,12 @@ class MakeFakeInputsTask(pipeBase.CmdLineTask):
             for colname in mergedData.columns:
                 outTab.add_column(astropy.table.Column(name=colname,
                                                    data=mergedData[colname]))
+
+            if ('ID' in outTab.colnames) and (self.config.uniqueID):
+                print "## Rename the ID column"
+                outTab.rename_column('ID', 'modelID')
+                outTab.add_column(astropy.table.Column(name="ID",
+                    data=np.arange(len(outTab))))
 
             """ Modified by SH; to generate multiBand catalog at the same time"""
             magList = [col for col in galData.colnames if 'mag_' in col]
