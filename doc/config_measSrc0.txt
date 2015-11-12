@@ -1,2 +1,0 @@
-from fakes import detectOnlyFakes
-root.processCoadd.detectCoaddSources.detection.retarget(detectOnlyFakes.OnlyFakesDetectionTask)
