@@ -76,7 +76,7 @@ def getFakeMatchesHeader(cal_md, sources, tol=1.0):
     return fakeXY, srcIndex
 
 
-def getFakeMatchesRaDec( sources, radecCatFile, bbox, wcs, tol=1.0):
+def getFakeMatchesRaDec(sources, radecCatFile, bbox, wcs, tol=1.0):
     """
     Returns the fake matches based on an radec match to the catalog of fake sources inputed.
 
@@ -160,7 +160,7 @@ def getFakeSources(butler, dataId, tol=1.0, extraCols=('zeropoint', 'visit', 'cc
             cal_md = butler.get('calexp_md', dataId, immediate=True)
         else:
             if multiband:
-                sources = butler.get('deepCoadd_forced_src', dataId,
+                sources = butler.get('deepCoadd_meas', dataId,
                                      flags=lsst.afw.table.SOURCE_IO_NO_FOOTPRINTS,
                                      immediate=True)
             else:
@@ -377,7 +377,7 @@ if __name__=='__main__':
     parser.add_argument('-c', help='fake catalog', default=None, dest='fakeCat')
     parser.add_argument('-w', '--overwrite', help='overwrite output file',
                         dest='ow', default=False, action='store_true')
-    parser.add_argument('-m', '--multiband', help='Match forced photometry catalog',
+    parser.add_argument('-m', '--multiband', help='Match multiband measurements',
                         dest='multiband', default=False, action='store_true')
     parser.add_argument('-t', '--tolerance', type=float, dest='tol', default=1.0,
                         help='matching radius in PIXELS (default=1.0)')
