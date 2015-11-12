@@ -40,6 +40,9 @@ class MakeFakeInputsConfig(pexConfig.Config):
     innerTract = pexConfig.Field(doc='only add to the inner Tract region or not',
                               dtype=bool,
                               optional=True, default=False)
+    uniqueID = pexConfig.Field(doc='Use the index as unique ID of the fake object',
+                              dtype=bool,
+                              optional=True, default=True)
 
 class MakeFakeInputsTask(pipeBase.CmdLineTask):
     """a task to make an input catalog of fake sources for a dataId"""
@@ -62,6 +65,7 @@ class MakeFakeInputsTask(pipeBase.CmdLineTask):
         ra1 = ra_vert[-1].asDegrees()
         dec0 = dec_vert[0].asDegrees()
         dec1 = dec_vert[-1].asDegrees()
+
         """
         Added by Song Huang 2016-09-02
         Tracts in the Deep and Wide layers are defined to have overlaps of 1 arcmin
@@ -72,6 +76,7 @@ class MakeFakeInputsTask(pipeBase.CmdLineTask):
             ra1 -= 0.0167
             dec0 += 0.0167
             dec1 -= 0.0167
+
         raArr, decArr = np.array(zip(*makeRaDecCat.getRandomRaDec(nFakes, ra0, ra1,
                                                                   dec0, dec1,
                                                                   rad=self.config.rad)))
@@ -115,6 +120,13 @@ class MakeFakeInputsTask(pipeBase.CmdLineTask):
             ra, dec = raArr, decArr
 
         outTab = astropy.table.Table()
+        """ Song Huang
+        Rename the input ID to modelID; and use the index as ID
+        """
+        if ('ID' in outTab.colnames) and (self.config.uniqueID):
+            outTab.rename_column('ID', 'modelID')
+            outTab.add_column(astropy.table.Column(name="ID",
+                data=np.arange(len(outTab))))
         outTab.add_column(astropy.table.Column(name="RA", data=ra))
         outTab.add_column(astropy.table.Column(name="Dec", data=dec))
         if self.config.inputCat is not None:
