@@ -33,10 +33,10 @@ class MakeFakeInputsConfig(pexConfig.Config):
                                optional=True, default=None)
     acpMask = pexConfig.Field(doc='region to include',
                               dtype=str,
-                              optional=True, default=None)
+                              optional=True, default='')
     rejMask = pexConfig.Field(doc='region to mask out',
                               dtype=str,
-                              optional=True, default=None)
+                              optional=True, default='')
     innerTract = pexConfig.Field(doc='only add to the inner Tract region or not',
                               dtype=bool,
                               optional=True, default=False)
@@ -84,14 +84,14 @@ class MakeFakeInputsTask(pipeBase.CmdLineTask):
         Added by Song Huang 2016-09-01
         Filter the random RA, DEC using two filters
         """
-        if self.config.acpMask is not None or self.config.rejMask is not None:
+        if (self.config.acpMask != '') or (self.config.rejMask != ''):
             try:
                 from shapely import wkb
                 from shapely.geometry import Point
             except ImportError:
                 raise Exception('Please install the Shapely library before using this function')
 
-            if os.path.isfile(self.config.acpMask):
+            if (self.config.acpMask != '') and os.path.isfile(self.config.acpMask):
                 print "## Filter through : %s" % self.config.acpMask
                 acpWkb = open(self.config.acpMask, 'r')
                 acpRegs = wkb.loads(acpWkb.read().decode('hex'))
@@ -101,7 +101,7 @@ class MakeFakeInputsTask(pipeBase.CmdLineTask):
             else:
                 inside = np.isfinite(raArr)
 
-            if os.path.isfile(self.config.rejMask):
+            if (self.config.rejMask != '') and os.path.isfile(self.config.rejMask):
                 print "## Filter through : %s" % self.config.rejMask
                 rejWkb = open(self.config.rejMask, 'r')
                 rejRegs = wkb.loads(rejWkb.read().decode('hex'))
@@ -120,6 +120,7 @@ class MakeFakeInputsTask(pipeBase.CmdLineTask):
             ra, dec = raArr, decArr
 
         outTab = astropy.table.Table()
+
         """ Song Huang
         Rename the input ID to modelID; and use the index as ID
         """
