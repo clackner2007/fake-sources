@@ -13,21 +13,28 @@ import lsst.daf.persistence as dafPersist
 import lsst.afw.geom.ellipses as geomEllip
 from lsst.afw.table import SourceCatalog, SchemaMapper
 
+from distutils.version import StrictVersion
+
 
 def getExpArray(root, tract, patch, filter):
 
     # make a butler and specify your dataId
     butler = dafPersist.Butler(root)
     dataId = {'tract': tract, 'patch':patch, 'filter':filter}
-    dataType = "deepCoadd"
+
+    pipeVersion = dafPersist.eupsVersions.EupsVersions().versions['hscPipe']
+    if StrictVersion(pipeVersion) >= StrictVersion('3.9.0'):
+        dataType = "deepCoadd_calexp"
+    else:
+        dataType = "deepCoadd"
 
     # get the exposure from the butler
     # Ugly work around in case the before and after Reruns are from different hscPipe
     try:
-        exposure = butler.get(dataType, dataId)
-    except Exception:
+        exposure = butler.get(dataType, dataId, immediate=True)
+    except:
         try:
-            exposure = butler.get('deepCoadd', dataId)
+            exposure = butler.get('deepCoadd', dataId, immediate=True)
         except:
             raise
 
@@ -53,7 +60,7 @@ def main(root1, root2, tract, patch, filter, root=""):
 
     # stretch it with arcsinh and make a png with pyplot
     fig, axes = pyplot.subplots(1, 3, sharex=True, sharey=True, figsize=(16.5,5))
-    pyplot.subplots_adjust(left=0.04, bottom=0.03, right=0.99, top=0.97,
+    pyplot.subplots_adjust(left=0.04, bottom=0.04, right=0.99, top=0.95,
                            wspace=0.01, hspace = 0.01)
 
     imgs   = imgBefore, imgAfter, imgDiff
