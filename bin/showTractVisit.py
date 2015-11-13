@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
-import sys, os, re
+import os
+import re
+import sys
+import random
 import argparse
 import matplotlib.pyplot as pyplot
 
@@ -27,15 +30,14 @@ def percent(values, p=0.5):
     interval = max(values) - m
     return m + p*interval
 
-def main(rootDir, tract, visits, ccds=None, showPatch=False):
-
-    butler = dafPersist.Butler(rootDir)
+def main(butler, tract, visits, ccds=None, showPatch=False, singleVisit=False):
 
     ##################
     ###  draw the CCDs
     ras, decs = [], []
     for i_v, visit in enumerate(visits):
         print i_v, visit
+        visitColor = "#%06x" % random.randint(0, 0xFFFFFF)
         ccdList = [camGeom.cast_Ccd(ccd) for ccd in camGeom.cast_Raft(butler.get("camera")[0])]
         for ccd in ccdList:
             bbox = ccd.getAllPixels()
@@ -50,8 +52,11 @@ def main(rootDir, tract, visits, ccds=None, showPatch=False):
                 ra, dec = bboxToRaDec(bbox, wcs)
                 ras += ra
                 decs += dec
-                color = ('r', 'b', 'c', 'g', 'm')[i_v%5]
-                pyplot.fill(ra, dec, fill=True, alpha=0.2, color=color, edgecolor=color)
+                if singleVisit:
+                    color = 'r'
+                else:
+                    color = visitColor
+                pyplot.fill(ra, dec, fill=True, alpha=0.3, color=color, edgecolor=color)
 
     buff = 0.1
     xlim = max(ras)+buff, min(ras)-buff
@@ -67,7 +72,8 @@ def main(rootDir, tract, visits, ccds=None, showPatch=False):
             pyplot.fill(ra, dec, fill=False, edgecolor='k', lw=1, linestyle='dashed')
             if xlim[1] < percent(ra) < xlim[0] and ylim[0] < percent(dec) < ylim[1]:
                         pyplot.text(percent(ra), percent(dec, 0.9), str(patch.getIndex()),
-                                    fontsize=6, horizontalalignment='center', verticalalignment='top')
+                                    fontsize=6, horizontalalignment='center',
+                                    verticalalignment='top')
 
 
     ######################
@@ -78,8 +84,12 @@ def main(rootDir, tract, visits, ccds=None, showPatch=False):
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
     fig = pyplot.gcf()
-    fig.savefig("%s_patches.png"%tract)
 
+    if singleVisit:
+        fig.savefig("%s_patches_%s.png"%(tract,visit))
+    else:
+        fig.savefig("%s_patches.png"%tract)
+    fig.clear()
 
 
 if __name__ == '__main__':
@@ -90,6 +100,8 @@ if __name__ == '__main__':
     parser.add_argument("-c", "--ccds", help="specify CCDs")
     parser.add_argument("-p", "--showPatch", action='store_true', default=False,
                         help="Show the patch boundaries")
+    parser.add_argument("-s", "--singleVisit", action='store_true', default=False,
+                        help="Show one visit at a time")
     args = parser.parse_args()
 
     def idSplit(id):
@@ -106,5 +118,16 @@ if __name__ == '__main__':
                 ids.append(int(r))
         return ids
 
-    main(args.root, args.tract, visits=idSplit(args.visits), ccds=idSplit(args.ccds), showPatch=args.showPatch)
+    visits = idSplit(args.visits)
 
+    butler = dafPersist.Butler(args.root)
+
+    if not args.singleVisit:
+        main(butler, args.tract, visits=idSplit(args.visits),
+                ccds=idSplit(args.ccds), showPatch=args.showPatch,
+                singleVisit=args.singleVisit)
+    else:
+        for vv in visits:
+            main(butler, args.tract, visits=[vv],
+                    ccds=idSplit(args.ccds), showPatch=args.showPatch,
+                    singleVisit=args.singleVisit)
