@@ -6,6 +6,7 @@ import argparse
 import itertools
 import numpy as np
 import lsst.daf.persistence as dafPersist
+from distutils.version import StrictVersion
 
 def tractFindVisits(rerun, tract, filter='HSC-I', patch=None,
         dataDir='/lustre/Subaru/SSP/rerun/'):
@@ -16,12 +17,18 @@ def tractFindVisits(rerun, tract, filter='HSC-I', patch=None,
 
     butler = dafPersist.Butler(os.path.join(dataDir, rerun))
 
+    pipeVersion = dafPersist.eupsVersions.EupsVersions().versions['hscPipe']
+    if StrictVersion(pipeVersion) >= StrictVersion('3.9.0'):
+        coaddData = "deepCoadd_calexp"
+    else:
+        coaddData = "deepCoadd"
+
     if patch is not '':
 
         """
         Only 1 Patch is required
         """
-        coadd = butler.get("deepCoadd", dataId = {"tract":tract,
+        coadd = butler.get(coaddData, dataId = {"tract":tract,
             "patch":patch, "filter":filter}, immediate=True)
         ccdInputs = coadd.getInfo().getCoaddInputs().ccds
         visits = np.unique(ccdInputs.get("visit"))
@@ -37,7 +44,7 @@ def tractFindVisits(rerun, tract, filter='HSC-I', patch=None,
         for pa in itertools.combinations_with_replacement((np.arange(9)+1), 2):
             patch = str(pa[0]) + ',' + str(pa[1])
             try:
-                coadd = butler.get("deepCoadd", dataId = {"tract": tract,
+                coadd = butler.get(coaddData, dataId = {"tract": tract,
                     "patch": patch, "filter": filter}, immediate=True)
             except Exception:
                 continue
