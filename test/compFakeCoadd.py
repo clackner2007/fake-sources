@@ -22,7 +22,14 @@ def getExpArray(root, tract, patch, filter):
     dataType = "deepCoadd"
 
     # get the exposure from the butler
-    exposure = butler.get(dataType, dataId)
+    # Ugly work around in case the before and after Reruns are from different hscPipe
+    try:
+        exposure = butler.get(dataType, dataId)
+    except Exception:
+        try:
+            exposure = butler.get('deepCoadd', dataId)
+        except:
+            raise
 
     # get the maskedImage from the exposure, and the image from the mimg
     mimg = exposure.getMaskedImage()
