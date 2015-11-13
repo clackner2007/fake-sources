@@ -4,16 +4,18 @@ matchFakes.py
 matches fakes based on position stored in the calibrated exposure image header
 """
 
+import re
+import argparse
+import collections
+import numpy as np
+import astropy.table
+from distutils.version import StrictVersion
+
 import lsst.daf.persistence as dafPersist
-from lsst.afw.table import SourceCatalog, SchemaMapper
+import lsst.afw.geom.ellipses
 import lsst.afw.geom
 import lsst.pex.exceptions
-import numpy as np
-import argparse
-import re
-import collections
-import astropy.table
-import lsst.afw.geom.ellipses
+from lsst.afw.table import SourceCatalog, SchemaMapper
 
 def getMag(flux, fluxerr, zeropoint):
     """
@@ -142,6 +144,12 @@ def getFakeSources(butler, dataId, tol=1.0, extraCols=('zeropoint', 'visit', 'cc
     sources where added
     """
 
+    pipeVersion = dafPersist.eupsVersions.EupsVersions().versions['hscPipe']
+    if StrictVersion(pipeVersion) >= StrictVersion('3.9.0'):
+        coaddData = "deepCoadd_calexp"
+    else:
+        coaddData = "deepCoadd"
+
     availExtras = {'zeropoint':{'type':float, 'doc':'zeropoint'},
                    'visit':{'type':int, 'doc':'visit id'},
                    'ccd':{'type':int, 'doc':'ccd id'},
@@ -167,7 +175,7 @@ def getFakeSources(butler, dataId, tol=1.0, extraCols=('zeropoint', 'visit', 'cc
                 sources = butler.get('deepCoadd_src', dataId,
                                      flags=lsst.afw.table.SOURCE_IO_NO_FOOTPRINTS,
                                      immediate=True)
-            cal = butler.get('deepCoadd', dataId, immediate=True)
+            cal = butler.get(coaddData, dataId, immediate=True)
             cal_md = butler.get('deepCoadd_md', dataId, immediate=True)
     except (lsst.pex.exceptions.LsstException, RuntimeError) as e:
         print "skipping", dataId
