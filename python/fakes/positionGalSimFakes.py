@@ -158,10 +158,15 @@ class PositionGalSimFakesTask(FakeSourcesTask):
             md.set("FAKE%s" % str(galident), "%.3f, %.3f" % (galXY.getX(), galXY.getY()))
             self.log.info("Adding fake %s at: %.1f,%.1f"% (str(galident), galXY.getX(), galXY.getY()))
 
+            """
+            Under hscPipe 4.0.0, all the maskbits are used.
+            Need to free a few to add our FAKE mask
+            Try clean the CROSSTALK one at first.
+            by Song Huang
+            """
+            galMaskedImage.getMask().clearMaskPane(10)
             galMaskedImage.getMask().set(self.bitmask)
             subMaskedImage = exposure.getMaskedImage().Factory(exposure.getMaskedImage(),
                                                                galMaskedImage.getBBox(lsst.afw.image.PARENT),
                                                                lsst.afw.image.PARENT)
             subMaskedImage += galMaskedImage
-
-
