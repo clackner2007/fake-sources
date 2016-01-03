@@ -163,10 +163,3 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                                                                galMaskedImage.getBBox(lsst.afw.image.PARENT),
                                                                lsst.afw.image.PARENT)
             subMaskedImage += galMaskedImage
-            """
-            Under hscPipe 4.0.0, all the maskbits are used.
-            Need to free a few to add our FAKE mask
-            Try clean the CROSSTALK one at first.
-            by Song Huang
-            """
-            subMaskedImage.getMask().clearMaskPane(10)

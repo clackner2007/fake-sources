@@ -130,6 +130,10 @@ class addFakesTask(BatchPoolTask):
             ccdId = dataRef.get("ccdExposureId")
             with self.logOperation("processing %s (ccdId=%d)" %(dataId, ccdId)):
                 exposure = dataRef.get('calexp', immediate=True)
+                """ By Song Huang """
+                exposure.getMaskedImage().getMask().removeAndClearMaskPlane('UNMASKEDNAN')
+                exposure.getMaskedImage().getMask().removeAndClearMaskPlane('CROSSTALK')
+                """"""
                 self.fakes.run(exposure,None)
                 dataRef.put(exposure,"calexp")
             return 0
@@ -143,4 +147,3 @@ class addFakesTask(BatchPoolTask):
                     pass
             self.log.warn("Can not find data for CCD %s (ccdId=%d)" %(dataId, ccdId))
             return None
-
