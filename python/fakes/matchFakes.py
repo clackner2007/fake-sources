@@ -229,32 +229,31 @@ def getFakeSources(butler, dataId, tol=1.0,
     if not np.in1d(extraCols, availExtras.keys()).all():
         print "extraCols must be in ", availExtras
 
-    #try:
-    if 'filter' not in dataId:
-        sources = butler.get('src', dataId,
-                             flags=lsst.afw.table.SOURCE_IO_NO_FOOTPRINTS,
-                             immediate=True)
-        cal = butler.get('calexp', dataId, immediate=True)
-        cal_md = butler.get('calexp_md', dataId, immediate=True)
-    else:
-        if multiband:
-            meas = butler.get('deepCoadd_meas', dataId,
-                              flags=NO_FOOTPRINT,
-                              immediate=True)
-            force = butler.get('deepCoadd_forced_src', dataId,
-                                flags=NO_FOOTPRINT,
-                                immediate=True)
-            sources = combineWithForce(meas, force)
-        else:
-            sources = butler.get('deepCoadd_src', dataId,
-                                 flags=NO_FOOTPRINT,
+    try:
+        if 'filter' not in dataId:
+            sources = butler.get('src', dataId,
+                                 flags=lsst.afw.table.SOURCE_IO_NO_FOOTPRINTS,
                                  immediate=True)
-        cal = butler.get(coaddData, dataId, immediate=True)
-        cal_md = butler.get(coaddMeta, dataId, immediate=True)
-
-    #except (lsst.pex.exceptions.LsstException, RuntimeError):
-        #print "skipping", dataId
-        #return None
+            cal = butler.get('calexp', dataId, immediate=True)
+            cal_md = butler.get('calexp_md', dataId, immediate=True)
+        else:
+            if multiband:
+                meas = butler.get('deepCoadd_meas', dataId,
+                                  flags=NO_FOOTPRINT,
+                                  immediate=True)
+                force = butler.get('deepCoadd_forced_src', dataId,
+                                    flags=NO_FOOTPRINT,
+                                    immediate=True)
+                sources = combineWithForce(meas, force)
+            else:
+                sources = butler.get('deepCoadd_src', dataId,
+                                     flags=NO_FOOTPRINT,
+                                     immediate=True)
+            cal = butler.get(coaddData, dataId, immediate=True)
+            cal_md = butler.get(coaddMeta, dataId, immediate=True)
+    except (lsst.pex.exceptions.LsstException, RuntimeError):
+        print "skipping", dataId
+        return None
 
     if ('pixelScale' in extraCols) or ('thetaNorth' in extraCols):
         wcs = cal.getWcs()
@@ -436,7 +435,7 @@ def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
                                   radecMatch=fakeCat if not pixMatch else None,
                                   tol=tol)
         else:
-            print 'doing patch %s' % ccd
+            print 'Doing patch %s' % ccd
             temp = getFakeSources(butler,
                                   {'tract': visit, 'patch': ccd,
                                    'filter': filt},
