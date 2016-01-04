@@ -225,7 +225,7 @@ def getFakeSources(butler, dataId, tol=1.0,
                 forced = butler.get('deepCoadd_forced_src', dataId,
                                     flags=NO_FOOTPRINT,
                                     immediate=True)
-                sources = combineWithForce(meas, force):
+                sources = combineWithForce(meas, force)
             else:
                 sources = butler.get('deepCoadd_src', dataId,
                                      flags=NO_FOOTPRINT,
