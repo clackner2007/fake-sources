@@ -147,8 +147,10 @@ def getFakeSources(butler, dataId, tol=1.0, extraCols=('zeropoint', 'visit', 'cc
     pipeVersion = dafPersist.eupsVersions.EupsVersions().versions['hscPipe']
     if StrictVersion(pipeVersion) >= StrictVersion('3.9.0'):
         coaddData = "deepCoadd_calexp"
+        coaddMeta = "deepCoadd_calexp_md"
     else:
         coaddData = "deepCoadd"
+        coaddMeta = "deepCoadd_md"
 
     availExtras = {'zeropoint':{'type':float, 'doc':'zeropoint'},
                    'visit':{'type':int, 'doc':'visit id'},
@@ -171,12 +173,16 @@ def getFakeSources(butler, dataId, tol=1.0, extraCols=('zeropoint', 'visit', 'cc
                 sources = butler.get('deepCoadd_meas', dataId,
                                      flags=lsst.afw.table.SOURCE_IO_NO_FOOTPRINTS,
                                      immediate=True)
+                forced = butler.get('deepCoadd_forced_src', dataId,
+                                    flags=lsst.afw.table.SOURCE_IO_NO_FOOTPRINTS,
+                                    immediate=True)
             else:
                 sources = butler.get('deepCoadd_src', dataId,
                                      flags=lsst.afw.table.SOURCE_IO_NO_FOOTPRINTS,
                                      immediate=True)
             cal = butler.get(coaddData, dataId, immediate=True)
-            cal_md = butler.get('deepCoadd_md', dataId, immediate=True)
+            cal_md = butler.get(coaddMeta, dataId, immediate=True)
+
     except (lsst.pex.exceptions.LsstException, RuntimeError) as e:
         print "skipping", dataId
         return None
@@ -194,10 +200,10 @@ def getFakeSources(butler, dataId, tol=1.0, extraCols=('zeropoint', 'visit', 'cc
     if 'zeropoint' in extraCols:
         availExtras['zeropoint']['value'] = 2.5*np.log10(cal_md.get('FLUXMAG0'))
 
-
     if radecMatch is None:
         fakeXY, srcIndex = getFakeMatchesHeader(cal_md, sources, tol=tol)
     else:
+        print "Using RA, DEC match !"
         fakeXY, srcIndex = getFakeMatchesRaDec(sources, radecMatch,
                                                lsst.afw.geom.Box2D(cal.getBBox(lsst.afw.image.PARENT)),
                                                cal.getWcs(),
@@ -242,7 +248,6 @@ def getFakeSources(butler, dataId, tol=1.0, extraCols=('zeropoint', 'visit', 'cc
         tempCol.fill(availExtras[extraName]['value'])
 
     return srcList
-
 
 def getAstroTable(src, mags=True):
     """
@@ -301,8 +306,6 @@ def getAstroTable(src, mags=True):
 
     return tab
 
-
-
 def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
                      overwrite=False, filt=None, tol=1.0, pixMatch=False,
                      multiband=False):
@@ -316,7 +319,7 @@ def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
                      extracted from the header of the CCDs based on position but no matching is done
            overwrite = whether to overwrite the existing output file, default is False
            pixMatch = do pixel matching instead of ra/dec matching even if there is
-                     a catalog supplied
+                      a catalog supplied
            multiband = whether match to forced photometry catalogs from multiband process
     OUTPUT: returns an astropy.table.Table with all the entries from the source catalog for
             objects which match in pixel position to the fake sources
@@ -347,14 +350,23 @@ def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
                                   radecMatch=fakeCat if not pixMatch else None,
                                   tol=tol, multiband=multiband)
         if temp is None:
+            print '   No match returns!'
             continue
+        else:
+            print '   Number of fakes : %d' % len(temp)
+
         if slist is None:
+            print '   Fisrt temp file'
             slist = temp.copy(True)
         else:
+            print '   Extend slist'
             slist.extend(temp, True)
         del temp
 
-    astroTable = getAstroTable(slist, mags=True)
+    if slist is None:
+        raise Exception("Slist is None !")
+    else:
+        astroTable = getAstroTable(slist, mags=True)
 
     if fakeCat is not None:
         astroTable = matchToFakeCatalog(astroTable, fakeCat)
@@ -390,7 +402,6 @@ if __name__=='__main__':
     parser.add_argument('-t', '--tolerance', type=float, dest='tol', default=1.0,
                         help='matching radius in PIXELS (default=1.0)')
     args = parser.parse_args()
-
 
     returnMatchTable(args.rootDir, args.visit, args.ccd, args.outfile, args.fakeCat,
                      overwrite=args.ow, filt=args.filt, tol=args.tol,
