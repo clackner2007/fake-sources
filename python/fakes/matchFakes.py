@@ -219,12 +219,13 @@ def getFakeSources(butler, dataId, tol=1.0,
             cal_md = butler.get('calexp_md', dataId, immediate=True)
         else:
             if multiband:
-                sources = butler.get('deepCoadd_meas', dataId,
-                                     flags=NO_FOOTPRINT,
-                                     immediate=True)
+                meas = butler.get('deepCoadd_meas', dataId,
+                                  flags=NO_FOOTPRINT,
+                                  immediate=True)
                 forced = butler.get('deepCoadd_forced_src', dataId,
                                     flags=NO_FOOTPRINT,
                                     immediate=True)
+                sources = combineWithForce(meas, force):
             else:
                 sources = butler.get('deepCoadd_src', dataId,
                                      flags=NO_FOOTPRINT,
