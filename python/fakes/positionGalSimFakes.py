@@ -41,6 +41,11 @@ class PositionGalSimFakesTask(FakeSourcesTask):
 
     def run(self, exposure, background):
 
+        """ Song Huang """
+        #self.log.info("Removing unused mask plane")
+        #exposure.getMaskedImage().getMask().removeMaskPlane('CROSSTALK')
+        """ """
+
         self.log.info("Adding fake galaxies at real positions")
         psf = exposure.getPsf()
         md = exposure.getMetadata()
@@ -161,9 +166,3 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                                                                galMaskedImage.getBBox(lsst.afw.image.PARENT),
                                                                lsst.afw.image.PARENT)
             subMaskedImage += galMaskedImage
-
-            """ Song Huang """
-            self.log.info("Removing unused mask plane")
-            subMaskedImage.getMask().removeAndClearMaskPlane('CROSSTALK')
-            #exposure.getMaskedImage().getMask().removeAndClearMaskPlane('CROSSTALK')
-            """ """

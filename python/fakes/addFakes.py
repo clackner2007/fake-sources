@@ -131,10 +131,15 @@ class addFakesTask(BatchPoolTask):
             with self.logOperation("processing %s (ccdId=%d)" %(dataId, ccdId)):
                 exposure = dataRef.get('calexp', immediate=True)
                 self.fakes.run(exposure, None)
-                #""" Song Huang """
-                #self.log.info("Removing unused mask plane")
-                #exposure.getMaskedImage().getMask().removeAndClearMaskPlane('CROSSTALK')
-                #""" """
+
+                """ Song Huang """
+                self.log.info("Removing unused mask plane")
+                exposure.getMaskedImage().getMask().removeAndClearMaskPlane('CROSSTALK',
+                        True)
+                exposure.getMaskedImage().getMask().removeAndClearMaskPlane('UNMASKEDNAN',
+                        True)
+                """ """
+
                 dataRef.put(exposure, "calexp")
             return 0
         except Exception, errMsg:
