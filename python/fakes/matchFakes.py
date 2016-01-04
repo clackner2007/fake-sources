@@ -23,11 +23,12 @@ NO_FOOTPRINT = lsst.afw.table.SOURCE_IO_NO_FOOTPRINTS
 
 def combineWithForce(meas, force):
     """Combine the meas and forced_src catalogs."""
+    if len(meas) != len(force):
+        raise Exception("# Meas and Forced_src catalogs should have the same size!")
     mapper = SchemaMapper(meas.schema)
     mapper.addMinimalSchema(meas.schema)
     newSchema = mapper.getOutputSchema()
     # Add new fields
-    newSchema.addField('countInputs', type=int)
     newSchema.addField('force.deblend.nchild', type=int)
     newSchema.addField('force.classification.extendedness', type=float)
     newSchema.addField('force.flux.kron', type=float)
@@ -52,12 +53,30 @@ def combineWithForce(meas, force):
     newSchema.addField('force.cmodel.dev.flux.apcorr', type=float)
     newSchema.addField('force.cmodel.dev.flux.apcorr.err', type=float)
 
+    newCols = ['deblend.nchild', 'classification.extendedness',
+               'flux.kron', 'flux.kron.err',
+               'flux.psf', 'flux.psf.err',
+               'flux.kron.apcorr', 'flux.kron.apcorr.err',
+               'flux.psf.apcorr', 'flux.psf.apcorr.err',
+               'cmodel.flux', 'cmodel.flux.err',
+               'cmodel.flux', 'cmodel.flux.err',
+               'cmodel.flux.apcorr', 'cmodel.flux.apcorr.err',
+               'cmodel.exp.flux', 'cmodel.exp.flux.err',
+               'cmodel.exp.flux.apcorr', 'cmodel.exp.flux.apcorr.err',
+               'cmodel.dev.flux', 'cmodel.dev.flux.err',
+               'cmodel.dev.flux.apcorr', 'cmodel.dev.flux.apcorr.err',
+               'cmodel.fracDev']
     combSrc = SourceCatalog(newSchema)
     combSrc.extend(meas, mapper=mapper)
 
-    for ii, ss in enumerate(meas):
-        combSrc[ii]['countInputs'] = force[ii]['countInputs']
-        combSrc[ii]['force.cmodel.flux'] = force[ii]['cmodel.flux']
+    for key in newCols:
+        combSrc['force.' + key][:] = force[key][:]
+
+    for name in ("Centroid", "Shape"):
+        val = getattr(meas.table, "get" + name + "Key")()
+        err = getattr(meas.table, "get" + name + "ErrKey")()
+        flag = getattr(meas.table, "get" + name + "FlagKey")()
+        getattr(combSrc.table, "define" + name)(val, err, flag)
 
     return combSrc
 
@@ -210,32 +229,32 @@ def getFakeSources(butler, dataId, tol=1.0,
     if not np.in1d(extraCols, availExtras.keys()).all():
         print "extraCols must be in ", availExtras
 
-    try:
-        if 'filter' not in dataId:
-            sources = butler.get('src', dataId,
-                                 flags=lsst.afw.table.SOURCE_IO_NO_FOOTPRINTS,
-                                 immediate=True)
-            cal = butler.get('calexp', dataId, immediate=True)
-            cal_md = butler.get('calexp_md', dataId, immediate=True)
+    #try:
+    if 'filter' not in dataId:
+        sources = butler.get('src', dataId,
+                             flags=lsst.afw.table.SOURCE_IO_NO_FOOTPRINTS,
+                             immediate=True)
+        cal = butler.get('calexp', dataId, immediate=True)
+        cal_md = butler.get('calexp_md', dataId, immediate=True)
+    else:
+        if multiband:
+            meas = butler.get('deepCoadd_meas', dataId,
+                              flags=NO_FOOTPRINT,
+                              immediate=True)
+            force = butler.get('deepCoadd_forced_src', dataId,
+                                flags=NO_FOOTPRINT,
+                                immediate=True)
+            sources = combineWithForce(meas, force)
         else:
-            if multiband:
-                meas = butler.get('deepCoadd_meas', dataId,
-                                  flags=NO_FOOTPRINT,
-                                  immediate=True)
-                force = butler.get('deepCoadd_forced_src', dataId,
-                                    flags=NO_FOOTPRINT,
-                                    immediate=True)
-                sources = combineWithForce(meas, force)
-            else:
-                sources = butler.get('deepCoadd_src', dataId,
-                                     flags=NO_FOOTPRINT,
-                                     immediate=True)
-            cal = butler.get(coaddData, dataId, immediate=True)
-            cal_md = butler.get(coaddMeta, dataId, immediate=True)
+            sources = butler.get('deepCoadd_src', dataId,
+                                 flags=NO_FOOTPRINT,
+                                 immediate=True)
+        cal = butler.get(coaddData, dataId, immediate=True)
+        cal_md = butler.get(coaddMeta, dataId, immediate=True)
 
-    except (lsst.pex.exceptions.LsstException, RuntimeError):
-        print "skipping", dataId
-        return None
+    #except (lsst.pex.exceptions.LsstException, RuntimeError):
+        #print "skipping", dataId
+        #return None
 
     if ('pixelScale' in extraCols) or ('thetaNorth' in extraCols):
         wcs = cal.getWcs()
