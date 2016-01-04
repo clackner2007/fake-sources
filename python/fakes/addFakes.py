@@ -1,6 +1,7 @@
 import os
 import sys
 import math
+import copy
 import fcntl
 import collections
 
@@ -120,7 +121,6 @@ class addFakesTask(BatchPoolTask):
         if (dataId["ccd"] in self.config.ignoreCcdList) or (dataId['ccd'] > 103):
             self.log.warn("Ignoring %s: CCD in ignoreCcdList" % (dataId,))
             return None
-
         """
         Try to deal with missing CCDs gracefully
         Song Huang
@@ -130,14 +130,14 @@ class addFakesTask(BatchPoolTask):
             ccdId = dataRef.get("ccdExposureId")
             with self.logOperation("processing %s (ccdId=%d)" %(dataId, ccdId)):
                 exposure = dataRef.get('calexp', immediate=True)
-                """ By Song Huang """
-                exposure.getMaskedImage().getMask().removeAndClearMaskPlane('UNMASKEDNAN')
-                exposure.getMaskedImage().getMask().removeAndClearMaskPlane('CROSSTALK')
-                """"""
-                self.fakes.run(exposure,None)
-                dataRef.put(exposure,"calexp")
+                self.fakes.run(exposure, None)
+                #""" Song Huang """
+                #self.log.info("Removing unused mask plane")
+                #exposure.getMaskedImage().getMask().removeAndClearMaskPlane('CROSSTALK')
+                #""" """
+                dataRef.put(exposure, "calexp")
             return 0
-        except Exception:
+        except Exception, errMsg:
             with open(self.missingLog, "a") as mlog:
                 try:
                     fcntl.flock(mlog, fcntl.LOCK_EX)
@@ -145,5 +145,6 @@ class addFakesTask(BatchPoolTask):
                     fcntl.flock(mlog, fcntl.LOCK_UN)
                 except IOError:
                     pass
-            self.log.warn("Can not find data for CCD %s (ccdId=%d)" %(dataId, ccdId))
+            self.log.warn(str(errMsg))
+            self.log.warn("Something is wrong for CCD %s (ccdId=%d)" %(dataId, ccdId))
             return None

@@ -39,7 +39,6 @@ class PositionGalSimFakesTask(FakeSourcesTask):
         self.npRand = np.random.RandomState(self.config.seed)
         self.galData = fits.open(self.config.galList)[1].data
 
-
     def run(self, exposure, background):
 
         self.log.info("Adding fake galaxies at real positions")
@@ -153,7 +152,6 @@ class PositionGalSimFakesTask(FakeSourcesTask):
 
             galMaskedImage = fsl.addNoise(galImage, exposure.getDetector(),
                                           rand_gen=self.npRand)
-
             # Put information of the added fake galaxies into the header
             md.set("FAKE%s" % str(galident), "%.3f, %.3f" % (galXY.getX(), galXY.getY()))
             self.log.info("Adding fake %s at: %.1f,%.1f"% (str(galident), galXY.getX(), galXY.getY()))
@@ -163,3 +161,9 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                                                                galMaskedImage.getBBox(lsst.afw.image.PARENT),
                                                                lsst.afw.image.PARENT)
             subMaskedImage += galMaskedImage
+
+            """ Song Huang """
+            self.log.info("Removing unused mask plane")
+            subMaskedImage.getMask().removeAndClearMaskPlane('CROSSTALK')
+            #exposure.getMaskedImage().getMask().removeAndClearMaskPlane('CROSSTALK')
+            """ """
