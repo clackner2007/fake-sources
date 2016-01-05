@@ -155,7 +155,7 @@ class addFakesTask(BatchPoolTask):
                 exposure.getMaskedImage().getMask().removeAndClearMaskPlane('UNMASKEDNAN',
                         True)
                 """ DR_S16A added BRIGHT_OBJECT mask, try removing CR too"""
-                exposure.getMaskedImage().getMask().removeAndClearMaskPlane('CR',
+                exposure.getMaskedImage().getMask().removeAndClearMaskPlane('NO_DATA',
                         True)
                 dataRef.put(exposure, "calexp")
             return 0
