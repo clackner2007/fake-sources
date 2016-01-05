@@ -183,6 +183,48 @@
     ```
         - See: `dr16a_8767_patches_HSC-R.png`
 
+### Generate the "Accept" masks for these two Tracts: 
+
+    * **This is an optional step, and involves using code outside the fakePipe.**
+      Please contact Song Huang if you want to generate these for your data.
+
+    * Under `/lustre/Subaru/SSP/rerun/song/fake/dr_s16a`
+        - Using `HSC-I` band as reference
+        - `batchShapeComb.sh` and `dr16a_wide_fakeTest.lis`
+        - Command: 
+            ``` bash 
+            ./batchShapeComb.sh dr16a_wide_fakeTest.lis
+            ```
+        - Results saved in `8766/shape` and `8767/shape`
+        - The two accept masks are:
+            1. `dr16a_wide_8766_HSC-I_shape_all.wkb`
+            2. `dr16a_wide_8767_HSC-I_shape_all.wkb`
+
+    * For these two Tracts, no Patch is missing, so the TractShape is very simple: 
+        1. `dr16a_wide_8766_HSC-I_shape_all.png`
+        2. `dr16a_wide_8767_HSC-I_shape_all.png`
+
+### Generate the "Accept" masks for these two Tracts: 
+
+    * **This is an optional step, and involves using code outside the fakePipe.**
+      Please contact Song Huang if you want to generate these for your data.
+
+    * Right now, the `BRIGHT_OBJECT` mask can be also combined
+
+    * Under `/lustre/Subaru/SSP/rerun/song/fake/dr_s16a`
+        - Using `HSC-I` band as reference
+        - `batchNoData.sh` and `dr16a_wide_fakeTest.lis`
+        - Command: 
+            ``` bash 
+            ./batchNoData.sh dr16a_wide_fakeTest.lis
+            ```
+        - Results saved in `8766/nodata` and `8767/nodata`
+        - The mask files are: 
+            1. `dr16a_wide_8766_HSC-I_nodata_big.wkb`
+            2. `dr16a_wide_8766_HSC-I_shape_all.wkb`
+
+
+
 ----
 
 ## fakePipe Test: 
@@ -211,3 +253,9 @@
     # Setup the fakePipe
     setup -v -r /home/song/work/fakes 
     ```
+
+----- 
+
+## runAddFake.py
+
+    * Add fake galaxies to single visits.
