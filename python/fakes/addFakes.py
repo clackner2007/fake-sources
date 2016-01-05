@@ -1,7 +1,8 @@
+#!/usr/bin/env python
+# encoding: utf-8
+
 import os
-import sys
 import math
-import copy
 import fcntl
 import collections
 
@@ -9,8 +10,8 @@ import lsst.pex.config
 import lsst.afw.cameraGeom as afwCg
 import hsc.pipe.base.butler as hscButler
 
-from lsst.pipe.base import Struct, ArgumentParser
-from hsc.pipe.base.pool import abortOnError, NODE, Pool, Debugger
+from lsst.pipe.base import ArgumentParser
+from hsc.pipe.base.pool import abortOnError, Pool, Debugger
 from hsc.pipe.base.parallel import BatchPoolTask
 
 from lsst.pipe.tasks.fakes import DummyFakeSourcesTask
@@ -18,24 +19,31 @@ from lsst.pipe.tasks.fakes import DummyFakeSourcesTask
 """
 DummyFakeSourcesTask:
 
-A stand-in for FakeSourcesTask that doesn't do anything, to be used as the default
-(to disable fake injection) anywhere FakeSourcesTask could be used.
+A stand-in for FakeSourcesTask that doesn't do anything, to be used
+as the default (to disable fake injection) anywhere FakeSourcesTask
+could be used.
 """
 
 Debugger().enabled = True
 
+
 class addFakesConfig(lsst.pex.config.Config):
+    """Configs of the addFakeTask."""
+
     fakes = lsst.pex.config.ConfigurableField(
-        target = DummyFakeSourcesTask,
-        doc = "Injection of fake sources into processed visits (retarget to enable)"
+        target=DummyFakeSourcesTask,
+        doc="Injection of fake sources to processed visits (retarget to enable)"
     )
     ignoreCcdList = lsst.pex.config.ListField(dtype=int, default=[],
-                                             doc="List of CCDs to ignore when processing")
+                                              doc="List of CCDs to ignore")
+
 
 class addFakesTask(BatchPoolTask):
+    """
+    Add fakes to entire exposure at once.
 
-    """Add fakes to entire exposure at once"""
-
+    Parameters:
+    """
     RunnerClass = hscButler.ButlerTaskRunner
     ConfigClass = addFakesConfig
     _DefaultName = "AddFakes"
@@ -49,13 +57,17 @@ class addFakesTask(BatchPoolTask):
     # mess with persisted configs and version info
     def _getConfigName(self):
         return None
+
     def _getEupsVersionsName(self):
         return None
+
     def _getMetadataName(self):
         return None
 
     def __init__(self, *args, **kwargs):
-        """Constructor
+        """
+        Constructor.
+
         calls BatchPoolTask construtor, and setups up fakes subTask
         """
         super(addFakesTask, self).__init__(*args, **kwargs)
@@ -64,7 +76,8 @@ class addFakesTask(BatchPoolTask):
     @classmethod
     def batchWallTime(cls, time, parsedCmd, numNodes, numProcs):
         """
-        over-ridden method that gives the requested wall time for the method
+        Over-ridden method that gives the requested wall time for the method.
+
         Probably not necessary here as this task is fast
         """
         numCcds = sum(1 for raft in parsedCmd.butler.get("camera")
@@ -76,7 +89,8 @@ class addFakesTask(BatchPoolTask):
     @classmethod
     def _makeArgumentParser(cls, *args, **kwargs):
         """
-        makes the argument parser.
+        Make the argument parser.
+
         this task won't work for tracts/patches as it's currently written
         """
         doBatch = kwargs.pop("doBatch", False)
@@ -88,14 +102,13 @@ class addFakesTask(BatchPoolTask):
     @abortOnError
     def run(self, expRef, butler):
         """
-        sets up the pool and scatters the processing of the individual CCDs,
+        Set up the pool and scatters the processing of the individual CCDs.
 
-        in processCcd, apparently all nodes (master and slaves) run this
+        In processCcd, apparently all nodes (master and slaves) run this
         method, but I don't really get that
 
         on the gather, we just check that any of the sources ran
         """
-
         pool = Pool(self._DefaultName)
         pool.cacheClear()
         pool.storeSet(butler=butler)
@@ -107,18 +120,20 @@ class addFakesTask(BatchPoolTask):
 
         # Scatter: process CCDs independently
         outList = pool.map(self.process, dataIdList.values())
-        numGood = sum(1 for s in outList if s==0)
+        numGood = sum(1 for s in outList if s == 0)
         if numGood == 0:
             self.log.warn("All CCDs in exposure failed")
             return
 
     def process(self, cache, dataId):
         """
-        add fakes to individual CCDs
-        return None if we are skipping the CCD
+        Add fakes to individual CCDs.
+
+        Return None if we are skipping the CCD
         """
         cache.result = None
-        if (dataId["ccd"] in self.config.ignoreCcdList) or (dataId['ccd'] > 103):
+        ignoreCcdList = self.config.ignoreCcdList
+        if (dataId["ccd"] in ignoreCcdList) or (dataId['ccd'] > 103):
             self.log.warn("Ignoring %s: CCD in ignoreCcdList" % (dataId,))
             return None
         """
@@ -128,28 +143,31 @@ class addFakesTask(BatchPoolTask):
         try:
             dataRef = hscButler.getDataRef(cache.butler, dataId)
             ccdId = dataRef.get("ccdExposureId")
-            with self.logOperation("processing %s (ccdId=%d)" %(dataId, ccdId)):
+            with self.logOperation("processing %s (ccdId=%d)" % (dataId,
+                                                                 ccdId)):
                 exposure = dataRef.get('calexp', immediate=True)
                 self.fakes.run(exposure, None)
 
-                """ Song Huang """
+                """ Remove unused mask plane CROSSTALK and UNMASKEDNAN """
                 self.log.info("Removing unused mask plane")
                 exposure.getMaskedImage().getMask().removeAndClearMaskPlane('CROSSTALK',
                         True)
                 exposure.getMaskedImage().getMask().removeAndClearMaskPlane('UNMASKEDNAN',
                         True)
-                """ """
-
+                """ DR_S16A added BRIGHT_OBJECT mask, try removing CR too"""
+                exposure.getMaskedImage().getMask().removeAndClearMaskPlane('CR',
+                        True)
                 dataRef.put(exposure, "calexp")
             return 0
         except Exception, errMsg:
             with open(self.missingLog, "a") as mlog:
                 try:
                     fcntl.flock(mlog, fcntl.LOCK_EX)
-                    mlog.write("%s  ,  %d\n"%(dataId, ccdId))
+                    mlog.write("%s  ,  %d\n" % (dataId, ccdId))
                     fcntl.flock(mlog, fcntl.LOCK_UN)
                 except IOError:
                     pass
             self.log.warn(str(errMsg))
-            self.log.warn("Something is wrong for CCD %s (ccdId=%d)" %(dataId, ccdId))
+            self.log.warn("Something is wrong for CCD %s (ccdId=%d)" % (dataId,
+                                                                        ccdId))
             return None
