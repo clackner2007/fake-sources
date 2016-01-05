@@ -179,7 +179,7 @@
 
     - HSC-R band
     ``` bash 
-    showTractVisit.py /lustre/Subaru/SSP/rerun/DR_S16A 8767 9844^9848^9856^9860^9870^9872^9884^9900^9902^9904^9906^9912^9914^11564^11572^11576^11584^11590^11598^11600^42460^42464^42468^42500^42514^42516^42536^42538 -p 
+    showTractVisit.py /lustre/Subaru/SSP/rerun/DR_S16A 8767 11430^11434^11446^11450^11470^11478^11480^11500^11508^11534^11536^41068^41072^41076^41108^41122^41124^41144^41146 -p 
     ```
         - See: `dr16a_8767_patches_HSC-R.png`
 
@@ -209,7 +209,9 @@
     * **This is an optional step, and involves using code outside the fakePipe.**
       Please contact Song Huang if you want to generate these for your data.
 
-    * Right now, the `BRIGHT_OBJECT` mask can be also combined
+    * Right now, the `BRIGHT_OBJECT` mask can be also combined; 
+      But it is better to use the flag in the output catalog to exclude objects 
+      contaminated by the bright stars. 
 
     * Under `/lustre/Subaru/SSP/rerun/song/fake/dr_s16a`
         - Using `HSC-I` band as reference
@@ -222,14 +224,125 @@
         - The mask files are: 
             1. `dr16a_wide_8766_HSC-I_nodata_big.wkb`
             2. `dr16a_wide_8766_HSC-I_shape_all.wkb`
+            3. `dr16a_wide_8767_HSC-I_nodata_big.wkb`
+            4. `dr16a_wide_8767_HSC-I_shape_all.wkb`
 
+    * The visualizations of these masks are available here: 
+        1. `dr16a_wide_8766_HSC-I_nodata_big.png`
+        2. `dr16a_wide_8766_HSC-I_shape_all.png`
+        3. `dr16a_wide_8767_HSC-I_nodata_big.png`
+        4. `dr16a_wide_8767_HSC-I_shape_all.png`
+    * **There is an extremely bright star that affect many Patches in Tract 8766**
 
+---- 
+
+## Generate Input Catalogs:
+
+### For full catalog
+
+#### Tract: 8766
+
+    * Configuration:
+        - Input: `cosmos_25.2_multiband.fits`
+        - acpMask: `dr16a_wide_8766_HSC-I_shape_all.wkb`
+        - rejMask: `dr16a_wide_8766_HSC-I_nodata_all.wkb`
+        - Only add to innerTract, and rename the ID column 
+        - Outputs: rename to `full_8766_radec_G/R/I/Z/Y.fits`
+
+    * Command:
+    ``` bash
+    makeSourceList.py /lustre/Subaru/SSP \
+         --rerun=DR_S16A \
+         --id tract=8766 filter='HSC-I' patch='4,4' \
+         -c inputCat='../cosmos_25.2_multiband.fits' \
+         acpMask='dr16a_wide_8766_HSC-I_shape_all.wkb' \
+         rejMask='dr16a_wide_8766_HSC-I_nodata_all.wkb' \
+         rhoFakes=450 innerTract=True uniqueID=True
+    ``` 
+
+    * Results: 
+        - **36119** galaxies are left in the catalog.
+        - The RA,Dec distribution of the fake sources is: `full_8766_radec_I.png` 
+
+#### Tract: 8767
+
+    * Configuration:
+        - Input: `cosmos_25.2_multiband.fits`
+        - acpMask: `dr16a_wide_8767_HSC-I_shape_all.wkb`
+        - rejMask: `dr16a_wide_8767_HSC-I_nodata_all.wkb`
+        - Only add to innerTract, and rename the ID column 
+        - Outputs: rename to `full_8767_radec_G/R/I/Z/Y.fits`
+
+    * Command:
+    ``` bash
+    makeSourceList.py /lustre/Subaru/SSP \
+         --rerun=DR_S16A \
+         --id tract=8767 filter='HSC-I' patch='4,4' \
+         -c inputCat='../cosmos_25.2_multiband.fits' \
+         acpMask='dr16a_wide_8767_HSC-I_shape_all.wkb' \
+         rejMask='dr16a_wide_8767_HSC-I_nodata_all.wkb' \
+         rhoFakes=450 innerTract=True uniqueID=True
+    ``` 
+
+    * Results: 
+        - **36237** galaxies are left in the catalog.
+        - The RA,Dec distribution of the fake sources is: `full_8767_radec_I.png` 
+
+### For bright galaxies: 
+
+#### Tract: 8766
+
+    * Configuration:
+        - Input: `cosmos_21.5_multiband.fits`
+        - acpMask: `dr16a_wide_8766_HSC-I_shape_all.wkb`
+        - rejMask: `dr16a_wide_8766_HSC-I_nodata_big.wkb`
+        - Only add to innerTract, and rename the ID column 
+        - Outputs: rename to `bright_8766_radec_G/R/I/Z/Y.fits`
+
+    * Command:
+    ``` bash
+    makeSourceList.py /lustre/Subaru/SSP \
+         --rerun=DR_S16A \
+         --id tract=8766 filter='HSC-I' patch='4,4' \
+         -c inputCat='../cosmos_21.5_multiband.fits' \
+         acpMask='dr16a_wide_8766_HSC-I_shape_all.wkb' \
+         rejMask='dr16a_wide_8766_HSC-I_nodata_big.wkb' \
+         rhoFakes=300 innerTract=True uniqueID=True
+    ``` 
+
+    * Results: 
+        - **24081** galaxies are left in the catalog.
+        - The RA,Dec distribution of the fake sources is: `bright_8766_radec_I.png`
+
+#### Tract: 8767
+
+    * Configuration:
+        - Input: `cosmos_21.5_multiband.fits`
+        - acpMask: `dr16a_wide_8767_HSC-I_shape_all.wkb`
+        - rejMask: `dr16a_wide_8767_HSC-I_nodata_big.wkb`
+        - Only add to innerTract, and rename the ID column 
+        - Outputs: rename to `bright_8766_radec_G/R/I/Z/Y.fits`
+
+    * Command:
+    ``` bash
+    makeSourceList.py /lustre/Subaru/SSP \
+         --rerun=DR_S16A \
+         --id tract=8767 filter='HSC-I' patch='4,4' \
+         -c inputCat='../cosmos_21.5_multiband.fits' \
+         acpMask='dr16a_wide_8767_HSC-I_shape_all.wkb' \
+         rejMask='dr16a_wide_8767_HSC-I_nodata_big.wkb' \
+         rhoFakes=300 innerTract=True uniqueID=True
+    ``` 
+
+    * Results: 
+        - **24177** galaxies are left in the catalog.
+        - The RA,Dec distribution of the fake sources is: `bright_8767_radec_I.png`
 
 ----
 
 ## fakePipe Test: 
 
-## Setup the environment: 
+### Setup the environment: 
 
     * Commands: 
         - One should adjust the directory according to their installation.
@@ -256,6 +369,92 @@
 
 ----- 
 
-## runAddFake.py
+### runAddFake.py
 
     * Add fake galaxies to single visits.
+    * Under: `/lustre/Subaru/SSP/rerun/song/fake/dr_s16a/`
+
+#### Tract=8766; Full catalog: `full_8766`
+
+##### HSC-I: `add_i` 
+
+    * Config file: `addfake_8766_i_full.config` 
+
+    * Command: `42746.master` 
+    ``` bash
+    runAddFakes.py /lustre/Subaru/SSP/ \
+        --rerun DR_S16A:song/fake/full_8766 \
+        --id visit="7288^7300^7304^7310^7318^7322^7338^7340^7344^7346^7352^7356^7358^7372^7384^7386^7408^19396^19400^19414^19416^19454^19456^19466^19468^19470^19482^19484" \
+        --clobber-config -C addfake_8766_i_full.config \
+        --queue small --job add_i_8766_full --nodes 9 --procs 12
+    ```
+
+##### HSC-G: `add_g` 
+
+    * Config file: `addfake_8766_g_full.config` 
+
+    * Command: `42748.master` 
+    ``` bash
+    runAddFakes.py /lustre/Subaru/SSP/ \
+        --rerun DR_S16A:song/fake/full_8766 \
+        --id visit="9840^9852^9856^9862^9868^9870^9882^9886^9888^9898^9900^9912^9918^11568^11572^11578^11582^11586^11588^11596^11598^11640^42456^42460^42512^42514^42534^42536" \
+        --clobber-config -C addfake_8766_g_full.config \
+        --queue small --job add_g_8766_full --nodes 9 --procs 12
+    ```
+
+##### HSC-R: `add_r` 
+
+    * Config file: `addfake_8766_r_full.config` 
+
+    * Command: `42750.master` 
+    ``` bash
+    runAddFakes.py /lustre/Subaru/SSP/ \
+        --rerun DR_S16A:song/fake/full_8766 \
+        --id visit="11426^11442^11446^11468^11474^11476^11478^11498^11504^11506^11532^11534^41064^41068^41120^41122^41142^41144" \
+        --clobber-config -C addfake_8766_r_full.config \
+        --queue small --job add_r_8766_full --nodes 9 --procs 12
+    ```
+
+
+#### Tract-8767; Bright galaxies: `bright_8766`
+
+##### HSC-I: `add_i` 
+
+    * Config file: `addfake_8767_i_bright.config` 
+
+    * Command: `42747.master` 
+    ``` bash
+    runAddFakes.py /lustre/Subaru/SSP/ \
+        --rerun DR_S16A:song/fake/full_8767 \
+        --id visit="7292^7296^7304^7308^7312^7318^7320^7322^7340^7342^7346^7348^7354^7358^7360^7374^7386^7388^19400^19404^19416^19418^19456^19470^19484^19486" \
+        --clobber-config -C addfake_8767_i_bright.config \
+        --queue small --job add_i_8767_bright --nodes 9 --procs 12
+    ```
+
+##### HSC-G: `add_g` 
+
+    * Config file: `addfake_8767_g_bright.config` 
+
+    * Command: `42749.master` 
+    ``` bash
+    runAddFakes.py /lustre/Subaru/SSP/ \
+        --rerun DR_S16A:song/fake/full_8767 \
+        --id visit="9844^9848^9856^9860^9870^9872^9884^9900^9902^9904^9906^9912^9914^11564^11572^11576^11584^11590^11598^11600^42460^42464^42468^42500^42514^42516^42536^42538" \
+        --clobber-config -C addfake_8767_g_bright.config \
+        --queue small --job add_g_8767_bright --nodes 9 --procs 12
+    ```
+
+##### HSC-R: `add_r` 
+
+    * Config file: `addfake_8767_r_bright.config` 
+
+    * Command: `42751.master` 
+    ``` bash
+    runAddFakes.py /lustre/Subaru/SSP/ \
+        --rerun DR_S16A:song/fake/full_8767 \
+        --id visit="11430^11434^11446^11450^11470^11478^11480^11500^11508^11534^11536^41068^41072^41076^41108^41122^41124^41144^41146" \
+        --clobber-config -C addfake_8767_r_bright.config \
+        --queue small --job add_r_8767_bright --nodes 9 --procs 12
+    ```
+
+----- 
