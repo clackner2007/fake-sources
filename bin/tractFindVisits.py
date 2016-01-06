@@ -41,7 +41,7 @@ def tractFindVisits(rerun, tract, filter='HSC-I', patch=None,
         """
 
         visits = np.empty([0], dtype=int)
-        for pa in itertools.combinations_with_replacement((np.arange(9)+1), 2):
+        for pa in itertools.combinations_with_replacement((np.arange(9)), 2):
             patch = str(pa[0]) + ',' + str(pa[1])
             try:
                 coadd = butler.get(coaddData, dataId = {"tract": tract,
@@ -50,8 +50,19 @@ def tractFindVisits(rerun, tract, filter='HSC-I', patch=None,
                 continue
             ccdInputs = coadd.getInfo().getCoaddInputs().ccds
             vTemp = np.unique(ccdInputs.get("visit"))
-
             visits = np.unique(np.append(visits, vTemp))
+
+        for pa in itertools.combinations_with_replacement((np.arange(9)), 2):
+            patch = str(pa[1]) + ',' + str(pa[0])
+            try:
+                coadd = butler.get(coaddData, dataId = {"tract": tract,
+                    "patch": patch, "filter": filter}, immediate=True)
+            except Exception:
+                continue
+            ccdInputs = coadd.getInfo().getCoaddInputs().ccds
+            vTemp = np.unique(ccdInputs.get("visit"))
+            visits = np.unique(np.append(visits, vTemp))
+
         print "\n# Input visits for Tract=%d Filter=%s\n" % (tract, filter)
 
     line = ''
