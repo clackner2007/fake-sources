@@ -330,6 +330,28 @@
         - **24177** galaxies are left in the catalog.
         - The RA,Dec distribution of the fake sources is: `bright_8767_radec_I.png`
 
+
+### For highly blended objects: 
+
+    * Replace the RA, DEC of available fake object catalog with RA, DEC of 
+      real galaxies in the same Tract, and then add small shifts in both 
+      RA and DEC direction.  Uisng `makeBlendedCat.py`
+        - The shift is randomly drawn from a normal distribution.
+
+    * Do this test only to Tract=8767 
+        - The real galaxy catalog is from Hiranao's shape catalog: `8767.fits`
+        - Only include galaxies with `cmodel_mag <= 23.9` -> `8767_cmodel_24.0.fits`
+        - The mean Re of fake galaxies is around 0.3 arcsec, so let mu=0.6, sigma=0.6
+
+    * Command: 
+        ``` bash 
+        python makeBlendedCat.py full_8767_radec_I.fits 8767_cmodel_24.0.fits
+        ```
+        - Output: `full_8767_radec_I_highb.fits` -- **36237** objects
+        - Copy to `full_8767_radec_R_highb.fits`
+        - Manually adjust the magnitude for `full_8767_radec_G_highb.fits`
+
+
 ----
 
 ## fakePipe Test: 
@@ -374,7 +396,7 @@
 
     * Config file: `addfake_8766_i_full.config` 
 
-    * Command: `42756.master` 
+    * Command: `42764.master` 
     ``` bash
     runAddFakes.py /lustre/Subaru/SSP/ \
         --rerun DR_S16A:song/fake/full_8766 \
@@ -382,7 +404,7 @@
         --clobber-config -C addfake_8766_i_full.config \
         --queue small --job add_i_8766_full --nodes 9 --procs 12
     ```
-        - Finished
+        - Running ...
 
     * Visually check the results: 
     ``` bash 
@@ -396,7 +418,7 @@
 
     * Config file: `addfake_8766_g_full.config` 
 
-    * Command: `42757.master` 
+    * Command: `42765.master` 
     ``` bash
     runAddFakes.py /lustre/Subaru/SSP/ \
         --rerun DR_S16A:song/fake/full_8766 \
@@ -404,7 +426,7 @@
         --clobber-config -C addfake_8766_g_full.config \
         --queue small --job add_g_8766_full --nodes 9 --procs 12
     ```
-        - Finished
+        - Running...
 
     * Visually check the results: 
     ``` bash 
@@ -416,7 +438,7 @@
 
     * Config file: `addfake_8766_r_full.config` 
 
-    * Command: `42758.master` 
+    * Command: `42766.master` 
     ``` bash
     runAddFakes.py /lustre/Subaru/SSP/ \
         --rerun DR_S16A:song/fake/full_8766 \
@@ -424,7 +446,7 @@
         --clobber-config -C addfake_8766_r_full.config \
         --queue small --job add_r_8766_full --nodes 9 --procs 12
     ```
-        - Finished
+        - Running ...
 
     * Visually check the results: 
     ``` bash 
@@ -441,7 +463,7 @@
 
 ##### HSC-I band: 
 
-    * Command: `42762.master`
+    * Command: `42770.master`
     ``` bash 
     stack.py /lustre/Subaru/SSP --rerun=song/fake/full_8766 \
         --job=stack_i_8766_full --queue small --nodes 9 --procs 12 \
@@ -472,10 +494,11 @@
         ``` bash
         python compFakeCoadd.py DR_S16A song/fake/full_8766 8766 6,6 HSC-I
         ```
+            - See: `full_8766-8766-6,6-HSC-I.png`
 
 ##### HSC-G band: 
 
-    * Command: `42761.master`
+    * Command: `42771.master`
     ``` bash 
     stack.py /lustre/Subaru/SSP --rerun=song/fake/full_8766 \
         --job=stack_g_8766_full --queue small --nodes 9 --procs 12 \
@@ -492,17 +515,17 @@
     * Visually check the results: 
         - Show in DS9, check the Cyan box for FAKE mask plane:
         ``` bash
-        python showInDs9.py /lustre/Subaru/SSP/rerun/song/fake/full_8766 8766 6,6 --filter HSC-G
+        python showInDs9.py /lustre/Subaru/SSP/rerun/song/fake/full_8766 8766 6,4 --filter HSC-G
         ```
 
     * Generate a before-after comparison plot: 
         ``` bash
-        python compFakeCoadd.py DR_S16A song/fake/full_8766 8766 6,6 HSC-G
+        python compFakeCoadd.py DR_S16A song/fake/full_8766 8766 6,4 HSC-G
         ```
 
 ##### HSC-R band: 
 
-    * Command: `42763.master`
+    * Command: `42772.master`
     ``` bash 
     stack.py /lustre/Subaru/SSP --rerun=song/fake/full_8766 \
         --job=stack_r_8766_full --queue small --nodes 9 --procs 12 \
@@ -520,15 +543,26 @@
 
 #### multiband.py 
 
-    * Command
+    * Config file: `multi.config` under `multiband`
+    ``` Python
+    root.measureCoaddSources.propagateFlags.flags={}
+    root.clobberMergedDetections = True
+    root.clobberMeasurements = True
+    root.clobberMergedMeasurements = True
+    root.clobberForcedPhotometry = True 
+    ```
+        - Right now, the `detectFakeOnly` option is still not available,
+          so the process will try to measure everything, including the real galaxies. 
 
+    * Command: `42773.master`
     ``` bash
     multiBand.py /lustre/Subaru/SSP --rerun=song/fake/full_8766 \
         --job=multi_8766_full --queue small --nodes 9 --procs 12 \
-        --time=1000000 --batch-type=pbs --mpiexec="-bind-to socket" 
-        --id tract=8766 filter=HSC-I^HSC-R^HSC-G
+        --time=1000000 --batch-type=pbs --mpiexec="-bind-to socket" \
+        --id tract=8766 filter=HSC-I^HSC-R^HSC-G --clobber-config -C multi.config
     ```
 
+##########################################################################################
 
 -----
 
