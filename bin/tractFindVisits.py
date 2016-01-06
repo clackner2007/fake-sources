@@ -41,7 +41,7 @@ def tractFindVisits(rerun, tract, filter='HSC-I', patch=None,
         """
 
         visits = np.empty([0], dtype=int)
-        for pa in itertools.combinations_with_replacement((np.arange(9)+1), 2):
+        for pa in itertools.combinations_with_replacement((np.arange(10)), 2):
             patch = str(pa[0]) + ',' + str(pa[1])
             try:
                 coadd = butler.get(coaddData, dataId = {"tract": tract,
