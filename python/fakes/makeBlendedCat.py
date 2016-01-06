@@ -12,10 +12,8 @@ import numpy as np
 from astropy.table import Table, Column
 
 
-def disturbRaDec(val, mu=1.0, sigma=1.0):
+def disturbRaDec(num, mu=1.0, sigma=1.0):
     """Disturb the coordinate a little bit."""
-    num = len(val)
-
     return (np.random.normal(mu, sigma, num) / 3600.0)
 
 
@@ -44,13 +42,13 @@ def makeBlendedCat(fakeCat, realCat, raCol='ra', decCol='dec',
     indices = random.sample(range(nReal), nFake)
 
     # Replace the RA, DEC with a small shift
-    fakeTab.add_column(Column(realTab[indices][raCol]), name='RA_ori')
-    fakeTab.add_column(Column(realTab[indices][decCol]), name='Dec_ori')
+    fakeTab.add_column(Column(realTab[indices][raCol], name='RA_ori'))
+    fakeTab.add_column(Column(realTab[indices][decCol], name='Dec_ori'))
 
-    fakeTab['RA'] = (realTab[indices][raCol] + disturbRaDec(realTab[raCol],
+    fakeTab['RA'] = (realTab[indices][raCol] + disturbRaDec(nFake,
                                                             mu=mu,
                                                             sigma=sigma))
-    fakeTab['Dec'] = (realTab[indices][decCol] + disturbRaDec(realTab[raCol],
+    fakeTab['Dec'] = (realTab[indices][decCol] + disturbRaDec(nFake,
                                                               mu=mu,
                                                               sigma=sigma))
 
