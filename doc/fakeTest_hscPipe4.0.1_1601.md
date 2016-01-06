@@ -80,24 +80,16 @@
 
     ```
     # Input visits for Tract=8766 Filter=HSC-I
-        # Input CCDs includes 28 Visits: 
-    7288^7300^7304^7310^7318^7322^7338^7340^7344^7346^7352^7356^7358^7372^7384^7386^7408^19396^19400^19414^19416^19454^19456^19466^19468^19470^19482^19484 
+        # Input CCDs includes 37 Visits:
+7288^7292^7300^7304^7310^7318^7322^7338^7340^7344^7346^7350^7352^7356^7358^7360^7370^7372^7384^7386^7392^7394^7396^7408^7416^19396^19400^19404^19414^19416^19454^19456^19466^19468^19470^19482^19484 
 
     # Input visits for Tract=8766 Filter=HSC-G
-        # Input CCDs includes 28 Visits:
-9840^9852^9856^9862^9868^9870^9882^9886^9888^9898^9900^9912^9918^11568^11572^11578^11582^11586^11588^11596^11598^11640^42456^42460^42512^42514^42534^42536
+        # Input CCDs includes 37 Visits:
+9840^9844^9852^9856^9862^9868^9870^9880^9882^9886^9888^9898^9900^9904^9912^9916^9918^11568^11572^11578^11582^11586^11588^11590^11596^11598^11620^11638^11640^11674^42456^42460^42464^42512^42514^42534^42536
 
     # Input visits for Tract=8766 Filter=HSC-R
-        # Input CCDs includes 18 Visits:
-11426^11442^11446^11468^11474^11476^11478^11498^11504^11506^11532^11534^41064^41068^41120^41122^41142^41144
-
-    # Input visits for Tract=8766 Filter=HSC-Z
-        # Input CCDs includes 28 Visits:
-9696^9708^9712^9718^9724^9726^9730^9732^9736^9738^9744^9748^9750^9762^9772^9774^13288^17672^17676^17692^17694^17722^17724^17736^17738^17740^17750^17752
-
-    # Input visits for Tract=8766 Filter=HSC-Y
-        # Input CCDs includes 17 Visits
-6466^6478^6482^6490^6496^6498^6522^6524^6528^6530^6538^6542^6544^6566^13152^13154^13198
+        # Input CCDs includes 25 Visits:
+11422^11426^11430^11442^11446^11466^11468^11474^11476^11478^11496^11498^11504^11506^11508^11530^11532^11534^41064^41068^41072^41120^41122^41142^41144
     ```
 
 ### Show Visits
@@ -106,21 +98,24 @@
 
     - HSC-I band
     ``` bash 
-    showTractVisit.py /lustre/Subaru/SSP/rerun/DR_S16A 8766  7288^7300^7304^7310^7318^7322^7338^7340^7344^7346^7352^7356^7358^7372^7384^7386^7408^19396^19400^19414^19416^19454^19456^19466^19468^19470^19482^19484 -p 
+    showTractVisit.py /lustre/Subaru/SSP/rerun/DR_S16A 8766  7288^7292^7300^7304^7310^7318^7322^7338^7340^7344^7346^7350^7352^7356^7358^7360^7370^7372^7384^7386^7392^7394^7396^7408^7416^19396^19400^19404^19414^19416^19454^19456^19466^19468^19470^19482^19484 -p 
     ```
         - See: `dr16a_8766_patches_HSC-I.png`
 
     - HSC-G band
     ``` bash 
-    showTractVisit.py /lustre/Subaru/SSP/rerun/DR_S16A 8766  9840^9852^9856^9862^9868^9870^9882^9886^9888^9898^9900^9912^9918^11568^11572^11578^11582^11586^11588^11596^11598^11640^42456^42460^42512^42514^42534^42536 -p 
+    showTractVisit.py /lustre/Subaru/SSP/rerun/DR_S16A 8766  9840^9844^9852^9856^9862^9868^9870^9880^9882^9886^9888^9898^9900^9904^9912^9916^9918^11568^11572^11578^11582^11586^11588^11590^11596^11598^11620^11638^11640^11674^42456^42460^42464^42512^42514^42534^42536 -p 
     ```
         - See: `dr16a_8766_patches_HSC-G.png`
 
     - HSC-R band
     ``` bash 
-    showTractVisit.py /lustre/Subaru/SSP/rerun/DR_S16A 8766  11426^11442^11446^11468^11474^11476^11478^11498^11504^11506^11532^11534^41064^41068^41120^41122^41142^41144 -p 
+    showTractVisit.py /lustre/Subaru/SSP/rerun/DR_S16A 8766  11422^11426^11430^11442^11446^11466^11468^11474^11476^11478^11496^11498^11504^11506^11508^11530^11532^11534^41064^41068^41072^41120^41122^41142^41144 -p 
     ```
         - See: `dr16a_8766_patches_HSC-R.png`
+
+    * Also do `showTractVisit.py` again with the `-s` option;
+        - And save the figure for each visit under the `visits` folder
 
 
 ### Wide: Tract:8767 
@@ -141,24 +136,16 @@
 
     ```
     # Input visits for Tract=8767 Filter=HSC-I
-        # Input CCDs includes 26 Visits
-7292^7296^7304^7308^7312^7318^7320^7322^7340^7342^7346^7348^7354^7358^7360^7374^7386^7388^19400^19404^19416^19418^19456^19470^19484^19486
+        # Input CCDs includes 32 Visits
+7288^7292^7296^7304^7308^7310^7312^7318^7320^7322^7338^7340^7342^7346^7348^7352^7354^7358^7360^7372^7374^7384^7386^7388^19400^19404^19416^19418^19456^19470^19484^19486
 
     # Input visits for Tract=8767 Filter=HSC-G
-        # Input CCDs includes 28 Visits
-9844^9848^9856^9860^9870^9872^9884^9900^9902^9904^9906^9912^9914^11564^11572^11576^11584^11590^11598^11600^42460^42464^42468^42500^42514^42516^42536^42538
+        # Input CCDs includes 38 Visits
+9840^9844^9848^9856^9860^9862^9866^9870^9872^9882^9884^9888^9900^9902^9904^9906^9912^9914^9918^11564^11572^11576^11578^11580^11584^11588^11590^11598^11600^42460^42464^42468^42500^42514^42516^42536^42538^42540
 
     # Input visits for Tract=8767 Filter=HSC-R
-        # Input CCDs includes 19 Visits
-11430^11434^11446^11450^11470^11478^11480^11500^11508^11534^11536^41068^41072^41076^41108^41122^41124^41144^41146
-
-    # Input visits for Tract=8767 Filter=HSC-Z
-        # Input CCDs includes 29 Visits
-9700^9704^9712^9716^9720^9724^9726^9728^9732^9734^9738^9740^9746^9750^9752^9764^9774^9776^17676^17680^17694^17696^17724^17740^17752^17754^44638^44670^44680
-
-    # Input visits for Tract=8767 Filter=HSC-Y
-        # Input CCDs includes 20 Visits
-6470^6474^6482^6486^6492^6496^6498^6500^6524^6526^6530^6532^6540^6544^6546^6568^13154^13156^44074^44084
+        # Input CCDs includes 25 Visits
+11426^11430^11434^11446^11450^11468^11470^11472^11478^11480^11498^11500^11506^11508^11534^11536^41068^41072^41076^41108^41122^41124^41144^41146^41148
     ```
 
 ### Show Visits
@@ -167,21 +154,26 @@
 
     - HSC-I band
     ``` bash 
-    showTractVisit.py /lustre/Subaru/SSP/rerun/DR_S16A 8767 7292^7296^7304^7308^7312^7318^7320^7322^7340^7342^7346^7348^7354^7358^7360^7374^7386^7388^19400^19404^19416^19418^19456^19470^19484^19486 -p 
+    showTractVisit.py /lustre/Subaru/SSP/rerun/DR_S16A 8767 7288^7292^7296^7304^7308^7310^7312^7318^7320^7322^7338^7340^7342^7346^7348^7352^7354^7358^7360^7372^7374^7384^7386^7388^19400^19404^19416^19418^19456^19470^19484^19486 -p 
     ```
         - See: `dr16a_8767_patches_HSC-I.png`
 
     - HSC-G band
     ``` bash 
-    showTractVisit.py /lustre/Subaru/SSP/rerun/DR_S16A 8767 9844^9848^9856^9860^9870^9872^9884^9900^9902^9904^9906^9912^9914^11564^11572^11576^11584^11590^11598^11600^42460^42464^42468^42500^42514^42516^42536^42538 -p 
+    showTractVisit.py /lustre/Subaru/SSP/rerun/DR_S16A 8767 9840^9844^9848^9856^9860^9862^9866^9870^9872^9882^9884^9888^9900^9902^9904^9906^9912^9914^9918^11564^11572^11576^11578^11580^11584^11588^11590^11598^11600^42460^42464^42468^42500^42514^42516^42536^42538^42540 -p 
     ```
         - See: `dr16a_8767_patches_HSC-G.png`
 
     - HSC-R band
     ``` bash 
-    showTractVisit.py /lustre/Subaru/SSP/rerun/DR_S16A 8767 11430^11434^11446^11450^11470^11478^11480^11500^11508^11534^11536^41068^41072^41076^41108^41122^41124^41144^41146 -p 
+    showTractVisit.py /lustre/Subaru/SSP/rerun/DR_S16A 8767 11426^11430^11434^11446^11450^11468^11470^11472^11478^11480^11498^11500^11506^11508^11534^11536^41068^41072^41076^41108^41122^41124^41144^41146^41148 -p 
     ```
         - See: `dr16a_8767_patches_HSC-R.png`
+
+    * Also do `showTractVisit.py` again with the `-s` option;
+        - And save the figure for each visit under the `visits` folder
+
+-----
 
 ### Generate the "Accept" masks for these two Tracts: 
 
@@ -369,77 +361,209 @@
 
 ----- 
 
-### runAddFake.py
+### 1. Tract=8766; Full catalog: `full_8766`
+
+##########################################################################################
+
+#### runAddFake.py
 
     * Add fake galaxies to single visits.
     * Under: `/lustre/Subaru/SSP/rerun/song/fake/dr_s16a/`
-
-#### Tract=8766; Full catalog: `full_8766`
 
 ##### HSC-I: `add_i` 
 
     * Config file: `addfake_8766_i_full.config` 
 
-    * Command: `42746.master` 
+    * Command: `42756.master` 
     ``` bash
     runAddFakes.py /lustre/Subaru/SSP/ \
         --rerun DR_S16A:song/fake/full_8766 \
-        --id visit="7288^7300^7304^7310^7318^7322^7338^7340^7344^7346^7352^7356^7358^7372^7384^7386^7408^19396^19400^19414^19416^19454^19456^19466^19468^19470^19482^19484" \
+        --id visit="7288^7292^7300^7304^7310^7318^7322^7338^7340^7344^7346^7350^7352^7356^7358^7360^7370^7372^7384^7386^7392^7394^7396^7408^7416^19396^19400^19404^19414^19416^19454^19456^19466^19468^19470^19482^19484" \
         --clobber-config -C addfake_8766_i_full.config \
         --queue small --job add_i_8766_full --nodes 9 --procs 12
     ```
+        - Finished
+
+    * Visually check the results: 
+    ``` bash 
+    python compFakeGalaxy.py DR_S16A song/fake/full_8766 7300 40
+    python compFakeGalaxy.py DR_S16A song/fake/full_8766 7322 50
+    ```
+        - `full_8766-7300-40.png`
+        - `full_8766-7322-40.png`
 
 ##### HSC-G: `add_g` 
 
     * Config file: `addfake_8766_g_full.config` 
 
-    * Command: `42748.master` 
+    * Command: `42757.master` 
     ``` bash
     runAddFakes.py /lustre/Subaru/SSP/ \
         --rerun DR_S16A:song/fake/full_8766 \
-        --id visit="9840^9852^9856^9862^9868^9870^9882^9886^9888^9898^9900^9912^9918^11568^11572^11578^11582^11586^11588^11596^11598^11640^42456^42460^42512^42514^42534^42536" \
+        --id visit="9840^9844^9852^9856^9862^9868^9870^9880^9882^9886^9888^9898^9900^9904^9912^9916^9918^11568^11572^11578^11582^11586^11588^11590^11596^11598^11620^11638^11640^11674^42456^42460^42464^42512^42514^42534^42536" \
         --clobber-config -C addfake_8766_g_full.config \
         --queue small --job add_g_8766_full --nodes 9 --procs 12
     ```
+        - Finished
+
+    * Visually check the results: 
+    ``` bash 
+    python compFakeGalaxy.py DR_S16A song/fake/full_8766 9852 50
+    ```
+        - `full_8766-9852-50.png`
 
 ##### HSC-R: `add_r` 
 
     * Config file: `addfake_8766_r_full.config` 
 
-    * Command: `42750.master` 
+    * Command: `42758.master` 
     ``` bash
     runAddFakes.py /lustre/Subaru/SSP/ \
         --rerun DR_S16A:song/fake/full_8766 \
-        --id visit="11426^11442^11446^11468^11474^11476^11478^11498^11504^11506^11532^11534^41064^41068^41120^41122^41142^41144" \
+        --id visit="11422^11426^11430^11442^11446^11466^11468^11474^11476^11478^11496^11498^11504^11506^11508^11530^11532^11534^41064^41068^41072^41120^41122^41142^41144" \
         --clobber-config -C addfake_8766_r_full.config \
         --queue small --job add_r_8766_full --nodes 9 --procs 12
     ```
+        - Finished
+
+    * Visually check the results: 
+    ``` bash 
+    python compFakeGalaxy.py DR_S16A song/fake/full_8766 11442 50
+    ```
+        - `full_8766-11442-50.png`
+
+##########################################################################################
+
+#### stack.py
+
+    * Generate coadd images.
+    * Under: `/lustre/Subaru/SSP/rerun/song/fake/dr_s16a/`
+
+##### HSC-I band: 
+
+    * Command: `42762.master`
+    ``` bash 
+    stack.py /lustre/Subaru/SSP --rerun=song/fake/full_8766 \
+        --job=stack_i_8766_full --queue small --nodes 9 --procs 12 \
+        --batch-type=pbs --mpiexec='-bind-to socket' --clobber-config \
+        --config makeCoaddTempExp.doOverwrite=True doOverwriteCoadd=True \
+        --id tract=08766 filter=HSC-I --selectId ccd=0..8^10..103 visit=7288^7292^7300^7304^7310^7318^7322^7338^7340^7344^7346^7350^7352^7356^7358^7360^7370^7372^7384^7386^7392^7394^7396^7408^7416^19396^19400^19404^19414^19416^19454^19456^19466^19468^19470^19482^19484
+    ```
+
+    * Warnings: 
+    ``` bash 
+    2016-01-06T04:07:23:  WARNING: No data found for dataId=OrderedDict([('ccd', 24), ('visit', 19396)])
+    2016-01-06T04:07:25:  WARNING: No data found for dataId=OrderedDict([('ccd', 58), ('visit', 19482)])
+    2016-01-06T04:07:25:  WARNING: No data found for dataId=OrderedDict([('ccd', 63), ('visit', 19466)])
+    2016-01-06T04:07:25:  WARNING: No data found for dataId=OrderedDict([('ccd', 67), ('visit', 7344)])
+    2016-01-06T04:07:25:  WARNING: No data found for dataId=OrderedDict([('ccd', 69), ('visit', 19468)])
+    2016-01-06T04:07:26:  WARNING: No data found for dataId=OrderedDict([('ccd', 84), ('visit', 7408)])
+    2016-01-06T04:07:27:  WARNING: No data found for dataId=OrderedDict([('ccd', 96), ('visit', 7356)])
+    ```
+
+    * Visually check the results: 
+        - Show in DS9, check the Cyan box for FAKE mask plane:
+        ``` bash
+        python showInDs9.py /lustre/Subaru/SSP/rerun/song/fake/full_8766 8766 6,6 --filter HSC-I
+        ```
+        - See: `fake_on_coadd_example.png`
+
+    * Generate a before-after comparison plot: 
+        ``` bash
+        python compFakeCoadd.py DR_S16A song/fake/full_8766 8766 6,6 HSC-I
+        ```
+
+##### HSC-G band: 
+
+    * Command: `42761.master`
+    ``` bash 
+    stack.py /lustre/Subaru/SSP --rerun=song/fake/full_8766 \
+        --job=stack_g_8766_full --queue small --nodes 9 --procs 12 \
+        --batch-type=pbs --mpiexec='-bind-to socket' --clobber-config \
+        --config makeCoaddTempExp.doOverwrite=True doOverwriteCoadd=True \
+        --id tract=08766 filter=HSC-G --selectId ccd=0..8^10..103 visit=9840^9844^9852^9856^9862^9868^9870^9880^9882^9886^9888^9898^9900^9904^9912^9916^9918^11568^11572^11578^11582^11586^11588^11590^11596^11598^11620^11638^11640^11674^42456^42460^42464^42512^42514^42534^42536
+    ```
+
+    * Warnings: 
+    ``` bash 
+    2016-01-06T04:02:27:  WARNING: No data found for dataId=OrderedDict([('ccd', 103), ('visit', 11582)])
+    ```
+
+    * Visually check the results: 
+        - Show in DS9, check the Cyan box for FAKE mask plane:
+        ``` bash
+        python showInDs9.py /lustre/Subaru/SSP/rerun/song/fake/full_8766 8766 6,6 --filter HSC-G
+        ```
+
+    * Generate a before-after comparison plot: 
+        ``` bash
+        python compFakeCoadd.py DR_S16A song/fake/full_8766 8766 6,6 HSC-G
+        ```
+
+##### HSC-R band: 
+
+    * Command: `42763.master`
+    ``` bash 
+    stack.py /lustre/Subaru/SSP --rerun=song/fake/full_8766 \
+        --job=stack_r_8766_full --queue small --nodes 9 --procs 12 \
+        --batch-type=pbs --mpiexec='-bind-to socket' --clobber-config \
+        --config makeCoaddTempExp.doOverwrite=True doOverwriteCoadd=True \
+        --id tract=08766 filter=HSC-R --selectId ccd=0..8^10..103 visit=11422^11426^11430^11442^11446^11466^11468^11474^11476^11478^11496^11498^11504^11506^11508^11530^11532^11534^41064^41068^41072^41120^41122^41142^41144
+    ```
+
+    * Generate a before-after comparison plot: 
+        ``` bash
+        python compFakeCoadd.py DR_S16A song/fake/full_8766 8766 6,6 HSC-R
+        ```
+
+##########################################################################################
+
+#### multiband.py 
+
+    * Command
+
+    ``` bash
+    multiBand.py /lustre/Subaru/SSP --rerun=song/fake/full_8766 \
+        --job=multi_8766_full --queue small --nodes 9 --procs 12 \
+        --time=1000000 --batch-type=pbs --mpiexec="-bind-to socket" 
+        --id tract=8766 filter=HSC-I^HSC-R^HSC-G
+    ```
 
 
-#### Tract-8767; Bright galaxies: `bright_8766`
+-----
+
+#### 2. Tract-8767; Bright galaxies: `bright_8767`
 
 ##### HSC-I: `add_i` 
 
     * Config file: `addfake_8767_i_bright.config` 
 
-    * Command: `42747.master` 
+    * Command: `` 
     ``` bash
     runAddFakes.py /lustre/Subaru/SSP/ \
-        --rerun DR_S16A:song/fake/full_8767 \
-        --id visit="7292^7296^7304^7308^7312^7318^7320^7322^7340^7342^7346^7348^7354^7358^7360^7374^7386^7388^19400^19404^19416^19418^19456^19470^19484^19486" \
+        --rerun DR_S16A:song/fake/bright_8767 \
+        --id visit="7288^7292^7296^7304^7308^7310^7312^7318^7320^7322^7338^7340^7342^7346^7348^7352^7354^7358^7360^7372^7374^7384^7386^7388^19400^19404^19416^19418^19456^19470^19484^19486" \
         --clobber-config -C addfake_8767_i_bright.config \
         --queue small --job add_i_8767_bright --nodes 9 --procs 12
     ```
+
+    * Visually check the results: 
+    ``` bash 
+    python compFakeGalaxy.py DR_S16A song/fake/full_8767 7304 40
+    python compFakeGalaxy.py DR_S16A song/fake/full_8767 7340 50
+    ```
+        - `full_8767-7304-40.png`
+        - `full_8767-7340-50.png`
 
 ##### HSC-G: `add_g` 
 
     * Config file: `addfake_8767_g_bright.config` 
 
-    * Command: `42749.master` 
+    * Command: `` 
     ``` bash
     runAddFakes.py /lustre/Subaru/SSP/ \
-        --rerun DR_S16A:song/fake/full_8767 \
-        --id visit="9844^9848^9856^9860^9870^9872^9884^9900^9902^9904^9906^9912^9914^11564^11572^11576^11584^11590^11598^11600^42460^42464^42468^42500^42514^42516^42536^42538" \
+        --rerun DR_S16A:song/fake/bright_8767 \
+        --id visit="9840^9844^9848^9856^9860^9862^9866^9870^9872^9882^9884^9888^9900^9902^9904^9906^9912^9914^9918^11564^11572^11576^11578^11580^11584^11588^11590^11598^11600^42460^42464^42468^42500^42514^42516^42536^42538^42540" \
         --clobber-config -C addfake_8767_g_bright.config \
         --queue small --job add_g_8767_bright --nodes 9 --procs 12
     ```
@@ -448,13 +572,30 @@
 
     * Config file: `addfake_8767_r_bright.config` 
 
-    * Command: `42751.master` 
+    * Command: `` 
     ``` bash
     runAddFakes.py /lustre/Subaru/SSP/ \
-        --rerun DR_S16A:song/fake/full_8767 \
-        --id visit="11430^11434^11446^11450^11470^11478^11480^11500^11508^11534^11536^41068^41072^41076^41108^41122^41124^41144^41146" \
+        --rerun DR_S16A:song/fake/bright_8767 \
+        --id visit="11426^11430^11434^11446^11450^11468^11470^11472^11478^11480^11498^11500^11506^11508^11534^11536^41068^41072^41076^41108^41122^41124^41144^41146^41148" \
         --clobber-config -C addfake_8767_r_bright.config \
         --queue small --job add_r_8767_bright --nodes 9 --procs 12
     ```
 
------ 
+
+
+#### Tract=8767; Bright objects: `bright_8767`
+
+##### HSC-I band: 
+
+    * Command: `x`
+    ``` bash 
+    stack.py /lustre/Subaru/SSP --rerun=song/fake/full_8767 \
+        --job=stack_i_8767_bright --queue small --nodes 9 --procs 12 \
+        --batch-type=pbs --mpiexec='-bind-to socket' --clobber-config \
+        --config makeCoaddTempExp.doOverwrite=True doOverwriteCoadd=True \
+        --id tract=08767 filter=HSC-I --selectId ccd=0..8^10..103 visit=7292^7296^7304^7308^7312^7318^7320^7322^7340^7342^7346^7348^7354^7358^7360^7374^7386^7388^19400^19404^19416^19418^19456^19470^19484^19486
+    ```
+
+
+-----
+
