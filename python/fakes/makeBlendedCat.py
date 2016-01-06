@@ -12,13 +12,13 @@ import numpy as np
 from astropy.table import Table, Column
 
 
-def disturbRaDec(num, mu=1.0, sigma=1.0):
+def disturbRaDec(num, mu=0.6, sigma=0.6):
     """Disturb the coordinate a little bit."""
     return (np.random.normal(mu, sigma, num) / 3600.0)
 
 
 def makeBlendedCat(fakeCat, realCat, raCol='ra', decCol='dec',
-                   sigma=1.0, mu=1.0):
+                   sigma=0.6, mu=0.6):
     """Make a highly blended version of fake catalog."""
     # Fake catalog
     if not os.path.isfile(fakeCat):
@@ -69,9 +69,15 @@ if __name__ == '__main__':
     parser.add_argument('--dec', '--decCol', dest='decCol',
                         help='Column for DEC in realCat',
                         default='dec')
+    parser.add_argument('--mu', dest='mu',
+                        help='mu of a normal distribution',
+                        default=0.6, type=float)
+    parser.add_argument('--sigma', dest='sigma',
+                        help='sigma of a normal distribution',
+                        default=0.6, type=float)
 
     args = parser.parse_args()
 
     makeBlendedCat(args.fakeCat, args.realCat,
                    raCol=args.raCol, decCol=args.decCol,
-                   sigma=1.0)
+                   sigma=args.sigma, mu=args.mu)
