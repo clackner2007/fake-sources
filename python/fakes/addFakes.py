@@ -148,13 +148,12 @@ class addFakesTask(BatchPoolTask):
                 exposure = dataRef.get('calexp', immediate=True)
                 self.fakes.run(exposure, None)
 
-                """ Remove unused mask plane CROSSTALK and UNMASKEDNAN """
+                """ Remove unused mask plane CR, NO_DATA, and UNMASKEDNAN """
                 self.log.info("Removing unused mask plane")
-                exposure.getMaskedImage().getMask().removeAndClearMaskPlane('CROSSTALK',
+                exposure.getMaskedImage().getMask().removeAndClearMaskPlane('CR',
                         True)
                 exposure.getMaskedImage().getMask().removeAndClearMaskPlane('UNMASKEDNAN',
                         True)
-                """ DR_S16A added BRIGHT_OBJECT mask, try removing CR too"""
                 exposure.getMaskedImage().getMask().removeAndClearMaskPlane('NO_DATA',
                         True)
                 dataRef.put(exposure, "calexp")
