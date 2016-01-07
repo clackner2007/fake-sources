@@ -151,7 +151,7 @@ class addFakesTask(BatchPoolTask):
                 """ Remove unused mask plane CR, NO_DATA, and UNMASKEDNAN """
                 self.log.info("Removing unused mask plane")
                 exposure.getMaskedImage().getMask().removeMaskPlane('CR')
-                exposure.getMaskedImage().getMask().removeMaskPlane('NO_DATA')
+                exposure.getMaskedImage().getMask().removeMaskPlane('CROSSTALK')
                 exposure.getMaskedImage().getMask().removeMaskPlane('UNMASKEDNAN')
                 dataRef.put(exposure, "calexp")
             return 0
