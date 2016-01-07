@@ -604,7 +604,11 @@
 
 -----
 
-#### 2. Tract-8767; Bright galaxies: `bright_8767`
+### 2. Tract-8767; Bright galaxies: `bright_8767`
+
+##########################################################################################
+
+#### runAddFakes.py
 
 ##### HSC-I: `add_i` 
 
@@ -618,13 +622,13 @@
         --clobber-config -C addfake_8767_i_bright.config \
         --queue small --job add_i_8767_bright --nodes 9 --procs 12
     ```
-        - Running ...
+        - Finished
 
     * Visually check the results: 
     ``` bash 
-    python compFakeGalaxy.py DR_S16A song/fake/full_8767 7304 40
+    python compFakeGalaxy.py DR_S16A song/fake/bright_8767 7304 40
     ```
-        - `full_8767-7304-40.png`
+        - `bright_8767-7304-40.png`
 
 ##### HSC-G: `add_g` 
 
@@ -638,7 +642,13 @@
         --clobber-config -C addfake_8767_g_bright.config \
         --queue small --job add_g_8767_bright --nodes 9 --procs 12
     ```
-        - Running ...
+        - Finished...
+
+    * Visually check the results: 
+    ``` bash 
+    python compFakeGalaxy.py DR_S16A song/fake/bright_8767 9872 50
+    ```
+        - `bright_8767-9872-50.png`
 
 ##### HSC-R: `add_r` 
 
@@ -652,6 +662,13 @@
         --clobber-config -C addfake_8767_r_bright.config \
         --queue small --job add_r_8767_bright --nodes 9 --procs 12
     ```
+        - Finished
+
+    * Visually check the results: 
+    ``` bash 
+    python compFakeGalaxy.py DR_S16A song/fake/bright_8767 11470 50
+    ```
+        - `bright_8767-11470-50.png`
 
 ##########################################################################################
 
@@ -659,23 +676,76 @@
 
 ##### HSC-I band: 
 
-    * Command: `x`
+    * Command: `42841.master`
     ``` bash 
-    stack.py /lustre/Subaru/SSP --rerun=song/fake/full_8767 \
+    stack.py /lustre/Subaru/SSP --rerun=song/fake/bright_8767 \
         --job=stack_i_8767_bright --queue small --nodes 9 --procs 12 \
         --batch-type=pbs --mpiexec='-bind-to socket' --clobber-config \
         --config makeCoaddTempExp.doOverwrite=True doOverwriteCoadd=True \
-        --id tract=08767 filter=HSC-I --selectId ccd=0..8^10..103 visit=7292^7296^7304^7308^7312^7318^7320^7322^7340^7342^7346^7348^7354^7358^7360^7374^7386^7388^19400^19404^19416^19418^19456^19470^19484^19486
+        --id tract=08767 filter=HSC-I --selectId ccd=0..8^10..103 visit=7288^7292^7296^7304^7308^7310^7312^7318^7320^7322^7338^7340^7342^7346^7348^7352^7354^7358^7360^7372^7374^7384^7386^7388^19400^19404^19416^19418^19456^19470^19484^19486
     ```
+        - Running ...
+
+    * Visually check the results: 
+        - Show in DS9, check the Cyan box for FAKE mask plane:
+        ``` bash
+        python showInDs9.py /lustre/Subaru/SSP/rerun/song/fake/bright_8767 8767 6,6 --filter HSC-I
+        ```
+
+    * Generate a before-after comparison plot: 
+        ``` bash
+        python compFakeCoadd.py DR_S16A song/fake/bright_8767 8767 6,6 HSC-I
+        ```
+            - See: `bright_8767-8767-6,6-HSC-I.png`
+
+##### HSC-G band: 
+
+    * Command: `42842.master`
+    ``` bash 
+    stack.py /lustre/Subaru/SSP --rerun=song/fake/bright_8767 \
+        --job=stack_g_8767_bright --queue small --nodes 9 --procs 12 \
+        --batch-type=pbs --mpiexec='-bind-to socket' --clobber-config \
+        --config makeCoaddTempExp.doOverwrite=True doOverwriteCoadd=True \
+        --id tract=08767 filter=HSC-G --selectId ccd=0..8^10..103 visit=9840^9844^9848^9856^9860^9862^9866^9870^9872^9882^9884^9888^9900^9902^9904^9906^9912^9914^9918^11564^11572^11576^11578^11580^11584^11588^11590^11598^11600^42460^42464^42468^42500^42514^42516^42536^42538^42540
+    ```
+        - Running ...
+
+    * Generate a before-after comparison plot: 
+        ``` bash
+        python compFakeCoadd.py DR_S16A song/fake/bright_8767 8767 6,6 HSC-G
+        ```
+            - See: `bright_8767-8767-6,6-HSC-G.png`
+
+##### HSC-R band: 
+
+    * Command: `42843.master`
+    ``` bash 
+    stack.py /lustre/Subaru/SSP --rerun=song/fake/bright_8767 \
+        --job=stack_r_8767_bright --queue small --nodes 9 --procs 12 \
+        --batch-type=pbs --mpiexec='-bind-to socket' --clobber-config \
+        --config makeCoaddTempExp.doOverwrite=True doOverwriteCoadd=True \
+        --id tract=08767 filter=HSC-R --selectId ccd=0..8^10..103 visit=11426^11430^11434^11446^11450^11468^11470^11472^11478^11480^11498^11500^11506^11508^11534^11536^41068^41072^41076^41108^41122^41124^41144^41146^41148
+    ```
+        - Running ...
+
+    * Generate a before-after comparison plot: 
+        ``` bash
+        python compFakeCoadd.py DR_S16A song/fake/bright_8767 8767 6,6 HSC-R
+        ```
+            - See: `bright_8767-8767-6,6-HSC-R.png`
+
 
 ##########################################################################################
 
 
 
-
 -----
 
-#### 3. Tract-8767; Blended objects: `blend_8767`
+### 3. Tract-8767; Blended objects: `blend_8767`
+
+##########################################################################################
+
+#### runAddFakes.py
 
 ##### HSC-I: `add_i` 
 
@@ -689,13 +759,13 @@
         --clobber-config -C addfake_8767_i_blend.config \
         --queue small --job add_i_8767_blend --nodes 9 --procs 12
     ```
-        - Running ...
+        - Finished
 
     * Visually check the results: 
     ``` bash 
-    python compFakeGalaxy.py DR_S16A song/fake/full_8767 7304 40
+    python compFakeGalaxy.py DR_S16A song/fake/blend_8767 7304 41
     ```
-        - `full_8767-7304-40.png`
+        - `blend_8767-7304-41.png`
 
 ##### HSC-G: `add_g` 
 
@@ -711,6 +781,12 @@
     ```
         - Running ...
 
+    * Visually check the results: 
+    ``` bash 
+    python compFakeGalaxy.py DR_S16A song/fake/blend_8767 9872 50
+    ```
+        - `blend_8767-9872-50.png`
+
 ##### HSC-R: `add_r` 
 
     * Config file: `addfake_8767_r_blend.config` 
@@ -724,6 +800,27 @@
         --queue small --job add_r_8767_blend --nodes 9 --procs 12
     ```
 
+    * Visually check the results: 
+    ``` bash 
+    python compFakeGalaxy.py DR_S16A song/fake/blend_8767 11470 50
+    ```
+        - `blend_8767-11470-50.png`
+
+##########################################################################################
+
+#### stack.py 
+
+##### HSC-I band: 
+
+    * Command: ``
+    ``` bash 
+    stack.py /lustre/Subaru/SSP --rerun=song/fake/blend_8767 \
+        --job=stack_i_8767_blend --queue small --nodes 9 --procs 12 \
+        --batch-type=pbs --mpiexec='-bind-to socket' --clobber-config \
+        --config makeCoaddTempExp.doOverwrite=True doOverwriteCoadd=True \
+        --id tract=08767 filter=HSC-I --selectId ccd=0..8^10..103 visit=7288^7292^7296^7304^7308^7310^7312^7318^7320^7322^7338^7340^7342^7346^7348^7352^7354^7358^7360^7372^7374^7384^7386^7388^19400^19404^19416^19418^19456^19470^19484^19486
+    ```
+        - Running ...
 
 -----
 
