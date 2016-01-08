@@ -993,7 +993,7 @@
 
     * Config file: `addfake_8767_i_full.config` 
 
-    * Command: `42905.master` 
+    * Command: `43118.master` 
     ``` bash
     runAddFakes.py /lustre/Subaru/SSP/ \
         --rerun DR_S16A:song/fake/full_8767 \
@@ -1005,15 +1005,15 @@
 
     * Visually check the results: 
     ``` bash 
-    python compFakeGalaxy.py DR_S16A song/fake/full_8767 7304 41
+    python compFakeGalaxy.py DR_S16A song/fake/full_8767 7304 40
     ```
-        - `full_8767-7304-41.png`
+        - `full_8767-7304-40.png`
 
 ##### HSC-G: `add_g` 
 
     * Config file: `addfake_8767_g_full.config` 
 
-    * Command: `42906.master` 
+    * Command: `43119.master` 
     ``` bash
     runAddFakes.py /lustre/Subaru/SSP/ \
         --rerun DR_S16A:song/fake/full_8767 \
@@ -1033,13 +1033,13 @@
 
     * Config file: `addfake_8767_r_full.config` 
 
-    * Command: `42907.master` 
+    * Command: `43197.master` 
     ``` bash
     runAddFakes.py /lustre/Subaru/SSP/ \
         --rerun DR_S16A:song/fake/full_8767 \
         --id visit="11426^11430^11434^11446^11450^11468^11470^11472^11478^11480^11498^11500^11506^11508^11534^11536^41068^41072^41076^41108^41122^41124^41144^41146^41148" \
         --clobber-config -C addfake_8767_r_full.config \
-        --queue small --job add_r_8767_full --nodes 9 --procs 12
+        --queue small --job add_r_8767_full --nodes 8 --procs 10
     ```
         - Finished
 
@@ -1055,7 +1055,7 @@
 
 ##### HSC-I band: 
 
-    * Command: `42940.master`
+    * Command: `43145.master`
     ``` bash 
     stack.py /lustre/Subaru/SSP --rerun=song/fake/full_8767 \
         --job=stack_i_8767_full --queue small --nodes 9 --procs 12 \
@@ -1073,7 +1073,7 @@
 
 ##### HSC-G band: 
 
-    * Command: `42941.master`
+    * Command: `43183.master`
     ``` bash 
     stack.py /lustre/Subaru/SSP --rerun=song/fake/full_8767 \
         --job=stack_g_8767_full --queue small --nodes 9 --procs 12 \
@@ -1081,7 +1081,7 @@
         --config makeCoaddTempExp.doOverwrite=True doOverwriteCoadd=True \
         --id tract=08767 filter=HSC-G --selectId ccd=0..8^10..103 visit=9840^9844^9848^9856^9860^9862^9866^9870^9872^9882^9884^9888^9900^9902^9904^9906^9912^9914^9918^11564^11572^11576^11578^11580^11584^11588^11590^11598^11600^42460^42464^42468^42500^42514^42516^42536^42538^42540
     ```
-        - Finished
+        - Finished 
 
     * Generate a before-after comparison plot: 
         ``` bash
@@ -1091,7 +1091,7 @@
 
 ##### HSC-R band: 
 
-    * Command: `42942.master`
+    * Command: `43290.master`
     ``` bash 
     stack.py /lustre/Subaru/SSP --rerun=song/fake/full_8767 \
         --job=stack_r_8767_full --queue small --nodes 9 --procs 12 \
@@ -1099,7 +1099,7 @@
         --config makeCoaddTempExp.doOverwrite=True doOverwriteCoadd=True \
         --id tract=08767 filter=HSC-R --selectId ccd=0..8^10..103 visit=11426^11430^11434^11446^11450^11468^11470^11472^11478^11480^11498^11500^11506^11508^11534^11536^41068^41072^41076^41108^41122^41124^41144^41146^41148
     ```
-        - Running ...
+        - Finished
 
     * Generate a before-after comparison plot: 
         ``` bash
@@ -1122,14 +1122,236 @@
         - Right now, the `detectFakeOnly` option is still not available,
           so the process will try to measure everything, including the real galaxies. 
 
-    * Command: ``
+    * Command: `43292.master`
     ``` bash
     multiBand.py /lustre/Subaru/SSP --rerun=song/fake/full_8767 \
         --job=multi_8767_full --queue small --nodes 9 --procs 12 \
         --time=1000000 --batch-type=pbs --mpiexec="-bind-to socket" \
         --id tract=8767 filter=HSC-I^HSC-R^HSC-G --clobber-config -C multi.config
     ```
+        - Finished
+
+##########################################################################################
+
+#### runMatchFakes.py
+
+    * Results are under: `/lustre/Subaru/SSP/rerun/song/fake/dr_s16a/match`
+
+##### HSC-I band 
+
+    * Command: 
+    ``` bash 
+    runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/full_8767 8767 \
+        -f HSC-I -c full_8767_radec_I_highb.fits -o full_8767_I_multiband -w -t 1.5 -m
+    ```
+        - `full_8767_I_multiband.fits`
+
+##### HSC-G band 
+
+    * Command: 
+    ``` bash 
+    runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/full_8767 8767 \
+        -f HSC-G -c full_8767_radec_G_highb.fits -o full_8767_G_multiband -w -t 1.5 -m
+    ```
+        - `full_8767_G_multiband.fits`
+
+##### HSC-R band 
+
+    * Command: 
+    ``` bash 
+    runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/full_8767 8767 \
+        -f HSC-R -c full_8767_radec_R_highb.fits -o full_8767_R_multiband -w -t 1.5 -m
+    ```
+        - `full_8767_R_multiband.fits`
 
 ##########################################################################################
 
 
+
+
+
+-----
+
+### 5. Tract-8767; Highly blended objects: `tight_8767`
+
+##########################################################################################
+
+#### runAddFakes.py
+
+##### HSC-I: `add_i` 
+
+    * Config file: `addfake_8767_i_tight.config` 
+
+    * Command: `43184.master` 
+    ``` bash
+    runAddFakes.py /lustre/Subaru/SSP/ \
+        --rerun DR_S16A:song/fake/tight_8767 \
+        --id visit="7288^7292^7296^7304^7308^7310^7312^7318^7320^7322^7338^7340^7342^7346^7348^7352^7354^7358^7360^7372^7374^7384^7386^7388^19400^19404^19416^19418^19456^19470^19484^19486" \
+        --clobber-config -C addfake_8767_i_tight.config \
+        --queue small --job add_i_8767_tight --nodes 9 --procs 12
+    ```
+        - Finished 
+
+    * Visually check the results: 
+    ``` bash 
+    python compFakeGalaxy.py DR_S16A song/fake/tight_8767 7304 41
+    ```
+        - `tight_8767-7304-41.png`
+
+
+##### HSC-G: `add_g` 
+
+    * Config file: `addfake_8767_g_tight.config` 
+
+    * Command: `43185.master` 
+    ``` bash
+    runAddFakes.py /lustre/Subaru/SSP/ \
+        --rerun DR_S16A:song/fake/tight_8767 \
+        --id visit="9840^9844^9848^9856^9860^9862^9866^9870^9872^9882^9884^9888^9900^9902^9904^9906^9912^9914^9918^11564^11572^11576^11578^11580^11584^11588^11590^11598^11600^42460^42464^42468^42500^42514^42516^42536^42538^42540" \
+        --clobber-config -C addfake_8767_g_tight.config \
+        --queue small --job add_g_8767_tight --nodes 9 --procs 12
+    ```
+        - Finished
+
+    * Visually check the results: 
+    ``` bash 
+    python compFakeGalaxy.py DR_S16A song/fake/tight_8767 9872 50
+    ```
+        - `tight_8767-9872-50.png`
+
+##### HSC-R: `add_r` 
+
+    * Config file: `addfake_8767_r_tight.config` 
+
+    * Command: `43196.master` 
+    ``` bash
+    runAddFakes.py /lustre/Subaru/SSP/ \
+        --rerun DR_S16A:song/fake/tight_8767 \
+        --id visit="11426^11430^11434^11446^11450^11468^11470^11472^11478^11480^11498^11500^11506^11508^11534^11536^41068^41072^41076^41108^41122^41124^41144^41146^41148" \
+        --clobber-config -C addfake_8767_r_tight.config \
+        --queue small --job add_r_8767_tight --nodes 8 --procs 10
+    ```
+        - Finished
+
+    * Visually check the results: 
+    ``` bash 
+    python compFakeGalaxy.py DR_S16A song/fake/tight_8767 11508 52
+    ```
+        - `tight_8767-11470-52.png`
+
+##########################################################################################
+
+#### stack.py 
+
+##### HSC-I band: 
+
+    * Command: ``
+    ``` bash 
+    stack.py /lustre/Subaru/SSP --rerun=song/fake/tight_8767 \
+        --job=stack_i_8767_tight --queue small --nodes 9 --procs 12 \
+        --batch-type=pbs --mpiexec='-bind-to socket' --clobber-config \
+        --config makeCoaddTempExp.doOverwrite=True doOverwriteCoadd=True \
+        --id tract=08767 filter=HSC-I --selectId ccd=0..8^10..103 visit=7288^7292^7296^7304^7308^7310^7312^7318^7320^7322^7338^7340^7342^7346^7348^7352^7354^7358^7360^7372^7374^7384^7386^7388^19400^19404^19416^19418^19456^19470^19484^19486
+    ```
+        - Finished 
+
+    * Generate a before-after comparison plot: 
+        ``` bash
+        python compFakeCoadd.py DR_S16A song/fake/tight_8767 8767 5,5 HSC-I
+        ```
+            - See: `tight_8767-8767-5,5-HSC-I.png`
+
+##### HSC-G band: 
+
+    * Command: `43193.master`
+    ``` bash 
+    stack.py /lustre/Subaru/SSP --rerun=song/fake/tight_8767 \
+        --job=stack_g_8767_tight --queue small --nodes 9 --procs 12 \
+        --batch-type=pbs --mpiexec='-bind-to socket' --clobber-config \
+        --config makeCoaddTempExp.doOverwrite=True doOverwriteCoadd=True \
+        --id tract=08767 filter=HSC-G --selectId ccd=0..8^10..103 visit=9840^9844^9848^9856^9860^9862^9866^9870^9872^9882^9884^9888^9900^9902^9904^9906^9912^9914^9918^11564^11572^11576^11578^11580^11584^11588^11590^11598^11600^42460^42464^42468^42500^42514^42516^42536^42538^42540
+    ```
+        - Finished
+
+    * Generate a before-after comparison plot: 
+        ``` bash
+        python compFakeCoadd.py DR_S16A song/fake/tight_8767 8767 6,6 HSC-G
+        ```
+            - See: `tight_8767-8767-6,6-HSC-G.png`
+
+##### HSC-R band: 
+
+    * Command: `42942.master`
+    ``` bash 
+    stack.py /lustre/Subaru/SSP --rerun=song/fake/tight_8767 \
+        --job=stack_r_8767_tight --queue small --nodes 9 --procs 12 \
+        --batch-type=pbs --mpiexec='-bind-to socket' --clobber-config \
+        --config makeCoaddTempExp.doOverwrite=True doOverwriteCoadd=True \
+        --id tract=08767 filter=HSC-R --selectId ccd=0..8^10..103 visit=11426^11430^11434^11446^11450^11468^11470^11472^11478^11480^11498^11500^11506^11508^11534^11536^41068^41072^41076^41108^41122^41124^41144^41146^41148
+    ```
+        - Finished
+
+    * Generate a before-after comparison plot: 
+        ``` bash
+        python compFakeCoadd.py DR_S16A song/fake/tight_8767 8767 6,7 HSC-R
+        ```
+            - See: `tight_8767-8767-6,7-HSC-R.png`
+
+##########################################################################################
+
+#### multiband.py 
+
+    * Config file: `multi.config` under `multiband`
+    ``` Python
+    root.measureCoaddSources.propagateFlags.flags={}
+    root.clobberMergedDetections = True
+    root.clobberMeasurements = True
+    root.clobberMergedMeasurements = True
+    root.clobberForcedPhotometry = True 
+    ```
+        - Right now, the `detectFakeOnly` option is still not available,
+          so the process will try to measure everything, including the real galaxies. 
+
+    * Command: `43291.master`
+    ``` bash
+    multiBand.py /lustre/Subaru/SSP --rerun=song/fake/tight_8767 \
+        --job=multi_8767_tight --queue small --nodes 9 --procs 12 \
+        --time=1000000 --batch-type=pbs --mpiexec="-bind-to socket" \
+        --id tract=8767 filter=HSC-I^HSC-R^HSC-G --clobber-config -C multi.config
+    ```
+        - Finished
+
+##########################################################################################
+
+#### runMatchFakes.py
+
+    * Results are under: `/lustre/Subaru/SSP/rerun/song/fake/dr_s16a/match`
+
+##### HSC-I band 
+
+    * Command: 
+    ``` bash 
+    runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/tight_8767 8767 \
+        -f HSC-I -c full_8767_radec_I_tight.fits -o full_8767_I_multiband -w -t 1.5 -m
+    ```
+        - `tight_8767_I_multiband.fits`
+
+##### HSC-G band 
+
+    * Command: 
+    ``` bash 
+    runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/tight_8767 8767 \
+        -f HSC-G -c full_8767_radec_G_tight.fits -o full_8767_G_multiband -w -t 1.5 -m
+    ```
+        - `tight_8767_G_multiband.fits`
+
+##### HSC-R band 
+
+    * Command: 
+    ``` bash 
+    runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/tight_8767 8767 \
+        -f HSC-R -c full_8767_radec_R_tight.fits -o full_8767_R_multiband -w -t 1.5 -m
+    ```
+        - `tight_8767_R_multiband.fits`
+
+##########################################################################################
