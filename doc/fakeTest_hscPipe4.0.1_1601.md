@@ -1142,7 +1142,7 @@
     * Command: 
     ``` bash 
     runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/full_8767 8767 \
-        -f HSC-I -c full_8767_radec_I_highb.fits -o full_8767_I_multiband -w -t 1.5 -m
+        -f HSC-I -c full_8767_radec_I.fits -o full_8767_I_multiband -w -t 1.5 -m
     ```
         - `full_8767_I_multiband.fits`
 
@@ -1151,7 +1151,7 @@
     * Command: 
     ``` bash 
     runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/full_8767 8767 \
-        -f HSC-G -c full_8767_radec_G_highb.fits -o full_8767_G_multiband -w -t 1.5 -m
+        -f HSC-G -c full_8767_radec_G.fits -o full_8767_G_multiband -w -t 1.5 -m
     ```
         - `full_8767_G_multiband.fits`
 
@@ -1160,7 +1160,7 @@
     * Command: 
     ``` bash 
     runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/full_8767 8767 \
-        -f HSC-R -c full_8767_radec_R_highb.fits -o full_8767_R_multiband -w -t 1.5 -m
+        -f HSC-R -c full_8767_radec_R.fits -o full_8767_R_multiband -w -t 1.5 -m
     ```
         - `full_8767_R_multiband.fits`
 
@@ -1332,7 +1332,7 @@
     * Command: 
     ``` bash 
     runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/tight_8767 8767 \
-        -f HSC-I -c full_8767_radec_I_tight.fits -o full_8767_I_multiband -w -t 1.5 -m
+        -f HSC-I -c full_8767_radec_I_tight.fits -o tight_8767_I_multiband -w -t 1.5 -m
     ```
         - `tight_8767_I_multiband.fits`
 
@@ -1341,7 +1341,7 @@
     * Command: 
     ``` bash 
     runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/tight_8767 8767 \
-        -f HSC-G -c full_8767_radec_G_tight.fits -o full_8767_G_multiband -w -t 1.5 -m
+        -f HSC-G -c full_8767_radec_G_tight.fits -o tight_8767_G_multiband -w -t 1.5 -m
     ```
         - `tight_8767_G_multiband.fits`
 
@@ -1350,7 +1350,7 @@
     * Command: 
     ``` bash 
     runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/tight_8767 8767 \
-        -f HSC-R -c full_8767_radec_R_tight.fits -o full_8767_R_multiband -w -t 1.5 -m
+        -f HSC-R -c full_8767_radec_R_tight.fits -o tight_8767_R_multiband -w -t 1.5 -m
     ```
         - `tight_8767_R_multiband.fits`
 
