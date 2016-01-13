@@ -1131,6 +1131,31 @@
     ```
         - Finished
 
+
+#### multiband.py with fix of cMoldel by Jim Bosch:
+
+    * Config file: `multi.config` under `multiband`
+    ``` Python
+    root.measureCoaddSources.propagateFlags.flags={}
+    root.forcedPhotCoadd.measurement.algorithms["cmodel"].exp.usePixelWeights = True
+    root.forcedPhotCoadd.measurement.algorithms["cmodel"].dev.usePixelWeights = True
+    root.measureCoaddSources.measurement.algorithms["cmodel"].exp.usePixelWeights = True
+    root.measureCoaddSources.measurement.algorithms["cmodel"].dev.usePixelWeights = True
+    root.clobberMergedDetections = True
+    root.clobberMeasurements = True
+    root.clobberMergedMeasurements = True
+    root.clobberForcedPhotometry = True 
+
+    * Command: `44243.master`
+    ``` bash
+    multiBand.py /lustre/Subaru/SSP --rerun=song/fake/full_8767 \
+        --job=multi_8767_full --queue small --nodes 9 --procs 12 \
+        --time=1000000 --batch-type=pbs --mpiexec="-bind-to socket" \
+        --id tract=8767 filter=HSC-I^HSC-R^HSC-G --clobber-config -C multi.config
+    ```
+        - Running ... 
+
+
 ##########################################################################################
 
 #### runMatchFakes.py
