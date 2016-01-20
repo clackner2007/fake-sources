@@ -271,8 +271,8 @@ def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
     if nSersic > 6.0:
         raise ValueError("Sersic index is too large! Should be <= 6.0")
     # Check the axisRatio value
-    if axisRatio <= 0.24:
-        raise ValueError("Axis Ratio is too small! Should be >= 0.24")
+    if axisRatio <= 0.05:
+        raise ValueError("Axis Ratio is too small! Should be >= 0.05")
 
     # Make the Sersic model based on flux, re, and Sersic index
     if nSersic == 1.0 or expAll:
