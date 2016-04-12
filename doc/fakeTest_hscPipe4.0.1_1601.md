@@ -24,17 +24,17 @@
 
     * Select the ones with reasonable properties, and suitable for fakePipe tests: 
       ```
-      mag <= 25.2 && reff >= 0.05 && reff <= 5.0 && sersic_n >= 0.5 && sersic_n <= 4.5 
-          && b_a >= 0.24 && b_a <= 0.99
+      mag <= 25.2 && reff >= 0.05 && reff <= 5.0 && sersic_n >= 0.4 && sersic_n <= 6.0 
+          && b_a >= 0.05 && b_a <= 0.99
       ```
-      - This results in **46873** galaxies. 
+      - This results in **59651** galaxies. 
 
     * There is a population of faint galaxies with very large `reff` 
         (when plotting `mag` againt `reff`).  Exclude them from the sample using: 
       ```
       mag <= 23.0 || reff <= (-0.25 * mag + 7.2)
       ```
-      - This results in **46511** galaxies.
+      - This results in **58697** galaxies.
       - **Fig.1**: See `cosmos_mag_reff_cut.png`
 
     * Make a multiband catalog: 
@@ -45,7 +45,7 @@
 ### Bright Galaxies (`mag <= 21.5`)
 
     * Other cuts are the same with the above catalog 
-        - There are **2416** galaxies in the sample.
+        - There are **3221** galaxies in the sample.
 
     * Save the catalog: `cosmos_21.5_multiband.fits`
 
@@ -545,15 +545,19 @@
     * Config file: `multi.config` under `multiband`
     ``` Python
     root.measureCoaddSources.propagateFlags.flags={}
+    root.forcedPhotCoadd.measurement.algorithms["cmodel"].exp.usePixelWeights = True
+    root.forcedPhotCoadd.measurement.algorithms["cmodel"].dev.usePixelWeights = True
+    root.measureCoaddSources.measurement.algorithms["cmodel"].exp.usePixelWeights = True
+    root.measureCoaddSources.measurement.algorithms["cmodel"].dev.usePixelWeights = True
     root.clobberMergedDetections = True
     root.clobberMeasurements = True
     root.clobberMergedMeasurements = True
-    root.clobberForcedPhotometry = True 
+    root.clobberForcedPhotometry = True
     ```
         - Right now, the `detectFakeOnly` option is still not available,
           so the process will try to measure everything, including the real galaxies. 
 
-    * Command: `42892.master`
+    * Command: `44492.master`
     ``` bash
     multiBand.py /lustre/Subaru/SSP --rerun=song/fake/full_8766 \
         --job=multi_8766_full --queue small --nodes 9 --procs 12 \
@@ -738,15 +742,18 @@
     * Config file: `multi.config` under `multiband`
     ``` Python
     root.measureCoaddSources.propagateFlags.flags={}
+    root.forcedPhotCoadd.measurement.algorithms["cmodel"].exp.usePixelWeights = True
+    root.forcedPhotCoadd.measurement.algorithms["cmodel"].dev.usePixelWeights = True
+    root.measureCoaddSources.measurement.algorithms["cmodel"].exp.usePixelWeights = True
+    root.measureCoaddSources.measurement.algorithms["cmodel"].dev.usePixelWeights = True
     root.clobberMergedDetections = True
     root.clobberMeasurements = True
     root.clobberMergedMeasurements = True
-    root.clobberForcedPhotometry = True 
-    ```
+    root.clobberForcedPhotometry = True    ```
         - Right now, the `detectFakeOnly` option is still not available,
           so the process will try to measure everything, including the real galaxies. 
 
-    * Command: `42900.master`
+    * Command: `44493.master`
     ``` bash
     multiBand.py /lustre/Subaru/SSP --rerun=song/fake/bright_8767 \
         --job=multi_8767_bright --queue small --nodes 9 --procs 12 \
@@ -927,15 +934,19 @@
     * Config file: `multi.config` under `multiband`
     ``` Python
     root.measureCoaddSources.propagateFlags.flags={}
+    root.forcedPhotCoadd.measurement.algorithms["cmodel"].exp.usePixelWeights = True
+    root.forcedPhotCoadd.measurement.algorithms["cmodel"].dev.usePixelWeights = True
+    root.measureCoaddSources.measurement.algorithms["cmodel"].exp.usePixelWeights = True
+    root.measureCoaddSources.measurement.algorithms["cmodel"].dev.usePixelWeights = True
     root.clobberMergedDetections = True
     root.clobberMeasurements = True
     root.clobberMergedMeasurements = True
-    root.clobberForcedPhotometry = True 
+    root.clobberForcedPhotometry = True
     ```
         - Right now, the `detectFakeOnly` option is still not available,
           so the process will try to measure everything, including the real galaxies. 
 
-    * Command: `42900.master`
+    * Command: `44497.master`
     ``` bash
     multiBand.py /lustre/Subaru/SSP --rerun=song/fake/blend_8767 \
         --job=multi_8767_blend --queue small --nodes 9 --procs 12 \
@@ -1153,7 +1164,7 @@
         --time=1000000 --batch-type=pbs --mpiexec="-bind-to socket" \
         --id tract=8767 filter=HSC-I^HSC-R^HSC-G --clobber-config -C multi.config
     ```
-        - Running ... 
+        - Finished
 
 
 ##########################################################################################
@@ -1329,15 +1340,19 @@
     * Config file: `multi.config` under `multiband`
     ``` Python
     root.measureCoaddSources.propagateFlags.flags={}
+    root.forcedPhotCoadd.measurement.algorithms["cmodel"].exp.usePixelWeights = True
+    root.forcedPhotCoadd.measurement.algorithms["cmodel"].dev.usePixelWeights = True
+    root.measureCoaddSources.measurement.algorithms["cmodel"].exp.usePixelWeights = True
+    root.measureCoaddSources.measurement.algorithms["cmodel"].dev.usePixelWeights = True
     root.clobberMergedDetections = True
     root.clobberMeasurements = True
     root.clobberMergedMeasurements = True
-    root.clobberForcedPhotometry = True 
+    root.clobberForcedPhotometry = True    
     ```
         - Right now, the `detectFakeOnly` option is still not available,
           so the process will try to measure everything, including the real galaxies. 
 
-    * Command: `43291.master`
+    * Command: `44503.master`
     ``` bash
     multiBand.py /lustre/Subaru/SSP --rerun=song/fake/tight_8767 \
         --job=multi_8767_tight --queue small --nodes 9 --procs 12 \
