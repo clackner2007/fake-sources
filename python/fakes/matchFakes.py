@@ -237,18 +237,13 @@ def getFakeSources(butler, dataId, tol=1.0,
             cal = butler.get('calexp', dataId, immediate=True)
             cal_md = butler.get('calexp_md', dataId, immediate=True)
         else:
-            if multiband:
-                meas = butler.get('deepCoadd_meas', dataId,
-                                  flags=NO_FOOTPRINT,
-                                  immediate=True)
-                force = butler.get('deepCoadd_forced_src', dataId,
-                                    flags=NO_FOOTPRINT,
-                                    immediate=True)
-                sources = combineWithForce(meas, force)
-            else:
-                sources = butler.get('deepCoadd_src', dataId,
-                                     flags=NO_FOOTPRINT,
-                                     immediate=True)
+            meas = butler.get('deepCoadd_meas', dataId,
+                              flags=NO_FOOTPRINT,
+                              immediate=True)
+            force = butler.get('deepCoadd_forced_src', dataId,
+                                flags=NO_FOOTPRINT,
+                                immediate=True)
+            sources = combineWithForce(meas, force)
             cal = butler.get(coaddData, dataId, immediate=True)
             cal_md = butler.get(coaddMeta, dataId, immediate=True)
     except (lsst.pex.exceptions.LsstException, RuntimeError):

@@ -143,21 +143,36 @@ class addFakesTask(BatchPoolTask):
         try:
             dataRef = hscButler.getDataRef(cache.butler, dataId)
             ccdId = dataRef.get("ccdExposureId")
+
             with self.logOperation("processing %s (ccdId=%d)" % (dataId,
                                                                  ccdId)):
                 exposure = dataRef.get('calexp', immediate=True)
                 self.fakes.run(exposure, None)
 
-                """ Remove unused mask plane CR, NO_DATA, and UNMASKEDNAN """
+                """ Remove unused mask plane CR, and UNMASKEDNAN """
                 self.log.info("Removing unused mask plane")
-                exposure.getMaskedImage().getMask().removeMaskPlane('CR')
-                exposure.getMaskedImage().getMask().removeAndCleanMaskPlane('SAT',
-                        True)
-                exposure.getMaskedImage().getMask().removeAndCleanMaskPlane('SUSPECT',
-                        True)
-                exposure.getMaskedImage().getMask().removeAndCleanMaskPlane('CROSSTALK',
-                        True)
+                """
+                try:
+                    exposure.getMaskedImage().getMask().removeAndClearMaskPlane('SUSPECT',
+                            True)
+                except Exception:
+                    self.log.info("Can not remove the SUSPECT plane")
+                """
+
+                try:
+                    exposure.getMaskedImage().getMask().removeAndClearMaskPlane('CROSSTALK',
+                            True)
+                except Exception:
+                    self.log.info("Can not remove the CROSSTALK plane")
+
+                try:
+                    exposure.getMaskedImage().getMask().removeAndClearMaskPlane('UNMASKEDNAN',
+                            True)
+                except Exception:
+                    self.log.info("Can not remove the UNMASKEDNAN plane")
+
                 dataRef.put(exposure, "calexp")
+
             return 0
         except Exception, errMsg:
             with open(self.missingLog, "a") as mlog:
