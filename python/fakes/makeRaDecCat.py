@@ -6,6 +6,7 @@ The inputs can be:
    2. DataId for single frame image: (visit, ccd)
    3. DataId for coadd image: (tract, patch, filter)
 """
+import os
 import numpy as np
 from numpy.random import uniform
 
@@ -174,21 +175,24 @@ def makeRaDecCat(nRand, dataId=None, rangeRaDec=None, rad=None,
     Add by Song Huang 15-09-01
     Filter the random catalog through two masks
     """
-    if acpMask is not None or regMask is not None:
+    if acpMask is not None or rejMask is not None:
         try:
             from shapely import wkb
             from shapely.geometry import Polygon, LineString, Point
+            from shapely.prepared import prep
         except ImportError:
             raise Exception('Please install the Shapely library before using this function')
         raArr, decArr = np.array(zip(*randomRaDec))
         if os.path.isfile(acpMask):
             acpRegs = polyReadWkb(acpMask)
-            inside = map(lambda x, y: acpRegs.contains(Point(x, y)), raArr, decArr)
+            acpPrep = prep(acpRegs)
+            inside = map(lambda x, y: acpPrep.contains(Point(x, y)), raArr, decArr)
         else:
             inside = np.isfinite(raArr)
         if os.path.isfile(rejMask):
-            regRegs = polyReadWkb(rejMask)
-            masked = map(lambda x, y: rejRegs.contains(Point(x, y)), raArr, decArr)
+            rejRegs = polyReadWkb(rejMask)
+            rejPrep = prep(rejRegs)
+            masked = map(lambda x, y: rejPrep.contains(Point(x, y)), raArr, decArr)
         else:
             masked = np.isnan(raArr)
 
