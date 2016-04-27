@@ -88,6 +88,7 @@ class MakeFakeInputsTask(pipeBase.CmdLineTask):
             try:
                 from shapely import wkb
                 from shapely.geometry import Point
+                from shapely.prepared import prep
             except ImportError:
                 raise Exception('Please install the Shapely library before using this function')
 
@@ -95,8 +96,9 @@ class MakeFakeInputsTask(pipeBase.CmdLineTask):
                 print "## Filter through : %s" % self.config.acpMask
                 acpWkb = open(self.config.acpMask, 'r')
                 acpRegs = wkb.loads(acpWkb.read().decode('hex'))
+                acpPrep = prep(acpRegs)
                 acpWkb.close()
-                inside = np.asarray(map(lambda x, y: acpRegs.contains(Point(x, y)),
+                inside = np.asarray(map(lambda x, y: acpPrep.contains(Point(x, y)),
                                     raArr, decArr))
             else:
                 inside = np.isfinite(raArr)
@@ -105,8 +107,9 @@ class MakeFakeInputsTask(pipeBase.CmdLineTask):
                 print "## Filter through : %s" % self.config.rejMask
                 rejWkb = open(self.config.rejMask, 'r')
                 rejRegs = wkb.loads(rejWkb.read().decode('hex'))
+                rejPrep = prep(rejRegs)
                 rejWkb.close()
-                masked = np.asarray(map(lambda x, y: rejRegs.contains(Point(x, y)),
+                masked = np.asarray(map(lambda x, y: rejPrep.contains(Point(x, y)),
                                     raArr, decArr))
             else:
                 masked = np.isnan(raArr)
