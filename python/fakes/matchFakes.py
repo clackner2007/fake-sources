@@ -185,7 +185,8 @@ def getFakeMatchesRaDec(sources, radecCatFile, bbox, wcs, tol=1.0,
                                               (fakeSrc['reff'] / pix))
             else:
                 fakeXY[int(fakeSrc['ID'])] = (fakeCoord.getX(),
-                                              fakeCoord.getY())
+                                              fakeCoord.getY(),
+                                              tol)
 
     srcX, srcY = sources.getX(), sources.getY()
     srcIndex = collections.defaultdict(list)
@@ -301,6 +302,8 @@ def getFakeSources(butler, dataId, tol=1.0,
                        doc='id of fake source matched to position')
     newSchema.addField('nMatched', type=int,
                        doc='Number of matched objects')
+    newSchema.addField('rMatched', type=float,
+                       doc='Radius seormatching oects')
     newSchema.addField('fakeOffset', type=lsst.afw.geom.Point2D,
                        doc='offset from input fake position (pixels)')
 
@@ -520,7 +523,6 @@ if __name__ == '__main__':
                         help='Match the fake sources using tol x Reff',
                         dest='reffMatch', default=False, action='store_true')
     parser.add_argument('-t', '--tolerance', type=float, dest='tol',
-
                         help='matching radius in PIXELS (default=1.0)')
     args = parser.parse_args()
 
