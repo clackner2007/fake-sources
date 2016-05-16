@@ -165,7 +165,7 @@ def getFakeMatchesRaDec(sources, radecCatFile, bbox, wcs, tol=1.0,
     """
     fakeXY = collections.defaultdict(tuple)
     try:
-        fakeCat = astropy.table.Table().read(radecCatFile)
+        fakeCat = astropy.table.Table().read(radecCatFile, format='fits')
     except IOError:
         raise
 
@@ -299,6 +299,8 @@ def getFakeSources(butler, dataId, tol=1.0,
     newSchema = mapper.getOutputSchema()
     newSchema.addField('fakeId', type=int,
                        doc='id of fake source matched to position')
+    newSchema.addField('nMatched', type=int,
+                       doc='Number of matched objects')
     newSchema.addField('fakeOffset', type=lsst.afw.geom.Point2D,
                        doc='offset from input fake position (pixels)')
 
@@ -316,10 +318,12 @@ def getFakeSources(butler, dataId, tol=1.0,
             newRec = srcList.addNew()
             newRec.set('fakeId', ident)
             newRec.set('id', 0)
+            newRec.set('nMatched', 0)
         for ss in sindlist:
             newRec = srcList.addNew()
             newRec.assign(sources[ss], mapper)
             newRec.set('fakeId', ident)
+            newRec.set('nMatched', len(sindlist))
             offsetX = (sources[ss].get(centroidKey).getX() - fakeXY[ident][0])
             offsetY = (sources[ss].get(centroidKey).getY() - fakeXY[ident][1])
             newRec.set('fakeOffset', lsst.afw.geom.Point2D(offsetX, offsetY))
