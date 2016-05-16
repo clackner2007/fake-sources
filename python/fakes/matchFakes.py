@@ -473,12 +473,12 @@ def returnMatchSingle(butler, slist, visit, ccd,
 
         if temp is None:
             print '   No match returns!'
-            continue
-        if slist is None:
-            slist = temp.copy(True)
         else:
-            slist.extend(temp, True)
-        del temp
+            if slist is None:
+                slist = temp.copy(True)
+            else:
+                slist.extend(temp, True)
+            del temp
 
         return slist
 
