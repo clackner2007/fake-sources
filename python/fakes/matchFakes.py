@@ -139,7 +139,8 @@ def getFakeMatchesHeader(cal_md, sources, tol=1.0):
     return fakeXY, srcIndex
 
 
-def getFakeMatchesRaDec(sources, radecCatFile, bbox, wcs, tol=1.0):
+def getFakeMatchesRaDec(sources, radecCatFile, bbox, wcs, tol=1.0,
+                        reffMatch=False, pix=0.168):
     """
     Return the fake matches based on an radec match.
 
@@ -168,20 +169,40 @@ def getFakeMatchesRaDec(sources, radecCatFile, bbox, wcs, tol=1.0):
     except IOError:
         raise
 
+    if reffMatch:
+        print "# Match fakes in tol x Reff (pixels) !!"
+        print "#   pixel size is %6.3f arcsec/pixel " % pix
+
     for fakeSrc in fakeCat:
         fakeCoord = wcs.skyToPixel(lsst.afw.geom.Angle(fakeSrc['RA'],
                                                        lsst.afw.geom.degrees),
                                    lsst.afw.geom.Angle(fakeSrc['Dec'],
                                                        lsst.afw.geom.degrees))
         if bbox.contains(fakeCoord):
-            fakeXY[int(fakeSrc['ID'])] = (fakeCoord.getX(), fakeCoord.getY())
+            if reffMatch:
+                fakeXY[int(fakeSrc['ID'])] = (fakeCoord.getX(),
+                                              fakeCoord.getY(),
+                                              (fakeSrc['reff'] / pix))
+            else:
+                fakeXY[int(fakeSrc['ID'])] = (fakeCoord.getX(),
+                                              fakeCoord.getY())
 
     srcX, srcY = sources.getX(), sources.getY()
     srcIndex = collections.defaultdict(list)
     for fid, fcoord in fakeXY.items():
         distX = srcX - fcoord[0]
         distY = srcY - fcoord[1]
-        matched = (np.abs(distX) < tol) & (np.abs(distY) < tol)
+        if reffMatch:
+            """Match in a radius"""
+            distFake = np.sqrt((np.abs(distX) ** 2.0) +
+                               (np.abs(distY) ** 2.0))
+            radMatch = (tol * fcoord[2])
+            """Minimum radius is 1 pixel"""
+            if radMatch < 1.0:
+                radMatch = 1.0
+            matched = (distFake <= radMatch)
+        else:
+            matched = (np.abs(distX) <= tol) & (np.abs(distY) <= tol)
         srcIndex[fid] = np.where(matched)[0]
 
     return fakeXY, srcIndex
@@ -190,7 +211,7 @@ def getFakeMatchesRaDec(sources, radecCatFile, bbox, wcs, tol=1.0):
 def getFakeSources(butler, dataId, tol=1.0,
                    extraCols=('zeropoint', 'visit', 'ccd'),
                    includeMissing=False, footprints=False, radecMatch=None,
-                   multiband=False):
+                   multiband=False, reffMatch=False, pix=0.168):
     """
     Get list of sources which agree in pixel position with fake ones with tol.
 
@@ -241,8 +262,8 @@ def getFakeSources(butler, dataId, tol=1.0,
                               flags=NO_FOOTPRINT,
                               immediate=True)
             force = butler.get('deepCoadd_forced_src', dataId,
-                                flags=NO_FOOTPRINT,
-                                immediate=True)
+                               flags=NO_FOOTPRINT,
+                               immediate=True)
             sources = combineWithForce(meas, force)
             cal = butler.get(coaddData, dataId, immediate=True)
             cal_md = butler.get(coaddMeta, dataId, immediate=True)
@@ -270,7 +291,8 @@ def getFakeSources(butler, dataId, tol=1.0,
         print "Using RA, DEC match !"
         bbox = lsst.afw.geom.Box2D(cal.getBBox(lsst.afw.image.PARENT))
         fakeXY, srcIndex = getFakeMatchesRaDec(sources, radecMatch,
-                                               bbox, cal.getWcs(), tol=tol)
+                                               bbox, cal.getWcs(), tol=tol,
+                                               reffMatch=reffMatch, pix=pix)
 
     mapper = SchemaMapper(sources.schema)
     mapper.addMinimalSchema(sources.schema)
@@ -391,7 +413,7 @@ def getAstroTable(src, mags=True):
 
 def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
                      overwrite=False, filt=None, tol=1.0, pixMatch=False,
-                     multiband=False):
+                     multiband=False, reffMatch=False, pix=0.168):
     """
     Driver (main function) for return match to fakes.
 
@@ -410,6 +432,8 @@ def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
                       even if there is a catalog supplied
            multiband = whether match to forced photometry catalogs
                        from multiband process
+           reffMatch = whether match fake sources in pixel radius
+                       or using tol x Reff (Only for Ra, Dec match)
     OUTPUT: returns an astropy.table.Table with all the entries
             from the source catalog for objects which match in pixel
             position to the fake sources
@@ -428,7 +452,7 @@ def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
                                              'zeropoint', 'pixelScale',
                                              'thetaNorth'),
                                   radecMatch=fakeCat if not pixMatch else None,
-                                  tol=tol)
+                                  tol=tol, reffMatch=reffMatch, pix=pix)
         else:
             print 'Doing patch %s' % ccd
             temp = getFakeSources(butler,
@@ -438,7 +462,8 @@ def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
                                                                   'pixelScale',
                                                                   'zeropoint'),
                                   radecMatch=fakeCat if not pixMatch else None,
-                                  tol=tol, multiband=multiband)
+                                  tol=tol, multiband=multiband,
+                                  reffMatch=reffMatch, pix=pix)
         if temp is None:
             print '   No match returns!'
             continue
@@ -487,6 +512,9 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--multiband',
                         help='Match multiband measurements',
                         dest='multiband', default=False, action='store_true')
+    parser.add_argument('-r', '--reffMatch',
+                        help='Match the fake sources using tol x Reff',
+                        dest='reffMatch', default=False, action='store_true')
     parser.add_argument('-t', '--tolerance', type=float, dest='tol',
 
                         help='matching radius in PIXELS (default=1.0)')
@@ -494,4 +522,5 @@ if __name__ == '__main__':
 
     returnMatchTable(args.rootDir, args.visit, args.ccd, args.outfile,
                      args.fakeCat, overwrite=args.ow, filt=args.filt,
-                     tol=args.tol, multiband=args.multiband)
+                     tol=args.tol, multiband=args.multiband,
+                     reffMatch=args.reffMatch)
