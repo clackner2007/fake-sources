@@ -474,7 +474,7 @@ def returnMatchSingle(butler, slist, visit, ccd,
                 slist = mlis.copy(True)
             else:
                 slist.extend(mlis, True)
-            del temp
+            del mlis
 
         return slist
 
