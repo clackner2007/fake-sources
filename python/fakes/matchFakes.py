@@ -170,9 +170,6 @@ def getFakeMatchesRaDec(sources, radecCatFile, bbox, wcs, tol=1.0,
     except IOError:
         raise
 
-    if reffMatch:
-        print "# Match fakes in tol x Reff (pixels) !!"
-
     for fakeSrc in fakeCat:
         fakeCoord = wcs.skyToPixel(lsst.afw.geom.Angle(fakeSrc['RA'],
                                                        lsst.afw.geom.degrees),
