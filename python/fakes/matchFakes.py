@@ -190,23 +190,24 @@ def getFakeMatchesRaDec(sources, radecCatFile, bbox, wcs, tol=1.0,
 
     srcX, srcY = sources.getX(), sources.getY()
     srcIndex = collections.defaultdict(list)
+    srcClose = collections.defaultdict(list)
     for fid, fcoord in fakeXY.items():
-        distX = srcX - fcoord[0]
-        distY = srcY - fcoord[1]
+        distX = (srcX - fcoord[0])
+        distY = (srcY - fcoord[1])
+        distR = np.sqrt((np.abs(distX) ** 2.0) + (np.abs(distY) ** 2.0))
+        closest = np.nanargmin(distR)
         if reffMatch:
-            """Match in a radius"""
-            distFake = np.sqrt((np.abs(distX) ** 2.0) +
-                               (np.abs(distY) ** 2.0))
             radMatch = (tol * fcoord[2])
             """Minimum radius is 1 pixel"""
             if radMatch < 1.0:
                 radMatch = 1.0
-            matched = (distFake <= radMatch)
+            matched = (distR <= radMatch)
         else:
             matched = (np.abs(distX) <= tol) & (np.abs(distY) <= tol)
         srcIndex[fid] = np.where(matched)[0]
+        srcClose[fid] = closest
 
-    return fakeXY, srcIndex
+    return fakeXY, srcIndex, srcClose
 
 
 def getFakeSources(butler, dataId, tol=1.0,
@@ -291,9 +292,13 @@ def getFakeSources(butler, dataId, tol=1.0,
     else:
         print "Using RA, DEC match !"
         bbox = lsst.afw.geom.Box2D(cal.getBBox(lsst.afw.image.PARENT))
-        fakeXY, srcIndex = getFakeMatchesRaDec(sources, radecMatch,
-                                               bbox, cal.getWcs(), tol=tol,
-                                               reffMatch=reffMatch, pix=pix)
+        fakeXY, srcIndex, srcClose = getFakeMatchesRaDec(sources,
+                                                         radecMatch,
+                                                         bbox,
+                                                         cal.getWcs(),
+                                                         tol=tol,
+                                                         reffMatch=reffMatch,
+                                                         pix=pix)
 
     mapper = SchemaMapper(sources.schema)
     mapper.addMinimalSchema(sources.schema)
@@ -303,9 +308,17 @@ def getFakeSources(butler, dataId, tol=1.0,
     newSchema.addField('nMatched', type=int,
                        doc='Number of matched objects')
     newSchema.addField('rMatched', type=float,
-                       doc='Radius seormatching oects')
-    newSchema.addField('fakeOffset', type=lsst.afw.geom.Point2D,
-                       doc='offset from input fake position (pixels)')
+                       doc='Radius used form atching obects, in pixel')
+    newSchema.addField('fakeOffX', type=float,
+                       doc='offset from input fake position in X (pixels)')
+    newSchema.addField('fakeOffY', type=float,
+                       doc='offset from input fake position in Y (pixels)')
+    newSchema.addField('fakeOffR', type=float,
+                       doc='offset from input fake position in radius')
+    newSchema.addField('fakeClosest', type=bool,
+                       doc='Is this match the closest one?')
+    #newSchema.addField('fakeOffset', type=lsst.afw.geom.Point2D,
+    #                   doc='offset from input fake position (pixels)')
 
     for extraName in set(extraCols).intersection(availExtras):
         newSchema.addField(extraName, type=availExtras[extraName]['type'],
@@ -322,14 +335,27 @@ def getFakeSources(butler, dataId, tol=1.0,
             newRec.set('fakeId', ident)
             newRec.set('id', 0)
             newRec.set('nMatched', 0)
+            newRec.set('rMatched', fakeXY[ident][2])
         for ss in sindlist:
             newRec = srcList.addNew()
             newRec.assign(sources[ss], mapper)
             newRec.set('fakeId', ident)
             newRec.set('nMatched', len(sindlist))
-            offsetX = (sources[ss].get(centroidKey).getX() - fakeXY[ident][0])
-            offsetY = (sources[ss].get(centroidKey).getY() - fakeXY[ident][1])
-            newRec.set('fakeOffset', lsst.afw.geom.Point2D(offsetX, offsetY))
+            newRec.set('rMatched', fakeXY[ident][2])
+            offsetX = (sources[ss].get(centroidKey).getX() -
+                       fakeXY[ident][0])
+            newRec.set('fakeOffX', offsetX)
+            offsetY = (sources[ss].get(centroidKey).getY() -
+                       fakeXY[ident][1])
+            newRec.set('fakeOffX', offsetY)
+            newRec.set('fakeOffR', np.sqrt(offsetX ** 2.0 + offsetY ** 2.0))
+            if radecMatch:
+                if ss == srcClose[ident]:
+                    newRec.set('fakeClosest', True)
+                else:
+                    newRec.set('fakeClosest', False)
+            #newRec.set('fakeOffset', lsst.afw.geom.Point2D(offsetX,
+            #                                               offsetY))
 
     if includeMissing:
         srcList = srcList.copy(deep=True)
