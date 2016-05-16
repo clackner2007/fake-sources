@@ -315,7 +315,7 @@ def getFakeSources(butler, dataId, tol=1.0,
                        doc='offset from input fake position in Y (pixels)')
     newSchema.addField('fakeOffR', type=float,
                        doc='offset from input fake position in radius')
-    newSchema.addField('fakeClosest', type=Flag,
+    newSchema.addField('fakeClosest', type="Flag",
                        doc='Is this match the closest one?')
     #newSchema.addField('fakeOffset', type=lsst.afw.geom.Point2D,
     #                   doc='offset from input fake position (pixels)')
@@ -485,7 +485,8 @@ def returnMatchSingle(butler, slist, visit, ccd,
 
 def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
                      overwrite=False, filt=None, tol=1.0, pixMatch=False,
-                     multiband=False, reffMatch=False, pix=0.168):
+                     multiband=False, reffMatch=False, pix=0.168,
+                     multijobs=False):
     """
     Driver (main function) for return match to fakes.
 
@@ -513,6 +514,12 @@ def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
 
     butler = dafPersist.Butler(rootDir)
     slist = None
+
+    if multijobs:
+        try:
+            from joblib import Parallel, delayed
+        except ImportError:
+            print "# Can not import joblib, stop multiprocessing!"
 
     for ccd in ccdList:
 
@@ -568,9 +575,13 @@ if __name__ == '__main__':
                         dest='reffMatch', default=False, action='store_true')
     parser.add_argument('-t', '--tolerance', type=float, dest='tol',
                         help='matching radius in PIXELS (default=1.0)')
+    parser.add_argument('--multijobs',
+                        help='Using multiprocessing',
+                        dest='multijobs', default=False, action='store_true')
     args = parser.parse_args()
 
     returnMatchTable(args.rootDir, args.visit, args.ccd, args.outfile,
                      args.fakeCat, overwrite=args.ow, filt=args.filt,
                      tol=args.tol, multiband=args.multiband,
-                     reffMatch=args.reffMatch)
+                     reffMatch=args.reffMatch,
+                     multijobs=args.multijobs)
