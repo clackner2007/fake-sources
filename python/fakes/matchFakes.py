@@ -517,7 +517,7 @@ def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
     for ccd in ccdList:
 
         slist = returnMatchSingle(butler, slist, visit, ccd,
-                                  filt=filt, radecMatch=fakeCat,
+                                  filt=filt, fakeCat=fakeCat,
                                   includeMissing=True, pixMatch=pixMatch,
                                   reffMatch=reffMatch, tol=tol, pix=pix,
                                   multiband=multiband)
