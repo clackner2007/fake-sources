@@ -27,17 +27,21 @@ if __name__=='__main__':
                         help='matching radius in PIXELS (default=1.0)')
     parser.add_argument('-p', '--pixelMatch', default=False, action='store_true',
                         help='do a pixel position match based on the header')
+    parser.add_argument('-r', '--reffMatch',
+                        help='Match the fake sources using tol x Reff',
+                        dest='reffMatch', default=False, action='store_true')
     args = parser.parse_args()
 
     if (args.ccd is None) or (len(args.ccd)<1):
         if args.filt is None:
             args.ccd=range(104)
         else:
-            #hack, assumes 11x11 patches per CCD
+            # TODO: hack, assumes 11x11 patches per CCD
             args.ccd=['%d,%d'%(x,y) for x in range(11) for y in range(11)]
 
     matchFakes.returnMatchTable(args.rootDir, args.visit, args.ccd,
                                 args.outfile, args.fakeCat,
                                 overwrite=args.ow, filt=args.filt, tol=args.tol,
                                 pixMatch=args.pixelMatch,
-                                multiband=args.multiband)
+                                multiband=args.multiband,
+                                reffMatch=args.reffMatch)
