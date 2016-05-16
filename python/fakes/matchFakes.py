@@ -24,7 +24,8 @@ NO_FOOTPRINT = lsst.afw.table.SOURCE_IO_NO_FOOTPRINTS
 def combineWithForce(meas, force):
     """Combine the meas and forced_src catalogs."""
     if len(meas) != len(force):
-        raise Exception("# Meas and Forced_src catalogs should have the same size!")
+        raise Exception("# Meas and Forced_src catalogs should have " +
+                        "the same size!")
     mapper = SchemaMapper(meas.schema)
     mapper.addMinimalSchema(meas.schema)
     newSchema = mapper.getOutputSchema()
@@ -171,7 +172,6 @@ def getFakeMatchesRaDec(sources, radecCatFile, bbox, wcs, tol=1.0,
 
     if reffMatch:
         print "# Match fakes in tol x Reff (pixels) !!"
-        print "#   pixel size is %6.3f arcsec/pixel " % pix
 
     for fakeSrc in fakeCat:
         fakeCoord = wcs.skyToPixel(lsst.afw.geom.Angle(fakeSrc['RA'],
@@ -317,8 +317,6 @@ def getFakeSources(butler, dataId, tol=1.0,
                        doc='offset from input fake position in radius')
     newSchema.addField('fakeClosest', type="Flag",
                        doc='Is this match the closest one?')
-    #newSchema.addField('fakeOffset', type=lsst.afw.geom.Point2D,
-    #                   doc='offset from input fake position (pixels)')
 
     for extraName in set(extraCols).intersection(availExtras):
         newSchema.addField(extraName, type=availExtras[extraName]['type'],
@@ -354,8 +352,6 @@ def getFakeSources(butler, dataId, tol=1.0,
                     newRec.set('fakeClosest', True)
                 else:
                     newRec.set('fakeClosest', False)
-            #newRec.set('fakeOffset', lsst.afw.geom.Point2D(offsetX,
-            #                                               offsetY))
 
     if includeMissing:
         srcList = srcList.copy(deep=True)
@@ -451,7 +447,7 @@ def returnMatchSingle(butler, slist, visit, ccd,
         """Return matched catalog for each CCD or Patch."""
         if filt is None:
             print 'Doing ccd %d' % int(ccd)
-            temp = getFakeSources(butler,
+            mlis = getFakeSources(butler,
                                   {'visit': visit, 'ccd': int(ccd)},
                                   includeMissing=includeMissing,
                                   extraCols=('visit', 'ccd',
@@ -461,7 +457,7 @@ def returnMatchSingle(butler, slist, visit, ccd,
                                   tol=tol, reffMatch=reffMatch, pix=pix)
         else:
             print 'Doing patch %s' % ccd
-            temp = getFakeSources(butler,
+            mlis = getFakeSources(butler,
                                   {'tract': visit, 'patch': ccd,
                                    'filter': filt},
                                   includeMissing=includeMissing,
@@ -471,13 +467,13 @@ def returnMatchSingle(butler, slist, visit, ccd,
                                   tol=tol, multiband=multiband,
                                   reffMatch=reffMatch, pix=pix)
 
-        if temp is None:
+        if mlis is None:
             print '   No match returns!'
         else:
             if slist is None:
-                slist = temp.copy(True)
+                slist = mlis.copy(True)
             else:
-                slist.extend(temp, True)
+                slist.extend(mlis, True)
             del temp
 
         return slist
@@ -486,7 +482,7 @@ def returnMatchSingle(butler, slist, visit, ccd,
 def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
                      overwrite=False, filt=None, tol=1.0, pixMatch=False,
                      multiband=False, reffMatch=False, pix=0.168,
-                     multijobs=False, includeMissing=True):
+                     multijobs=1, includeMissing=True):
     """
     Driver (main function) for return match to fakes.
 
@@ -511,21 +507,22 @@ def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
             from the source catalog for objects which match in pixel
             position to the fake sources
     """
-
     butler = dafPersist.Butler(rootDir)
     slist = None
 
-    if multijobs:
+    if multijobs > 1:
         try:
             from joblib import Parallel, delayed
-            slist = Parallel(n_jobs=4)(delayed(returnMatchSingle)(
-                                       butler, slist, visit, ccd,
-                                       filt=filt, fakeCat=fakeCat,
-                                       includeMissing=includeMissing,
-                                       pixMatch=pixMatch,
-                                       reffMatch=reffMatch, tol=tol,
-                                       multiband=multiband,
-                                       pix=pix) for ccd in ccdList)
+            mlist = Parallel(n_jobs=multijobs)(delayed(returnMatchSingle)(
+                                               butler, None, visit, ccd,
+                                               filt=filt,
+                                               fakeCat=fakeCat,
+                                               includeMissing=includeMissing,
+                                               pixMatch=pixMatch,
+                                               reffMatch=reffMatch, tol=tol,
+                                               multiband=multiband,
+                                               pix=pix) for ccd in ccdList)
+            slist = [slist.append(m) for m in mlist][0]
         except ImportError:
             print "# Can not import joblib, stop multiprocessing!"
             for ccd in ccdList:
@@ -592,9 +589,9 @@ if __name__ == '__main__':
                         dest='reffMatch', default=False, action='store_true')
     parser.add_argument('-t', '--tolerance', type=float, dest='tol',
                         help='matching radius in PIXELS (default=1.0)')
-    parser.add_argument('--multijobs',
-                        help='Using multiprocessing',
-                        dest='multijobs', default=False, action='store_true')
+    parser.add_argument('-j', '--multijobs', type=int,
+                        help='Number of jobs run at the same time',
+                        dest='multijobs', default=1, action='store_true')
     args = parser.parse_args()
 
     returnMatchTable(args.rootDir, args.visit, args.ccd, args.outfile,
