@@ -315,7 +315,7 @@ def getFakeSources(butler, dataId, tol=1.0,
                        doc='offset from input fake position in Y (pixels)')
     newSchema.addField('fakeOffR', type=float,
                        doc='offset from input fake position in radius')
-    newSchema.addField('fakeClosest', type=int,
+    newSchema.addField('fakeClosest', type='bool',
                        doc='Is this match the closest one?')
     #newSchema.addField('fakeOffset', type=lsst.afw.geom.Point2D,
     #                   doc='offset from input fake position (pixels)')
@@ -347,7 +347,7 @@ def getFakeSources(butler, dataId, tol=1.0,
             newRec.set('fakeOffX', offsetX)
             offsetY = (sources[ss].get(centroidKey).getY() -
                        fakeXY[ident][1])
-            newRec.set('fakeOffX', offsetY)
+            newRec.set('fakeOffY', offsetY)
             newRec.set('fakeOffR', np.sqrt(offsetX ** 2.0 + offsetY ** 2.0))
             if radecMatch:
                 if ss == srcClose[ident]:
@@ -444,6 +444,45 @@ def getAstroTable(src, mags=True):
     return tab
 
 
+def returnMatchSingle(butler, slist, visit, ccd,
+                      filt=None, tol=1.0, pix=0.168,
+                      fakeCat=None, pixMatch=False, multiband=False,
+                      reffMatch=False, includeMissing=True):
+        """Return matched catalog for each CCD or Patch."""
+        if filt is None:
+            print 'Doing ccd %d' % int(ccd)
+            temp = getFakeSources(butler,
+                                  {'visit': visit, 'ccd': int(ccd)},
+                                  includeMissing=includeMissing,
+                                  extraCols=('visit', 'ccd',
+                                             'zeropoint', 'pixelScale',
+                                             'thetaNorth'),
+                                  radecMatch=fakeCat if not pixMatch else None,
+                                  tol=tol, reffMatch=reffMatch, pix=pix)
+        else:
+            print 'Doing patch %s' % ccd
+            temp = getFakeSources(butler,
+                                  {'tract': visit, 'patch': ccd,
+                                   'filter': filt},
+                                  includeMissing=includeMissing,
+                                  extraCols=('thetaNorth', 'pixelScale',
+                                             'zeropoint'),
+                                  radecMatch=fakeCat if not pixMatch else None,
+                                  tol=tol, multiband=multiband,
+                                  reffMatch=reffMatch, pix=pix)
+
+        if temp is None:
+            print '   No match returns!'
+            continue
+        if slist is None:
+            slist = temp.copy(True)
+        else:
+            slist.extend(temp, True)
+        del temp
+
+        return slist
+
+
 def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
                      overwrite=False, filt=None, tol=1.0, pixMatch=False,
                      multiband=False, reffMatch=False, pix=0.168):
@@ -476,53 +515,32 @@ def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
     slist = None
 
     for ccd in ccdList:
-        if filt is None:
-            print 'Doing ccd %d' % int(ccd)
-            temp = getFakeSources(butler,
-                                  {'visit': visit, 'ccd': int(ccd)},
-                                  includeMissing=True,
-                                  extraCols=('visit', 'ccd',
-                                             'zeropoint', 'pixelScale',
-                                             'thetaNorth'),
-                                  radecMatch=fakeCat if not pixMatch else None,
-                                  tol=tol, reffMatch=reffMatch, pix=pix)
-        else:
-            print 'Doing patch %s' % ccd
-            temp = getFakeSources(butler,
-                                  {'tract': visit, 'patch': ccd,
-                                   'filter': filt},
-                                  includeMissing=True, extraCols=('thetaNorth',
-                                                                  'pixelScale',
-                                                                  'zeropoint'),
-                                  radecMatch=fakeCat if not pixMatch else None,
-                                  tol=tol, multiband=multiband,
-                                  reffMatch=reffMatch, pix=pix)
-        if temp is None:
-            print '   No match returns!'
-            continue
-        if slist is None:
-            slist = temp.copy(True)
-        else:
-            slist.extend(temp, True)
-        del temp
+
+        slist = returnMatchSingle(butler, slist, visit, ccd,
+                                  filt=filt, radecMatch=fakeCat,
+                                  includeMissing=True, pixMatch=pixMatch,
+                                  reffMatch=reffMatch, tol=tol, pix=pix,
+                                  multiband=multiband)
 
     if slist is None:
-        raise Exception("Slist is None !")
+        print "Returns no match....!"
+
+        return None
     else:
         astroTable = getAstroTable(slist, mags=True)
 
-    if fakeCat is not None:
-        astroTable = matchToFakeCatalog(astroTable, fakeCat)
+        if fakeCat is not None:
+            astroTable = matchToFakeCatalog(astroTable, fakeCat)
 
-    if outfile is not None:
-        try:
-            astroTable.write(outfile+'.fits', format='fits',
-                             overwrite=overwrite)
-        except IOError:
-            print "Try setting the option -w to overwrite the file."
-            raise
+        if outfile is not None:
+            try:
+                astroTable.write(outfile+'.fits', format='fits',
+                                 overwrite=overwrite)
+            except IOError:
+                print "Try setting the option -w to overwrite the file."
+                raise
 
-    return astroTable
+        return astroTable
 
 
 if __name__ == '__main__':
