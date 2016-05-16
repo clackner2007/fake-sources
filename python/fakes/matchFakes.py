@@ -486,7 +486,7 @@ def returnMatchSingle(butler, slist, visit, ccd,
 def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
                      overwrite=False, filt=None, tol=1.0, pixMatch=False,
                      multiband=False, reffMatch=False, pix=0.168,
-                     multijobs=False):
+                     multijobs=False, includeMissing=True):
     """
     Driver (main function) for return match to fakes.
 
@@ -518,16 +518,33 @@ def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
     if multijobs:
         try:
             from joblib import Parallel, delayed
+            slist = Parallel(n_jobs=4)(delayed(returnMatchSingle)(
+                                       butler, slist, visit, ccd,
+                                       filt=filt, fakeCat=fakeCat,
+                                       includeMissing=includeMissing,
+                                       pixMatch=pixMatch,
+                                       reffMatch=reffMatch, tol=tol,
+                                       multiband=multiband,
+                                       pix=pix) for ccd in ccdList)
         except ImportError:
             print "# Can not import joblib, stop multiprocessing!"
-
-    for ccd in ccdList:
-
-        slist = returnMatchSingle(butler, slist, visit, ccd,
-                                  filt=filt, fakeCat=fakeCat,
-                                  includeMissing=True, pixMatch=pixMatch,
-                                  reffMatch=reffMatch, tol=tol, pix=pix,
-                                  multiband=multiband)
+            for ccd in ccdList:
+                slist = returnMatchSingle(butler, slist, visit, ccd,
+                                          filt=filt, fakeCat=fakeCat,
+                                          includeMissing=includeMissing,
+                                          pixMatch=pixMatch,
+                                          reffMatch=reffMatch,
+                                          tol=tol, pix=pix,
+                                          multiband=multiband)
+    else:
+        for ccd in ccdList:
+            slist = returnMatchSingle(butler, slist, visit, ccd,
+                                      filt=filt, fakeCat=fakeCat,
+                                      includeMissing=includeMissing,
+                                      pixMatch=pixMatch,
+                                      reffMatch=reffMatch,
+                                      tol=tol, pix=pix,
+                                      multiband=multiband)
 
     if slist is None:
         print "Returns no match....!"
