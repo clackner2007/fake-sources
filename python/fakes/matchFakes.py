@@ -520,11 +520,12 @@ def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
                                                multiband=multiband,
                                                pix=pix) for ccd in ccdList)
             for m in mlist:
-                if slist is None:
-                    slist = m.copy(True)
-                else:
-                    slist.extend(m, True)
-                del m
+                if mlist is not None:
+                    if slist is None:
+                        slist = m.copy(True)
+                    else:
+                        slist.extend(m, True)
+                    del m
         except ImportError:
             print "# Can not import joblib, stop multiprocessing!"
             for ccd in ccdList:
