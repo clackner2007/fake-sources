@@ -591,7 +591,7 @@ if __name__ == '__main__':
                         help='matching radius in PIXELS (default=1.0)')
     parser.add_argument('-j', '--multijobs', type=int,
                         help='Number of jobs run at the same time',
-                        dest='multijobs', default=1, action='store_true')
+                        dest='multijobs', default=1)
     args = parser.parse_args()
 
     returnMatchTable(args.rootDir, args.visit, args.ccd, args.outfile,

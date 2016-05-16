@@ -37,7 +37,7 @@ if __name__ == '__main__':
                         dest='reffMatch', default=False, action='store_true')
     parser.add_argument('-j', '--multijobs', type=int,
                         help='Number of jobs run at the same time',
-                        dest='multijobs', default=1, action='store_true')
+                        dest='multijobs', default=1)
     args = parser.parse_args()
 
     if (args.ccd is None) or (len(args.ccd) < 1):
