@@ -35,9 +35,9 @@ if __name__ == '__main__':
     parser.add_argument('-r', '--reffMatch',
                         help='Match the fake sources using tol x Reff',
                         dest='reffMatch', default=False, action='store_true')
-    parser.add_argument('--multijobs',
-                        help='Using multiprocessing',
-                        dest='multijobs', default=False, action='store_true')
+    parser.add_argument('-j', '--multijobs', type=int,
+                        help='Number of jobs run at the same time',
+                        dest='multijobs', default=1, action='store_true')
     args = parser.parse_args()
 
     if (args.ccd is None) or (len(args.ccd) < 1):
