@@ -520,7 +520,7 @@ def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
                                                multiband=multiband,
                                                pix=pix) for ccd in ccdList)
             for m in mlist:
-                if mlist is not None:
+                if m is not None:
                     if slist is None:
                         slist = m.copy(True)
                     else:
