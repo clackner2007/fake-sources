@@ -336,7 +336,7 @@ def getFakeSources(butler, dataId, tol=1.0,
                     (0 if not includeMissing else srcIndex.values().count([])))
 
     centroidKey = sources.schema.find('centroid.sdss').getKey()
-    isPrimary = sources.schema.find('detect.is_primary').getKey()
+    isPrimary = sources.schema.find('detect.is-primary').getKey()
     for ident, sindlist in srcIndex.items():
         nMatched = len(sindlist)
         nPrimary = np.sum([sources[ss].get(isPrimary) for ss in sindlist])
