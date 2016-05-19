@@ -316,6 +316,8 @@ def getFakeSources(butler, dataId, tol=1.0,
                        doc='Number of matched objects')
     newSchema.addField('nPrimary', type=int,
                        doc='Number of unique matched objects')
+    newSchema.addField('nNoChild', type=int,
+                       doc='Number of matched objects with nchild==0')
     newSchema.addField('rMatched', type=float,
                        doc='Radius used form atching obects, in pixel')
     newSchema.addField('fakeOffX', type=float,
@@ -337,9 +339,11 @@ def getFakeSources(butler, dataId, tol=1.0,
 
     centroidKey = sources.schema.find('centroid.sdss').getKey()
     isPrimary = sources.schema.find('detect.is-primary').getKey()
+    nChild = sources.schema.find('force.deblend.nchild').getKey()
     for ident, sindlist in srcIndex.items():
         nMatched = len(sindlist)
-        nPrimary = np.sum([sources[ss].get(isPrimary) for ss in sindlist])
+        nPrimary = np.sum([sources[obj].get(isPrimary) for obj in sindlist])
+        nNoChild = np.sum([(sources[obj].get(nChild) == 0) for obj in sindlist])
         if includeMissing and (nMatched == 0):
             newRec = srcList.addNew()
             newRec.set('fakeId', ident)
@@ -352,6 +356,7 @@ def getFakeSources(butler, dataId, tol=1.0,
             newRec.set('fakeId', ident)
             newRec.set('nMatched', nMatched)
             newRec.set('nPrimary', nPrimary)
+            newRec.set('nNoChild', nNoChild)
             newRec.set('rMatched', fakeXY[ident][2])
             offsetX = (sources[ss].get(centroidKey).getX() -
                        fakeXY[ident][0])
