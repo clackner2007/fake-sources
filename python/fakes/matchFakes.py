@@ -5,6 +5,8 @@ matchFakes.py.
 Matches fakes based on position stored in the calibrated exposure image header
 """
 
+from __future__ import division
+
 import re
 import argparse
 import collections
@@ -84,14 +86,21 @@ def combineWithForce(meas, force):
 
 def getMag(flux, fluxerr, zeropoint):
     """Return the magnitude and error."""
-    mag, magerr = -2.5 * np.log10(flux), 2.5/np.log(10.0)*fluxerr/flux
+    mag = -2.5 * np.log10(flux)
+    magerr = (2.5 / np.log(10.0) * fluxerr / flux)
     return (mag.T + zeropoint).T, magerr
 
 
 def getEllipse(quad):
     """Return the Re, b/a and PA for a given quadrupole moment."""
     e = lsst.afw.geom.ellipses.Axes(quad)
-    return e.getA(), e.getB()/e.getA(), e.getTheta() * 180.0/np.pi
+    rad = e.getA()
+    try:
+        b_a = (e.getB() / e.getA())
+    except ZeroDivisionError:
+        b_a = np.nan
+    pa = (e.getTheta() * 180.0 / np.pi)
+    return rad, b_a, pa
 
 
 def matchToFakeCatalog(sources, fakeCatalog):
@@ -201,6 +210,7 @@ def getFakeMatchesRaDec(sources, radecCatFile, bbox, wcs, tol=1.0,
             matched = (distR <= radMatch)
         else:
             matched = (np.abs(distX) <= tol) & (np.abs(distY) <= tol)
+
         srcIndex[fid] = np.where(matched)[0]
         srcClose[fid] = closest
 
@@ -304,6 +314,8 @@ def getFakeSources(butler, dataId, tol=1.0,
                        doc='id of fake source matched to position')
     newSchema.addField('nMatched', type=int,
                        doc='Number of matched objects')
+    newSchema.addField('nPrimary', type=int,
+                       doc='Number of unique matched objects')
     newSchema.addField('rMatched', type=float,
                        doc='Radius used form atching obects, in pixel')
     newSchema.addField('fakeOffX', type=float,
@@ -324,8 +336,11 @@ def getFakeSources(butler, dataId, tol=1.0,
                     (0 if not includeMissing else srcIndex.values().count([])))
 
     centroidKey = sources.schema.find('centroid.sdss').getKey()
+    isPrimary = sources.schema.find('detect.is_primary').getKey()
     for ident, sindlist in srcIndex.items():
-        if includeMissing and (len(sindlist) == 0):
+        nMatched = len(sindlist)
+        nPrimary = np.sum([sources[ss].get(isPrimary) for ss in sindlist])
+        if includeMissing and (nMatched == 0):
             newRec = srcList.addNew()
             newRec.set('fakeId', ident)
             newRec.set('id', 0)
@@ -335,7 +350,8 @@ def getFakeSources(butler, dataId, tol=1.0,
             newRec = srcList.addNew()
             newRec.assign(sources[ss], mapper)
             newRec.set('fakeId', ident)
-            newRec.set('nMatched', len(sindlist))
+            newRec.set('nMatched', nMatched)
+            newRec.set('nPrimary', nPrimary)
             newRec.set('rMatched', fakeXY[ident][2])
             offsetX = (sources[ss].get(centroidKey).getX() -
                        fakeXY[ident][0])
