@@ -35,6 +35,9 @@ if __name__ == '__main__':
     parser.add_argument('-r', '--reffMatch',
                         help='Match the fake sources using tol x Reff',
                         dest='reffMatch', default=False, action='store_true')
+    parser.add_argument('--min', '--minRad',
+                        help='Min matching radius (pixel) when -r is set',
+                        dest='minRad', type=float, default=None)
     parser.add_argument('-j', '--multijobs', type=int,
                         help='Number of jobs run at the same time',
                         dest='multijobs', default=1)
@@ -54,4 +57,5 @@ if __name__ == '__main__':
                                 pixMatch=args.pixelMatch,
                                 multiband=args.multiband,
                                 reffMatch=args.reffMatch,
-                                multijobs=args.multijobs)
+                                multijobs=args.multijobs,
+                                minRad=args.minRad)
