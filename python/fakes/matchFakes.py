@@ -150,7 +150,7 @@ def getFakeMatchesHeader(cal_md, sources, tol=1.0):
 
 
 def getFakeMatchesRaDec(sources, radecCatFile, bbox, wcs, tol=1.0,
-                        reffMatch=False, pix=0.168):
+                        reffMatch=False, pix=0.168, minRad=None):
     """
     Return the fake matches based on an radec match.
 
@@ -188,7 +188,7 @@ def getFakeMatchesRaDec(sources, radecCatFile, bbox, wcs, tol=1.0,
             if reffMatch:
                 fakeXY[int(fakeSrc['ID'])] = (fakeCoord.getX(),
                                               fakeCoord.getY(),
-                                              (fakeSrc['reff'] / pix))
+                                              (fakeSrc['reff'] / pix) * tol)
             else:
                 fakeXY[int(fakeSrc['ID'])] = (fakeCoord.getX(),
                                               fakeCoord.getY(),
@@ -202,14 +202,14 @@ def getFakeMatchesRaDec(sources, radecCatFile, bbox, wcs, tol=1.0,
         distY = (srcY - fcoord[1])
         distR = np.sqrt((np.abs(distX) ** 2.0) + (np.abs(distY) ** 2.0))
         closest = np.nanargmin(distR)
+        radMatch = fcoord[2]
         if reffMatch:
-            radMatch = (tol * fcoord[2])
             """Minimum radius is 1 pixel"""
-            if radMatch < 1.0:
-                radMatch = 1.0
+            if minRad is not None:
+                radMatch = radMatch if radMatch >= minRad else minRad
             matched = (distR <= radMatch)
         else:
-            matched = (np.abs(distX) <= tol) & (np.abs(distY) <= tol)
+            matched = (np.abs(distX) <= radMatch) & (np.abs(distY) <= radMatch)
 
         srcIndex[fid] = np.where(matched)[0]
         srcClose[fid] = closest
@@ -220,7 +220,7 @@ def getFakeMatchesRaDec(sources, radecCatFile, bbox, wcs, tol=1.0,
 def getFakeSources(butler, dataId, tol=1.0,
                    extraCols=('zeropoint', 'visit', 'ccd'),
                    includeMissing=False, footprints=False, radecMatch=None,
-                   multiband=False, reffMatch=False, pix=0.168):
+                   multiband=False, reffMatch=False, pix=0.168, minRad=None):
     """
     Get list of sources which agree in pixel position with fake ones with tol.
 
@@ -305,7 +305,8 @@ def getFakeSources(butler, dataId, tol=1.0,
                                                          cal.getWcs(),
                                                          tol=tol,
                                                          reffMatch=reffMatch,
-                                                         pix=pix)
+                                                         pix=pix,
+                                                         minRad=minRad)
 
     mapper = SchemaMapper(sources.schema)
     mapper.addMinimalSchema(sources.schema)
@@ -461,7 +462,7 @@ def getAstroTable(src, mags=True):
 def returnMatchSingle(butler, slist, visit, ccd,
                       filt=None, tol=1.0, pix=0.168,
                       fakeCat=None, pixMatch=False, multiband=False,
-                      reffMatch=False, includeMissing=True):
+                      reffMatch=False, includeMissing=True, minRad=None):
         """Return matched catalog for each CCD or Patch."""
         if filt is None:
             print 'Doing ccd %d' % int(ccd)
@@ -472,7 +473,8 @@ def returnMatchSingle(butler, slist, visit, ccd,
                                              'zeropoint', 'pixelScale',
                                              'thetaNorth'),
                                   radecMatch=fakeCat if not pixMatch else None,
-                                  tol=tol, reffMatch=reffMatch, pix=pix)
+                                  tol=tol, reffMatch=reffMatch, pix=pix,
+                                  minRad=minRad)
         else:
             print 'Doing patch %s' % ccd
             mlis = getFakeSources(butler,
@@ -483,7 +485,8 @@ def returnMatchSingle(butler, slist, visit, ccd,
                                              'zeropoint'),
                                   radecMatch=fakeCat if not pixMatch else None,
                                   tol=tol, multiband=multiband,
-                                  reffMatch=reffMatch, pix=pix)
+                                  reffMatch=reffMatch, pix=pix,
+                                  minRad=minRad)
 
         if mlis is None:
             print '   No match returns!'
@@ -500,7 +503,7 @@ def returnMatchSingle(butler, slist, visit, ccd,
 def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
                      overwrite=False, filt=None, tol=1.0, pixMatch=False,
                      multiband=False, reffMatch=False, pix=0.168,
-                     multijobs=1, includeMissing=True):
+                     multijobs=1, includeMissing=True, minRad=None):
     """
     Driver (main function) for return match to fakes.
 
@@ -539,7 +542,8 @@ def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
                                                pixMatch=pixMatch,
                                                reffMatch=reffMatch, tol=tol,
                                                multiband=multiband,
-                                               pix=pix) for ccd in ccdList)
+                                               pix=pix,
+                                               minRad=minRad) for ccd in ccdList)
             for m in mlist:
                 if m is not None:
                     if slist is None:
@@ -556,7 +560,8 @@ def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
                                           pixMatch=pixMatch,
                                           reffMatch=reffMatch,
                                           tol=tol, pix=pix,
-                                          multiband=multiband)
+                                          multiband=multiband,
+                                          minRad=minRad)
     else:
         for ccd in ccdList:
             slist = returnMatchSingle(butler, slist, visit, ccd,
@@ -565,7 +570,8 @@ def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
                                       pixMatch=pixMatch,
                                       reffMatch=reffMatch,
                                       tol=tol, pix=pix,
-                                      multiband=multiband)
+                                      multiband=multiband,
+                                      minRad=minRad)
 
     if slist is None:
         print "Returns no match....!"
@@ -611,6 +617,9 @@ if __name__ == '__main__':
     parser.add_argument('-r', '--reffMatch',
                         help='Match the fake sources using tol x Reff',
                         dest='reffMatch', default=False, action='store_true')
+    parser.add_argument('--min', '--minRad',
+                        help='Minimum matching radius in unit of pixel when -r is set',
+                        dest='minRad', type=float, default=None)
     parser.add_argument('-t', '--tolerance', type=float, dest='tol',
                         help='matching radius in PIXELS (default=1.0)')
     parser.add_argument('-j', '--multijobs', type=int,
@@ -622,4 +631,5 @@ if __name__ == '__main__':
                      args.fakeCat, overwrite=args.ow, filt=args.filt,
                      tol=args.tol, multiband=args.multiband,
                      reffMatch=args.reffMatch,
-                     multijobs=args.multijobs)
+                     multijobs=args.multijobs,
+                     minRad=args.minRad)
