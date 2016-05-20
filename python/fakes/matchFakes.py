@@ -203,10 +203,10 @@ def getFakeMatchesRaDec(sources, radecCatFile, bbox, wcs, tol=1.0,
         distR = np.sqrt((np.abs(distX) ** 2.0) + (np.abs(distY) ** 2.0))
         closest = np.nanargmin(distR)
         radMatch = fcoord[2]
+        if minRad is not None:
+            if radMatch < minRad:
+                radMatch = minRad
         if reffMatch:
-            """Minimum radius is 1 pixel"""
-            if minRad is not None:
-                radMatch = radMatch if radMatch >= minRad else minRad
             matched = (distR <= radMatch)
         else:
             matched = (np.abs(distX) <= radMatch) & (np.abs(distY) <= radMatch)
@@ -297,7 +297,8 @@ def getFakeSources(butler, dataId, tol=1.0,
     if radecMatch is None:
         fakeXY, srcIndex = getFakeMatchesHeader(cal_md, sources, tol=tol)
     else:
-        print "Using RA, DEC match !"
+        if minRad is not None:
+            print "# The minimum matching radius is %4.1f" % minRad
         bbox = lsst.afw.geom.Box2D(cal.getBBox(lsst.afw.image.PARENT))
         fakeXY, srcIndex, srcClose = getFakeMatchesRaDec(sources,
                                                          radecMatch,
@@ -344,7 +345,8 @@ def getFakeSources(butler, dataId, tol=1.0,
     for ident, sindlist in srcIndex.items():
         rMatched = fakeXY[ident][2]
         if minRad is not None:
-            rMatched = rMatched if rMatched >= minRad else minRad
+            if rMatched < minRad:
+                rMatched = minRad
         nMatched = len(sindlist)
         nPrimary = np.sum([sources[obj].get(isPrimary) for obj in sindlist])
         nNoChild = np.sum([(sources[obj].get(nChild) == 0) for obj in sindlist])
