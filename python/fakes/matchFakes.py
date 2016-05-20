@@ -342,6 +342,9 @@ def getFakeSources(butler, dataId, tol=1.0,
     isPrimary = sources.schema.find('detect.is-primary').getKey()
     nChild = sources.schema.find('force.deblend.nchild').getKey()
     for ident, sindlist in srcIndex.items():
+        rMatched = fakeXY[ident][2]
+        if minRad is not None:
+            rMatched = rMatched if rMatched >= minRad else minRad
         nMatched = len(sindlist)
         nPrimary = np.sum([sources[obj].get(isPrimary) for obj in sindlist])
         nNoChild = np.sum([(sources[obj].get(nChild) == 0) for obj in sindlist])
@@ -350,7 +353,7 @@ def getFakeSources(butler, dataId, tol=1.0,
             newRec.set('fakeId', ident)
             newRec.set('id', 0)
             newRec.set('nMatched', 0)
-            newRec.set('rMatched', fakeXY[ident][2])
+            newRec.set('rMatched', rMatched)
         for ss in sindlist:
             newRec = srcList.addNew()
             newRec.assign(sources[ss], mapper)
@@ -358,7 +361,7 @@ def getFakeSources(butler, dataId, tol=1.0,
             newRec.set('nMatched', nMatched)
             newRec.set('nPrimary', nPrimary)
             newRec.set('nNoChild', nNoChild)
-            newRec.set('rMatched', fakeXY[ident][2])
+            newRec.set('rMatched', rMatched)
             offsetX = (sources[ss].get(centroidKey).getX() -
                        fakeXY[ident][0])
             newRec.set('fakeOffX', offsetX)
