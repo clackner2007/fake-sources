@@ -205,6 +205,7 @@ def getFakeMatchesRaDec(sources, radecCatFile, bbox, wcs, tol=1.0,
         radMatch = fcoord[2]
         if minRad is not None:
             if radMatch < minRad:
+                print "# Changed radMatch from %5.2d to %5.2d" % (radmatch, minRad)
                 radMatch = minRad
         if reffMatch:
             matched = (distR <= radMatch)
@@ -298,7 +299,7 @@ def getFakeSources(butler, dataId, tol=1.0,
         fakeXY, srcIndex = getFakeMatchesHeader(cal_md, sources, tol=tol)
     else:
         if minRad is not None:
-            print "# The minimum matching radius is %4.1f" % minRad
+            print "# The min matching radius is %4.1f pixel" % minRad
         bbox = lsst.afw.geom.Box2D(cal.getBBox(lsst.afw.image.PARENT))
         fakeXY, srcIndex, srcClose = getFakeMatchesRaDec(sources,
                                                          radecMatch,
