@@ -205,7 +205,7 @@ def getFakeMatchesRaDec(sources, radecCatFile, bbox, wcs, tol=1.0,
         radMatch = fcoord[2]
         if minRad is not None:
             if radMatch < minRad:
-                print "# Changed radMatch from %5.2d to %5.2d" % (radmatch, minRad)
+                print "# Changed radMatch from %5.2d to %5.2d" % (radMatch, minRad)
                 radMatch = minRad
         if reffMatch:
             matched = (distR <= radMatch)
