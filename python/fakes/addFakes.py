@@ -95,7 +95,7 @@ class addFakesTask(BatchPoolTask):
 
         this task won't work for tracts/patches as it's currently written
         """
-        doBatch = kwargs.pop("doBatch", False)
+        kwargs.pop("doBatch", False)
         parser = ArgumentParser(name=cls._DefaultName, *args, **kwargs)
         parser.add_id_argument("--id", datasetType="raw", level="visit",
                                help="data ID, e.g. --id visit=12345")
@@ -153,23 +153,14 @@ class addFakesTask(BatchPoolTask):
 
                 """ Remove unused mask plane CR, and UNMASKEDNAN """
                 self.log.info("Removing unused mask plane")
-                """
+                maskPlane = exposure.getMaskedImage().getMask()
                 try:
-                    exposure.getMaskedImage().getMask().removeAndClearMaskPlane('SUSPECT',
-                            True)
-                except Exception:
-                    self.log.info("Can not remove the SUSPECT plane")
-                """
-
-                try:
-                    exposure.getMaskedImage().getMask().removeAndClearMaskPlane('CROSSTALK',
-                            True)
+                    maskPlane.removeAndClearMaskPlane('CROSSTALK', True)
                 except Exception:
                     self.log.info("Can not remove the CROSSTALK plane")
 
                 try:
-                    exposure.getMaskedImage().getMask().removeAndClearMaskPlane('UNMASKEDNAN',
-                            True)
+                    maskPlane.removeAndClearMaskPlane('UNMASKEDNAN', True)
                 except Exception:
                     self.log.info("Can not remove the UNMASKEDNAN plane")
 
