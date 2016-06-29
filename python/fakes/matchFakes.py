@@ -349,7 +349,8 @@ def getFakeSources(butler, dataId, tol=1.0,
                 rMatched = minRad
         nMatched = len(sindlist)
         nPrimary = np.sum([sources[obj].get(isPrimary) for obj in sindlist])
-        nNoChild = np.sum([(sources[obj].get(nChild) == 0) for obj in sindlist])
+        nNoChild = np.sum([(sources[obj].get(nChild) == 0) for
+                           obj in sindlist])
         if includeMissing and (nMatched == 0):
             newRec = srcList.addNew()
             newRec.set('fakeId', ident)
@@ -444,14 +445,15 @@ def getAstroTable(src, mags=True):
         # This is a horrible hack, but I don't think we can use the slots,
         # since not all the fluxes end up in the slots
         for col in tab.colnames:
-            if (re.match('^flux\.[a-z]+$', col) or
-                re.match('^flux\.[a-z]+.apcorr$', col) or
-                re.match('^force.flux\.[a-z]+$', col) or
-                re.match('^force.flux\.[a-z]+.apcorr$', col) or
-                re.match('^force.cmodel.+flux$', col) or
-                re.match('^force.cmodel.+flux.apcorr$', col) or
-                re.match('^cmodel.+flux$', col) or
-                re.match('^cmodel.+flux.apcorr$', col)):
+            colMatch = (re.match('^flux\.[a-z]+$', col) or
+                        re.match('^flux\.[a-z]+.apcorr$', col) or
+                        re.match('^force.flux\.[a-z]+$', col) or
+                        re.match('^force.flux\.[a-z]+.apcorr$', col) or
+                        re.match('^force.cmodel.+flux$', col) or
+                        re.match('^force.cmodel.+flux.apcorr$', col) or
+                        re.match('^cmodel.+flux$', col) or
+                        re.match('^cmodel.+flux.apcorr$', col))
+            if colMatch:
                 zp = tab['zeropoint'] if not re.search('apcorr', col) else 0.0
                 mag, magerr = getMag(tab[col], tab[col+'.err'], zp)
                 tab.add_column(astropy.table.Column(name=re.sub('flux', 'mag',
@@ -547,8 +549,8 @@ def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
                                                pixMatch=pixMatch,
                                                reffMatch=reffMatch, tol=tol,
                                                multiband=multiband,
-                                               pix=pix,
-                                               minRad=minRad) for ccd in ccdList)
+                                               minRad=minRad,
+                                               pix=pix) for ccd in ccdList)
             for m in mlist:
                 if m is not None:
                     if slist is None:
@@ -623,7 +625,7 @@ if __name__ == '__main__':
                         help='Match the fake sources using tol x Reff',
                         dest='reffMatch', default=False, action='store_true')
     parser.add_argument('--min', '--minRad',
-                        help='Minimum matching radius in unit of pixel when -r is set',
+                        help='Minimum matching radius in unit of pixel',
                         dest='minRad', type=float, default=None)
     parser.add_argument('-t', '--tolerance', type=float, dest='tol',
                         help='matching radius in PIXELS (default=1.0)')
