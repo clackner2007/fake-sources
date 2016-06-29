@@ -8,13 +8,15 @@ import collections
 
 import lsst.pex.config
 import lsst.afw.cameraGeom as afwCg
-import hsc.pipe.base.butler as hscButler
 
 from lsst.pipe.base import ArgumentParser
+from lsst.pipe.tasks.fakes import DummyFakeSourcesTask
+
+import hsc.pipe.base.butler as hscButler
+
 from hsc.pipe.base.pool import abortOnError, Pool, Debugger
 from hsc.pipe.base.parallel import BatchPoolTask
 
-from lsst.pipe.tasks.fakes import DummyFakeSourcesTask
 
 """
 DummyFakeSourcesTask:
@@ -32,7 +34,7 @@ class addFakesConfig(lsst.pex.config.Config):
 
     fakes = lsst.pex.config.ConfigurableField(
         target=DummyFakeSourcesTask,
-        doc="Injection of fake sources to processed visits (retarget to enable)"
+        doc="Injection of fake sources to processed visits"
     )
     ignoreCcdList = lsst.pex.config.ListField(dtype=int, default=[],
                                               doc="List of CCDs to ignore")
@@ -177,7 +179,6 @@ class addFakesTask(BatchPoolTask):
         except Exception, errMsg:
             with open(self.missingLog, "a") as mlog:
                 try:
-                    fcntl.flock(mlog, fcntl.LOCK_EX)
                     mlog.write("%s  ,  %d\n" % (dataId, ccdId))
                     fcntl.flock(mlog, fcntl.LOCK_UN)
                 except IOError:
