@@ -289,7 +289,12 @@ def galSimFakeCosmos(cosmosCat, flux, gal,
     """
     Generate fake galaxy using galSim.COSMOSCatalog objects.
     """
-    galFound = np.where(cosmosCat.param_cat['IDENT'] == gal['ID'])[0]
+    # Select the useful parameter catalog
+    indexUse = cosmosCat.orig_index
+    paramCat = cosmosCat.param_cat
+    objectUse = paramCat[indexUse]
+
+    galFound = np.where(objectUse['IDENT'] == gal['ID'])[0]
     if len(galFound) == 0:
         raise Exception("# Find no match for %d" % gal['ID'])
     elif len(galFound) > 1:
