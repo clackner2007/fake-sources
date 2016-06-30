@@ -1,29 +1,35 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-import galsim
 import warnings
+
 import numpy as np
+
+import galsim
+
 import pyfits as fits
 
 
-def makeGalaxy(flux, gal, psfImage, galType='sersic', drawMethod='no_pixel',
-               trunc=10.0, transform=None, addShear=False):
+def makeGalaxy(flux, gal, psfImage, galType='sersic',
+               drawMethod='no_pixel', trunc=10.0,
+               transform=None, addShear=False):
     """
     Function called by task to make galaxy images
 
     INPUTS:
-    flux = calibrated total flux
-    gal = galaxy parameters in record (np.recarray)
-    psfImage = np.ndarray of psfImage
-    galType = type of galaxy we want to make, this has to agree with what's in the
-    record array, options now are: 'sersic' (single sersic),
-    'dsersic' (double sersic), and
-    'real' (for making galaxies from real HST images)
+        flux = calibrated total flux
+        gal = galaxy parameters in record (np.recarray)
+        psfImage = np.ndarray of psfImage
+        galType = type of galaxy we want to make, this has to agree
+                  with what's in the record array, options now are:
+                    'sersic' (single sersic),
+                    'dsersic' (double sersic), and
+                    'real' (for making galaxies from real HST images)
+                    'cosmos' (Using GalSim.COSMOSCatalog)
+
     All the necessary keywords need to be in the fits catalog,
     including maybe drawMethod and trunc...
     """
-
     if galType is 'sersic':
         return galSimFakeSersic(flux, gal, psfImage=psfImage, trunc=trunc,
                                 drawMethod=drawMethod, returnObj=False,
@@ -52,8 +58,11 @@ def makeGalaxy(flux, gal, psfImage, galType='sersic', drawMethod='no_pixel',
                                 returnObj=False, drawMethod=drawMethod,
                                 transform=transform)
 
-def parseRealGalaxy(gal):
+    if galType is 'cosmos':
+        # TODO : Place holder
 
+
+def parseRealGalaxy(gal):
         # If an "index" column is presented, then use the index
         # If not, turn random = True
         try:
