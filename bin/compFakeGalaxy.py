@@ -177,7 +177,7 @@ def getNoMatchXY(rootDir, visit, ccd):
     return noMatchX, noMatchY, fakeX, fakeY, badKronX, badKronY
 
 
-def main(root1, root2, visit, ccd, root=None):
+def main(root1, root2, visit, ccd, root=None, showMatch=False):
 
     # get the name of the rerun
     rerun = os.path.split(root2)[-1]
@@ -194,8 +194,9 @@ def main(root1, root2, visit, ccd, root=None):
     imgDiff = (imgAfter - imgBefore)
 
     # get the X, Y lists of noMatch stars
-    noMatches = getNoMatchXY(root2, visit, ccd)
-    noMatchX, noMatchY, fakeX, fakeY, badKronX, badKronY = noMatches
+    if showMatch:
+        noMatches = getNoMatchXY(root2, visit, ccd)
+        noMatchX, noMatchY, fakeX, fakeY, badKronX, badKronY = noMatches
 
     # stretch it with arcsinh and make a png with pyplot
     fig, axes = pyplot.subplots(1, 3, sharex=True,
@@ -211,10 +212,11 @@ def main(root1, root2, visit, ccd, root=None):
         print '### Plot : ', i
         axes[i].imshow(np.arcsinh(imgs[i]), cmap='gray')
         axes[i].set_title(titles[i])
-        area1 = np.pi * 6 ** 2
-        # area2 = np.pi * 4 ** 2
-        axes[i].scatter(fakeX, fakeY, s=area1, facecolors='none',
-                        edgecolors='g', alpha=0.9)
+        if showMatch:
+            area1 = np.pi * 6 ** 2
+            # area2 = np.pi * 4 ** 2
+            axes[i].scatter(fakeX, fakeY, s=area1, facecolors='none',
+                            edgecolors='g', alpha=0.9)
 
     pyplot.gcf().savefig("%s-%d-%s.png" % (rerun, visit, str(ccd)))
 
