@@ -122,10 +122,19 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                                                    addShear=addShear,
                                                    sersic_prec=prec,
                                                    transform=skyToPixelMatrix)
+            except IndexError as ierr:
+                self.log.info("GalSim Index Error: Skipping %d" % galident)
+                self.log.info(ierr.message)
+                with open(skipLog, "a") as slog:
+                    try:
+                        fcntl.flock(slog, fcntl.LOCK_EX)
+                        slog.write("%8d , galsimI\n" % galident)
+                        fcntl.flock(slog, fcntl.LOCK_UN)
+                    except IOError:
+                        continue
+                continue
             except KeyError as kerr:
                 self.log.info("GalSim Key Error: Skipping %d" % galident)
-                self.log.info("   Mag, N, R, Q: %5.2f, %5.2f, %6.2f, %4.1f" % (
-                    gal['mag'], gal['sersic_n'], gal['reff'], gal['b_a']))
                 self.log.info(kerr.message)
                 with open(skipLog, "a") as slog:
                     try:
@@ -137,8 +146,6 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                 continue
             except ValueError as verr:
                 self.log.info("GalSim Value Error: Skipping %d" % galident)
-                self.log.info("   Mag, N, R, Q: %5.2f, %5.2f, %6.2f, %4.1f" % (
-                    gal['mag'], gal['sersic_n'], gal['reff'], gal['b_a']))
                 self.log.info(verr.message)
                 with open(skipLog, "a") as slog:
                     try:
@@ -150,8 +157,6 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                 continue
             except RuntimeError as rerr:
                 self.log.info("GalSim Runtime Error: Skipping %d" % galident)
-                self.log.info("   Mag, N, R, Q: %5.2f, %5.2f, %6.2f, %4.1f" % (
-                    gal['mag'], gal['sersic_n'], gal['reff'], gal['b_a']))
                 self.log.info(rerr.message)
                 with open(skipLog, "a") as slog:
                     try:
