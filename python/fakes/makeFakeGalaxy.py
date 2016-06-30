@@ -314,16 +314,6 @@ def galSimFakeCosmos(cosmosCat, flux, gal,
     if transform is not None:
         cosObj = cosObj.transform(*tuple(transform.ravel()))
 
-    # Convolve the Sersic model using the provided PSF image
-    if psfImage is not None:
-        # Convert the PSF Image Array into a GalSim Object
-        # Norm=True by default
-        psfObj = arrayToGSObj(psfImage, norm=True)
-        cosFinal = galsim.Convolve([cosObj, psfObj])
-    else:
-        cosFinal = cosObj
-
-    # Pass the flux to the object
     # TODO : Should check the flux
     """
     The flux of the galaxy corresponds to a 1 second exposure time with the
@@ -333,8 +323,29 @@ def galSimFakeCosmos(cosmosCat, flux, gal,
         effective diameter of their telescope compared to that of HST.
         (Effective diameter may differ from the actual diameter if there is
         significant obscuration.)
+
+    The catalog returns objects that are appropriate for HST in 1 second
+    exposures.  So for our  telescope we scale up by the relative area and
+    exposure time.  Note that what is important is the *effective* area after
+    taking into account obscuration.  For HST, the telescope diameter is 2.4
+    but there is obscuration (a linear factor of 0.33).  Here, we assume that
+    the telescope we're simulating effectively has no obscuration factor.
+    We're also ignoring the pi/4 factor since it appears in the numerator and
+    denominator, so we use area = diam^2.
     """
-    # cosFinal = cosFinal.withFlux(float(flux))
+    hstEffArea = (2.4 ** 2) * (1.0 - 0.33 ** 2)
+    subaruEffArea = (8.2 ** 2) * (1.0 - 0.1 ** 2)
+    fluxScaling = (subaruEffArea / hstEffArea)
+    cosObj *= fluxScaling
+
+    # Convolve the Sersic model using the provided PSF image
+    if psfImage is not None:
+        # Convert the PSF Image Array into a GalSim Object
+        # Norm=True by default
+        psfObj = arrayToGSObj(psfImage, norm=True)
+        cosFinal = galsim.Convolve([cosObj, psfObj])
+    else:
+        cosFinal = cosObj
 
     # Make a PNG figure of the fake galaxy to check if everything is Ok
     if plotFake:
