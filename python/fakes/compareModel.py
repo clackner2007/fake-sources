@@ -2,13 +2,17 @@
 """
 Compare the input fake galaxy model to the output one
 """
+import argparse
+
 import numpy as np
+
 import astropy.table
 
-import lsst.daf.persistence as dafPersist
 import lsst.pipe.base
 import lsst.afw.table
 import lsst.afw.geom.ellipses
+import lsst.daf.persistence as dafPersist
+
 from matchFakes import getFakeSources
 
 
@@ -16,15 +20,15 @@ def getParams(record, galType='sersic'):
     """
     return the semi-major axis, axis ratio and position angle (in degrees)
     """
-    fluxType = {'dev':'cmodel.dev',
-                'exp':'cmodel.exp',
-                'sersic':'cmodel',
-                'cmodel':'cmodel'}[galType]
+    fluxType = {'dev': 'cmodel.dev',
+                'exp': 'cmodel.exp',
+                'sersic': 'cmodel',
+                'cmodel': 'cmodel'}[galType]
 
-    e = lsst.afw.geom.ellipses.Axes(record.get(fluxType+'.ellipse'))
+    e = lsst.afw.geom.ellipses.Axes(record.get(fluxType + '.ellipse'))
+    q = (e.getB() / e.getA())
     reff = e.getA()
-    q = e.getB()/e.getA()
-    pa = e.getTheta() * 180.0/np.pi
+    pa = (e.getTheta() * 180.0 / np.pi)
     return reff, q, pa
 
 
@@ -36,6 +40,7 @@ def getMag(record, fluxType='cmodel'):
     mag, magerr = -2.5 * np.log10(flux), 2.5/np.log(10.0)*fluxerr/flux
     mag += record.get('zeropoint')
     return mag, magerr
+
 
 def writeNumpyTable(fakeTable):
     """Writes output to numpy
@@ -101,14 +106,7 @@ def main(root, visit, ccds, galType='sersic', output='outputs/'):
                                              '_galMags.txt', format='ascii')
 
 
-
-if __name__=='__main__':
-    # parser = lsst.pipe.base.ArgumentParser(name='compareModel')
-    # parser.add_id_argument('--id', 'src', help='Data ID, e.g. --id visit=123 ccd=50..100', ContainerClass=lsst.pipe.base.DataIdContainer)
-    # args = parser.parse_args(None)
-    # print args()
-
-    import argparse
+if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('root', help="Root directory of data repository")
     parser.add_argument("visit", type=int, help="Visit")
@@ -118,4 +116,6 @@ if __name__=='__main__':
     parser.add_argument('-o', '--outputpath', dest='outpath',
                         help='path for output')
     args = parser.parse_args()
-    main(args.root, args.visit, args.ccd, galType=args.galType, output=args.outpath)
+
+    main(args.root, args.visit, args.ccd, galType=args.galType,
+         output=args.outpath)

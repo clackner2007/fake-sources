@@ -43,7 +43,7 @@ class MakeFakeInputsConfig(pexConfig.Config):
     innerTract = pexConfig.Field(doc='Only add to the inner Tract region',
                                  dtype=bool, optional=True, default=False)
     uniqueID = pexConfig.Field(doc='Use the index as unique ID',
-                               dtype=bool, optional=True, default=True)
+                               dtype=bool, optional=True, default=False)
 
 
 class MakeFakeInputsTask(pipeBase.CmdLineTask):
@@ -155,7 +155,6 @@ class MakeFakeInputsTask(pipeBase.CmdLineTask):
                 outTab.add_column(colAdd)
             # Replace ID with a unique integer (using index)
             if ('ID' in outTab.colnames) and (self.config.uniqueID):
-                print "## Rename the ID column"
                 outTab.rename_column('ID', 'modelID')
                 outTab.add_column(astropy.table.Column(name="ID",
                                   data=np.arange(len(outTab))))
