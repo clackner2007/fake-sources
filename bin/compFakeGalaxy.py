@@ -194,7 +194,7 @@ def main(root1, root2, visit, ccd, root=None):
     imgDiff = (imgAfter - imgBefore)
 
     # get the X, Y lists of noMatch stars
-    noMatches = getNoMatchXY(root + root2, visit, ccd)
+    noMatches = getNoMatchXY(root2, visit, ccd)
     noMatchX, noMatchY, fakeX, fakeY, badKronX, badKronY = noMatches
 
     # stretch it with arcsinh and make a png with pyplot
