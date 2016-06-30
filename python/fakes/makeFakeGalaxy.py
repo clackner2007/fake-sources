@@ -289,7 +289,13 @@ def galSimFakeCosmos(cosmosCat, flux, gal,
     """
     Generate fake galaxy using galSim.COSMOSCatalog objects.
     """
-    galIndex = np.where(cosmosCat.param_cat['IDENT'] == gal['ID'])[0][0]
+    galFound = np.where(cosmosCat.param_cat['IDENT'] == gal['ID'])[0]
+    if len(galFound) == 0:
+        raise Exception("# Find no match for %d" % gal['ID'])
+    elif len(galFound) > 1:
+        raise Exception("# Multiple match for %d" % gal['ID'])
+
+    galIndex = galFound[0]
     cosObj = cosmosCat.makeGalaxy(index=galIndex,
                                   sersic_prec=sersic_prec,
                                   gal_type='parametric')
