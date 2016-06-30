@@ -3,31 +3,30 @@
 import re
 import os
 import argparse
-
 import collections
+
 import numpy as np
-import pyfits as fits
 import matplotlib.pyplot as pyplot
 
 import lsst.daf.persistence as dafPersist
-import lsst.afw.geom.ellipses as geomEllip
+
 from lsst.afw.table import SourceCatalog, SchemaMapper
+
 
 def getGalaxy(rootdir, visit, ccd, tol):
     """Get list of sources which agree in position with fake ones with tol
     """
     # Call the butler
     butler = dafPersist.Butler(rootdir)
-    dataId = {'visit':visit, 'ccd':ccd}
+    dataId = {'visit': visit, 'ccd': ccd}
     tol = float(tol)
 
     # Get the source catalog and metadata
     sources = butler.get('src', dataId)
-    cal_md  = butler.get('calexp_md', dataId)
+    cal_md = butler.get('calexp_md', dataId)
 
     # Get the X, Y locations of objects on the CCD
     srcX, srcY = sources.getX(), sources.getY()
-    nSources = srcX.shape[0]
     # Get the zeropoint
     zeropoint = (2.5 * np.log10(cal_md.get("FLUXMAG0")))
     # Get the parent ID
@@ -40,8 +39,8 @@ def getGalaxy(rootdir, visit, ccd, tol):
     # For Galaxies: Get these parameters
     # 1. Get the Kron flux and its error
     fluxKron, ferrKron = sources.get('flux.kron'), sources.get('flux.kron.err')
-    magKron, merrKron = (zeropoint - 2.5*np.log10(fluxKron)), (2.5/np.log(10)*
-                                                            (ferrKron/fluxKron))
+    magKron = (zeropoint - 2.5 * np.log10(fluxKron))
+    merrKron = (2.5 / np.log(10) * (ferrKron / fluxKron))
     # X, Y locations of the fake galaxies
     fakeList = collections.defaultdict(tuple)
     # Regular Expression
@@ -54,7 +53,7 @@ def getGalaxy(rootdir, visit, ccd, tol):
         m = fakename.match(card)
         if m is not None:
             # Get the X,Y location for fake object
-            x,y    = map(float, (cal_md.get(card)).split(','))
+            x, y = map(float, (cal_md.get(card)).split(','))
             # Get the ID or index of the fake object
             fakeID = int(m.group(1))
             fakeList[counts] = [fakeID, x, y]
@@ -62,13 +61,14 @@ def getGalaxy(rootdir, visit, ccd, tol):
 
     # Match the fake object to the source list
     srcIndex = collections.defaultdict(list)
-    for fid, fcoord  in fakeList.items():
+    for fid, fcoord in fakeList.items():
         separation = np.sqrt(np.abs(srcX-fcoord[1])**2 +
                              np.abs(srcY-fcoord[2])**2)
         matched = (separation <= tol)
         matchId = np.where(matched)[0]
         matchSp = separation[matchId]
-        sortId = [matchId for (matchSp, matchId) in sorted(zip(matchSp, matchId))]
+        sortId = [matchId for (matchSp, matchId) in
+                  sorted(zip(matchSp, matchId))]
         # DEBUG:
         # print fid, fcoord, matchId
         # print sortId, sorted(matchSp), matchId
@@ -85,7 +85,6 @@ def getGalaxy(rootdir, visit, ccd, tol):
     srcList.reserve(sum([len(s) for s in srcIndex.values()]))
 
     # Return a list of interesting parameters
-    #srcParam = collections.defaultdict(list)
     srcParam = []
     nFake = 0
     for matchIndex in srcIndex.values():
@@ -123,15 +122,19 @@ def getGalaxy(rootdir, visit, ccd, tol):
 
     return srcIndex, srcParam, srcList, zeropoint
 
+
 def getExpArray(root, visit, ccd, filter=None):
 
     # make a butler and specify your dataId
     butler = dafPersist.Butler(root)
     if filter:
-        dataId = {'tract': visit, 'patch':ccd, 'filter':filter}
+        dataId = {'tract': visit,
+                  'patch': ccd,
+                  'filter': filter}
         prefix = "deepCoadd_"
     else:
-        dataId = {'visit': visit, 'ccd':int(ccd)}
+        dataId = {'visit': visit,
+                  'ccd': int(ccd)}
         prefix = ""
 
     # get the exposure from the butler
@@ -146,14 +149,13 @@ def getExpArray(root, visit, ccd, filter=None):
 
 
 def getNoMatchXY(rootDir, visit, ccd):
-
     # TODO: Need to be organized
     (fakeIndex, fakeParam, fakeList, zp) = getGalaxy(rootDir,
                                                      visit, ccd, 2.0)
     fakeX = fakeParam['fakeX']
     fakeY = fakeParam['fakeY']
     fakeMag = fakeParam['magKron']
-    nFakes   = len(fakeX)
+    nFakes = len(fakeX)
     nNoMatch = (nFakes - len(np.argwhere(fakeMag)))
     noMatchX = []
     noMatchY = []
@@ -170,58 +172,66 @@ def getNoMatchXY(rootDir, visit, ccd):
             noMatchY.append(fakeY[i])
 
     if len(noMatchX) is not nNoMatch:
-        raise Exception("Something is wrong about the number of noMatch stars!")
+        raise Exception("Something is wrong about the number of noMatch")
 
     return noMatchX, noMatchY, fakeX, fakeY, badKronX, badKronY
 
 
-def main(root1, root2, visit, ccd, root=""):
+def main(root1, root2, visit, ccd, root=None):
 
     # get the name of the rerun
     rerun = os.path.split(root2)[-1]
 
     # get the image array before the fake objects are added
-    imgBefore = getExpArray(root + root1, visit, ccd)
-    imgAfter  = getExpArray(root + root2, visit, ccd)
+    if root is not None:
+        root1 = os.path.join(root, root1)
+        root2 = os.path.join(root, root2)
+
+    imgBefore = getExpArray(root1, visit, ccd)
+    imgAfter = getExpArray(root2, visit, ccd)
 
     # get the difference between the two image
     imgDiff = (imgAfter - imgBefore)
 
     # get the X, Y lists of noMatch stars
-    noMatchX, noMatchY, fakeX, fakeY, badKronX, badKronY = getNoMatchXY(root + root2, visit, ccd)
+    noMatches = getNoMatchXY(root + root2, visit, ccd)
+    noMatchX, noMatchY, fakeX, fakeY, badKronX, badKronY = noMatches
 
     # stretch it with arcsinh and make a png with pyplot
-    fig, axes = pyplot.subplots(1, 3, sharex=True, sharey=True, figsize=(15,10))
-    pyplot.subplots_adjust(left=0.04, bottom=0.03, right=0.99, top=0.97,
-                           wspace=0.01, hspace = 0.01)
+    fig, axes = pyplot.subplots(1, 3, sharex=True,
+                                sharey=True,
+                                figsize=(15, 10))
+    pyplot.subplots_adjust(left=0.04, bottom=0.03,
+                           right=0.99, top=0.97,
+                           wspace=0.01, hspace=0.01)
 
-    imgs   = imgBefore, imgAfter, imgDiff
+    imgs = imgBefore, imgAfter, imgDiff
     titles = "Before", "After", "Diff"
     for i in range(3):
         print '### Plot : ', i
         axes[i].imshow(np.arcsinh(imgs[i]), cmap='gray')
         axes[i].set_title(titles[i])
         area1 = np.pi * 6 ** 2
-        area2 = np.pi * 4 ** 2
+        # area2 = np.pi * 4 ** 2
         axes[i].scatter(fakeX, fakeY, s=area1, facecolors='none',
                         edgecolors='g', alpha=0.9)
-        #if len(noMatchX) > 0:
-            #axes[i].scatter(noMatchX, noMatchY, s=area2, c='r', alpha=0.3)
-        if len(badKronX) > 0:
-            axes[i].scatter(badKronX, badKronY, s=area2, c='b', alpha=0.4)
 
-    pyplot.gcf().savefig("%s-%d-%s.png"%(rerun, visit, str(ccd)))
+    pyplot.gcf().savefig("%s-%d-%s.png" % (rerun, visit, str(ccd)))
 
 
 if __name__ == '__main__':
 
-    root = '/lustre/Subaru/SSP/rerun/'
-
     parser = argparse.ArgumentParser()
-    parser.add_argument("root1", help="Root directory of data before adding fake objects")
-    parser.add_argument("root2", help="Root directory of data after adding fake objects")
+    parser.add_argument("root1",
+                        help="Root directory of data before adding fakes!")
+    parser.add_argument("root2",
+                        help="Root directory of data after adding fakes")
     parser.add_argument("visit", type=int, help="Visit to show")
     parser.add_argument("ccd", type=int, help="CCD to show")
+    parser.add_argument("root",
+                        help="Master root directory",
+                        default=None)
     args = parser.parse_args()
 
-    main(args.root1, args.root2, args.visit, args.ccd, root=root)
+    main(args.root1, args.root2, args.visit, args.ccd,
+         root=args.root)
