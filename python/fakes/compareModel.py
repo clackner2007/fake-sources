@@ -16,11 +16,11 @@ def getParams(record, galType='sersic'):
     """
     return the semi-major axis, axis ratio and position angle (in degrees)
     """
-    fluxType = {'dev':'cmodel.dev', 
+    fluxType = {'dev':'cmodel.dev',
                 'exp':'cmodel.exp',
                 'sersic':'cmodel',
                 'cmodel':'cmodel'}[galType]
-    
+
     e = lsst.afw.geom.ellipses.Axes(record.get(fluxType+'.ellipse'))
     reff = e.getA()
     q = e.getB()/e.getA()
@@ -49,7 +49,7 @@ def writeNumpyTable(fakeTable):
                                           'expPosAng', 'devPosAng',
                                           'cmodelMagErr', 'expMagErr',
                                           'devMagErr', 'nchild', 'parent'],
-                                 'formats':[long, int, int, int, 
+                                 'formats':[long, int, int, int,
                                             float, float,
                                             float, float, float, float,
                                             float, float, float, float,
@@ -75,7 +75,7 @@ def writeNumpyTable(fakeTable):
         npTable[indFake]['nchild'] = fake.get('deblend.nchild')
         npTable[indFake]['parent'] = fake.get('parent')
     return npTable
-        
+
 
 def main(root, visit, ccds, galType='sersic', output='outputs/'):
     """
@@ -94,7 +94,7 @@ def main(root, visit, ccds, galType='sersic', output='outputs/'):
             fakeTable = temp.copy(True)
         else:
             fakeTable.extend(temp, True)
-    
+
     npTable = writeNumpyTable(fakeTable)
     rerunName = root.split('/')[-2]
     fitsTable = astropy.table.Table(npTable).write(output+'/'+rerunName+

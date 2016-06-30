@@ -10,9 +10,11 @@ import galsim
 import pyfits as fits
 
 
-def makeGalaxy(flux, gal, psfImage, galType='sersic',
+def makeGalaxy(flux, gal, psfImage,
+               galType='sersic', cosmosCat=None,
                drawMethod='no_pixel', trunc=10.0,
-               transform=None, addShear=False):
+               transform=None, addShear=False,
+               sersic_prec=0.02, addPoisson=False):
     """
     Function called by task to make galaxy images
 
@@ -31,17 +33,24 @@ def makeGalaxy(flux, gal, psfImage, galType='sersic',
     including maybe drawMethod and trunc...
     """
     if galType is 'sersic':
-        return galSimFakeSersic(flux, gal, psfImage=psfImage, trunc=trunc,
-                                drawMethod=drawMethod, returnObj=False,
-                                transform=transform, addShear=addShear)
+        return galSimFakeSersic(flux, gal, psfImage=psfImage,
+                                trunc=trunc,
+                                drawMethod=drawMethod,
+                                returnObj=False,
+                                transform=transform,
+                                addShear=addShear,
+                                addPoisson=addPoisson)
 
     if galType is 'dsersic':
         # TODO: addShear option is not available for double Sersic yet
         (comp1, comp2) = parseDoubleSersic(flux, gal)
         return galSimFakeDoubleSersic(comp1, comp2, psfImage=psfImage,
-                                      trunc=trunc, drawMethod=drawMethod,
-                                      returnObj=False, transform=transform,
-                                      addShear=addShear)
+                                      trunc=trunc,
+                                      drawMethod=drawMethod,
+                                      returnObj=False,
+                                      transform=transform,
+                                      addShear=addShear,
+                                      addPoisson=addPoisson)
 
     if galType is 'real':
         # TODO: For real galaxies, we need to decide which to use: index in the
@@ -53,42 +62,55 @@ def makeGalaxy(flux, gal, psfImage, galType='sersic',
         else:
             index = None
             random = True
-        return galSimRealGalaxy(flux, real_galaxy_catalog, index=index,
-                                psfImage=psfImage, random=random,
-                                returnObj=False, drawMethod=drawMethod,
-                                transform=transform)
+        return galSimRealGalaxy(flux, real_galaxy_catalog,
+                                index=index,
+                                psfImage=psfImage,
+                                random=random,
+                                returnObj=False,
+                                drawMethod=drawMethod,
+                                transform=transform,
+                                addPoisson=addPoisson)
 
     if galType is 'cosmos':
-        # TODO : Place holder
+        if cosmosCat is None:
+            raise Exception("# No COSMOSCatalog() provided!")
+        return galSimFakeCosmos(cosmosCat, flux, gal,
+                                psfImage=psfImage,
+                                returnObj=False,
+                                sersic_prec=sersic_prec,
+                                drawMethod=drawMethod,
+                                transform=transform,
+                                addShear=addShear,
+                                addPoisson=addPoisson)
 
 
 def parseRealGalaxy(gal):
-        # If an "index" column is presented, then use the index
-        # If not, turn random = True
-        try:
-            index = gal['index']
-        except KeyError:
-            index = -1
+    """Place holder for real galaxi."""
+    try:
+        index = gal['index']
+    except KeyError:
+        index = -1
 
-        # Get the catalog name and the directory
-        try:
-            cat_name = gal['cat_name']
-        except KeyError:
-            raise KeyError('Can not find the name of the catlog')
-        try:
-            cat_dir = gal['cat_dir']
-        except KeyError:
-            cat_dir = None
+    # Get the catalog name and the directory
+    try:
+        cat_name = gal['cat_name']
+    except KeyError:
+        raise KeyError('Can not find the name of the catlog')
+    try:
+        cat_dir = gal['cat_dir']
+    except KeyError:
+        cat_dir = None
 
-        real_galaxy_catalog = galsim.RealGalaxyCatalog(cat_name, dir=cat_dir)
+    real_galaxy_catalog = galsim.RealGalaxyCatalog(cat_name,
+                                                   dir=cat_dir)
 
-        return real_galaxy_catalog, index
+    return real_galaxy_catalog, index
 
 
 def parseDoubleSersic(tflux, gal):
     """
-    Parse the input total flux [tflux] and parameter record array [gal] into two
-    parameter records for each component [comp1, comp2]
+    Parse the input total flux [tflux] and parameter record array
+    [gal] into two parameter records for each component [comp1, comp2]
     """
 
     # Check if this is a real 2-Sersic record
@@ -96,8 +118,9 @@ def parseDoubleSersic(tflux, gal):
         frac1 = float(gal['b2t'])
     except KeyError:
         raise KeyError("No b2t parameter is found in the record!!")
+
     # Make sure the flux fraction of the first component is reasonable
-    if (frac1 <= 0) or (frac1 >=1):
+    if (frac1 <= 0) or (frac1 >= 1):
         raise Exception("b2t should be > 0 and <1 !!")
     flux1, flux2 = (tflux * frac1), (tflux * (1.0 - frac1))
 
@@ -124,34 +147,42 @@ def parseDoubleSersic(tflux, gal):
     except KeyError:
         raise KeyError("theta1 or theta2 is found in the record!!")
 
-
     comp1 = np.array((galID, flux1, nser1, reff1, ba1, pa1),
-                     dtype=[('ID','int'), ('mag','float'), ('sersic_n','float'),
-                            ('reff','float'), ('b_a','float'),
-                            ('theta','float')])
+                     dtype=[('ID', 'int'),
+                            ('mag', 'float'),
+                            ('sersic_n', 'float'),
+                            ('reff', 'float'),
+                            ('b_a', 'float'),
+                            ('theta', 'float')])
     comp2 = np.array((galID, flux2, nser2, reff2, ba2, pa2),
-                     dtype=[('ID','int'), ('mag','float'), ('sersic_n','float'),
-                            ('reff','float'), ('b_a','float'),
-                            ('theta','float')])
+                     dtype=[('ID', 'int'),
+                            ('mag', 'float'),
+                            ('sersic_n', 'float'),
+                            ('reff', 'float'),
+                            ('b_a', 'float'),
+                            ('theta', 'float')])
 
     return comp1, comp2
 
 
 def arrayToGSObj(imgArr, scale=1.0, norm=False):
-    # TODO : Check the scale here
-    # According to the GalSim Doxygen
-    # If provided, use this as the pixel scale for the Image; this will override
-    # the pixel scale stored by the provided Image, in any. If scale is None,
-    # then take the provided image's pixel scale. [default: None]
     """
     Convert an input 2-D array into a GalSim Image object
+
+    TODO : Check the scale here
+            According to the GalSim Doxygen
+            If provided, use this as the pixel scale for the Image;
+            this will override the pixel scale stored by the provided Image.
+            If scale is None, then take the provided image's pixel scale.
+            [default: None]
     """
     if norm:
         return galsim.InterpolatedImage(galsim.image.Image(imgArr),
-                                         scale=scale, normalization="flux")
+                                        scale=scale,
+                                        normalization="flux")
     else:
         return galsim.InterpolatedImage(galsim.image.Image(imgArr),
-                                         scale=scale)
+                                        scale=scale)
 
 
 def galSimDrawImage(galObj, size=0, scale=1.0, method="no_pixel",
@@ -159,14 +190,15 @@ def galSimDrawImage(galObj, size=0, scale=1.0, method="no_pixel",
     """
     "Draw" a GalSim Object into an GalSim Image using certain method, and with
     certain size
+
+    TODO : Think about the scale here:
+      By default scale=None
+      According to GalSim Doxygen :
+      If provided, use this as the pixel scale for the image. If scale is None
+      and image != None, then take the provided image's pixel scale.
+      If scale is None and image == None, then use the Nyquist scale.
+      If scale <= 0 (regardless of image), then use the Nyquist scale.
     """
-    # TODO : Think about the scale here:
-    # By default scale=None
-    # According to GalSim Doxygen :
-    # If provided, use this as the pixel scale for the image. If scale is None
-    # and image != None, then take the provided image's pixel scale. If scale is
-    # None and image == None, then use the Nyquist scale. If scale <= 0
-    # (regardless of image), then use the Nyquist scale.
 
     # Generate an "Image" object for the model
     if size > 0:
@@ -183,10 +215,11 @@ def galSimDrawImage(galObj, size=0, scale=1.0, method="no_pixel",
     return galImg.array
 
 
-def galSimConvolve(galObj, psfObj, size=0, scale=1.0, method="auto",
+def galSimConvolve(galObj, psfObj, size=0, scale=1.0, method="no_pixel",
                    returnObj=False):
     """
     Just do convolution using GalSim
+
     Make sure the inputs are both GalSim GSObj
     The galaxy model should be the first one, and the PSF object is the second
     one; Returns a imgArr or GSObj
@@ -196,11 +229,13 @@ def galSimConvolve(galObj, psfObj, size=0, scale=1.0, method="auto",
     if returnObj:
         return outObj
     else:
-        outArr = galSimDrawImage(galObj, size=size, scale=scale, method=method)
+        outArr = galSimDrawImage(galObj, size=size,
+                                 scale=scale, method=method)
         return outArr
 
 
-def galSimAdd(galObjList, size=0, scale=1.0, method="auto", returnArr=False):
+def galSimAdd(galObjList, size=0, scale=1.0, method="no_pixel",
+              returnArr=False):
     """
     Just add a list of GSObjs together using GalSim
     Make sure all elements in the input list are GSObjs
@@ -211,13 +246,15 @@ def galSimAdd(galObjList, size=0, scale=1.0, method="auto", returnArr=False):
     outObj = galsim.Add(galObjList)
 
     if returnArr:
-        outArr = galSimDrawImage(outObj, size=size, scale=scale, method=method)
+        outArr = galSimDrawImage(outObj, size=size, scale=scale,
+                                 method=method)
         return outArr
     else:
         return outObj
 
 
-def plotFakeGalaxy(galObj, galID=None, suffix=None, size=0, addPoisson=False):
+def plotFakeGalaxy(galObj, galID=None, suffix=None,
+                   size=0, addPoisson=False):
 
     """
     Generate a PNG image of the model
@@ -233,17 +270,82 @@ def plotFakeGalaxy(galObj, galID=None, suffix=None, size=0, addPoisson=False):
     if suffix is not None:
         outPNG = outPNG + '_' + suffix.strip() + '.png'
 
-    plt.figure(1, figsize=(8,8))
+    plt.figure(1, figsize=(8, 8))
 
     # Use "fft" just to be fast
-    plt.imshow(np.arcsinh(galSimDrawImage(galObj, size=size, method="no_pixel",
-                                         addPoisson=addPoisson, scale=1.0)))
+    plt.imshow(np.arcsinh(galSimDrawImage(galObj, size=size,
+                                          method="no_pixel",
+                                          addPoisson=addPoisson,
+                                          scale=1.0)))
     plt.savefig(outPNG)
+
+
+def galSimFakeCosmos(cosmosCat, flux, gal,
+                     psfImage=None, plotFake=False,
+                     returnObj=True, sersic_prec=0.02,
+                     drawMethod='no_pixel', scale=1.0,
+                     transform=None, addShear=False,
+                     addPoisson=False):
+    """
+    Generate fake galaxy using galSim.COSMOSCatalog objects.
+    """
+    galIndex = np.where(cosmosCat.param_cat['IDENT'] == gal['ID'])[0][0]
+    cosObj = cosmosCat.makeGalaxy(index=galIndex,
+                                  sersic_prec=sersic_prec,
+                                  gal_type='parametric')
+
+    # If necessary, apply addtion shear (e.g. for weak lensing test)
+    if addShear:
+        try:
+            g1 = float(gal['g1'])
+            g2 = float(gal['g2'])
+            cosObj = cosObj.shear(g1=g1, g2=g2)
+        except ValueError:
+            warnings.warn("Can not find g1 or g2 in the input!\n",
+                          " No shear has been added!")
+
+    # Do the transformation from sky to pixel coordinates, if given
+    if transform is not None:
+        cosObj = cosObj.transform(*tuple(transform.ravel()))
+
+    # Convolve the Sersic model using the provided PSF image
+    if psfImage is not None:
+        # Convert the PSF Image Array into a GalSim Object
+        # Norm=True by default
+        psfObj = arrayToGSObj(psfImage, norm=True)
+        cosFinal = galsim.Convolve([cosObj, psfObj])
+    else:
+        cosFinal = cosObj
+
+    # Pass the flux to the object
+    # TODO : Should check the flux
+    """
+    The flux of the galaxy corresponds to a 1 second exposure time with the
+        Hubble Space Telescope. Users who wish to simulate F814W images with a
+        different telescope and an exposure time longer than 1 second should
+        multiply by that exposure time, and by the square of the ratio of the
+        effective diameter of their telescope compared to that of HST.
+        (Effective diameter may differ from the actual diameter if there is
+        significant obscuration.)
+    """
+    # cosFinal = cosFinal.withFlux(float(flux))
+
+    # Make a PNG figure of the fake galaxy to check if everything is Ok
+    if plotFake:
+        plotFakeGalaxy(cosFinal, galID=gal['ID'])
+
+    # Now, by default, the function will just return the GSObj
+    if returnObj:
+        return cosFinal
+    else:
+        return galSimDrawImage(cosFinal,
+                               method=drawMethod, scale=scale,
+                               addPoisson=addPoisson)
 
 
 def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
                      expAll=False, devAll=False, plotFake=False, trunc=0,
-                     drawMethod="auto", addPoisson=False, scale=1.0,
+                     drawMethod="no_pixel", addPoisson=False, scale=1.0,
                      transform=None, addShear=False):
     """
     Make a fake single Sersic galaxy using the galSim.Sersic function
@@ -263,14 +365,12 @@ def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
         plotFake:     Generate a PNG figure of the model
         expAll:       Input model will be seen as nSersic=1
         devAll:       Input model will be seen as nSersic=4
-        returnObj:    If TRUE, will return the GSObj, instead of the image array
+        returnObj:    If TRUE, will return the GSObj
     """
-
-    # Convert the numpy.float32 into normal float format
-    nSersic   = float(gal["sersic_n"])
-    reff   = float(gal["reff"])
+    reff = float(gal["reff"])
+    posAng = float(gal["theta"])
     axisRatio = float(gal["b_a"])
-    posAng    = float(gal["theta"])
+    nSersic = float(gal["sersic_n"])
 
     # Truncate the flux at trunc x reff
     if trunc > 0:
@@ -290,23 +390,24 @@ def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
         else:
             serObj = galsim.Exponential(half_light_radius=reff)
         if expAll:
-            print " * This model is treated as a n=1 Exponential disk : %d" % (gal["ID"])
+            print " * Treated as a n=1 Exponential disk : %d" % (gal["ID"])
     elif nSersic == 4.0 or devAll:
         serObj = galsim.DeVaucouleurs(half_light_radius=reff, trunc=trunc)
         if devAll:
-            print " * This model is treated as a n=4 De Vaucouleurs model: %d" % (gal["ID"])
+            print " * Treated as a n=4 De Vaucouleurs model: %d" % (gal["ID"])
     elif nSersic <= 0.9:
         serObj = galsim.Sersic(nSersic, half_light_radius=reff)
     else:
-        serObj = galsim.Sersic(nSersic, half_light_radius=reff, trunc=trunc)
+        serObj = galsim.Sersic(nSersic, half_light_radius=reff,
+                               trunc=trunc)
 
     # If necessary, apply the Axis Ratio (q=b/a) using the Shear method
     if axisRatio < 1.0:
-        serObj = serObj.shear(q=axisRatio, beta=0.0*galsim.degrees)
+        serObj = serObj.shear(q=axisRatio, beta=(0.0 * galsim.degrees))
 
     # If necessary, apply the Position Angle (theta) using the Rotate method
-    #if posAng != 0.0 or posAng != 180.0:
-    serObj = serObj.rotate((90.0-posAng)*galsim.degrees)
+    #    if posAng != 0.0 or posAng != 180.0:
+    serObj = serObj.rotate((90.0 - posAng) * galsim.degrees)
 
     # If necessary, apply addtion shear (e.g. for weak lensing test)
     if addShear:
@@ -315,10 +416,10 @@ def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
             g2 = float(gal['g2'])
             serObj = serObj.shear(g1=g1, g2=g2)
         except ValueError:
-            # TODO: Should check other options
-            warnings.warn("Can not find g1 or g2 in the input! No shear has been added!")
+            warnings.warn("Can not find g1 or g2 in the input!\n",
+                          " No shear has been added!")
 
-    #do the transformation from sky to pixel coordinates, if given
+    # Do the transformation from sky to pixel coordinates, if given
     if transform is not None:
         serObj = serObj.transform(*tuple(transform.ravel()))
 
@@ -326,7 +427,7 @@ def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
     if psfImage is not None:
         # Convert the PSF Image Array into a GalSim Object
         # Norm=True by default
-        psfObj  = arrayToGSObj(psfImage, norm=True)
+        psfObj = arrayToGSObj(psfImage, norm=True)
         serFinal = galsim.Convolve([serObj, psfObj])
     else:
         serFinal = serObj
@@ -335,7 +436,6 @@ def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
     serFinal = serFinal.withFlux(float(flux))
 
     # Make a PNG figure of the fake galaxy to check if everything is Ok
-    # TODO: For test, should be removed later
     if plotFake:
         plotFakeGalaxy(serFinal, galID=gal['ID'])
 
@@ -347,8 +447,9 @@ def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
                                addPoisson=addPoisson)
 
 
-def galSimFakeDoubleSersic(comp1, comp2, psfImage=None, trunc=0, returnObj=True,
-                           devExp=False, plotFake=False, drawMethod='auto',
+def galSimFakeDoubleSersic(comp1, comp2, psfImage=None, trunc=0,
+                           returnObj=True, devExp=False,
+                           plotFake=False, drawMethod='auto',
                            addPoisson=False, scale=1.0, transform=None,
                            addShear=False):
     """
@@ -369,15 +470,15 @@ def galSimFakeDoubleSersic(comp1, comp2, psfImage=None, trunc=0, returnObj=True,
         plotFake:     Generate a PNG figure of the model
         devexp:       The first component will be seen as a nSersic=4 bulge;
                       And, the second one will be seen as a nSersic=1 disk
-        returnObj:    If TRUE, will return the GSObj, instead of the image array
+        returnObj:    If TRUE, will return the GSObj
     """
 
     # Get the flux of both components
     flux1 = float(comp1['mag'])
     flux2 = float(comp2['mag'])
-    #tflux = flux1 + flux2
+    # tflux = flux1 + flux2
 
-    # If devExp = True : Treat the first component as an n=4 DeVaucouleurs bulge
+    # If devExp = True : Treat the first component as an n=4 DeVaucouleurs
     #                    and, the second component as an n=1 Exponential disk
     if devExp:
         serModel1 = galSimFakeSersic(flux1, comp1, returnObj=True, devAll=True,
@@ -393,7 +494,7 @@ def galSimFakeDoubleSersic(comp1, comp2, psfImage=None, trunc=0, returnObj=True,
     # Combine these two components
     doubleSersic = galSimAdd([serModel1, serModel2])
 
-    #do the transformation from sky to pixel coordinates, if given
+    # Do the transformation from sky to pixel coordinates, if given
     if transform is not None:
         doubleSersic = doubleSersic.transform(*tuple(transform.ravel()))
 
@@ -401,13 +502,12 @@ def galSimFakeDoubleSersic(comp1, comp2, psfImage=None, trunc=0, returnObj=True,
     if psfImage is not None:
         # Convert the PSF Image Array into a GalSim Object
         # Norm=True by default
-        psfObj   = arrayToGSObj(psfImage, norm=True)
+        psfObj = arrayToGSObj(psfImage, norm=True)
         dserFinal = galsim.Convolve([doubleSersic, psfObj])
     else:
         dserFinal = doubleSersic
 
     # Make a PNG figure of the fake galaxy to check if everything is Ok
-    # TODO: For test, should be removed later
     if plotFake:
         if devExp:
             plotFakeGalaxy(dserFinal, galID=comp1['ID'], suffix='devexp')
@@ -426,20 +526,20 @@ def galSimRealGalaxy(flux, real_galaxy_catalog, index=None, psfImage=None,
                      random=False, returnObj=True, plotFake=False,
                      drawMethod='auto', addPoisson=False, scale=1.0,
                      transform=None):
-
     """
-    Real galaxy
+    Real galaxy.
     """
 
     if index is None:
         random = True
-    realObj = galsim.RealGalaxy(real_galaxy_catalog, index=index, random=random)
+    realObj = galsim.RealGalaxy(real_galaxy_catalog, index=index,
+                                random=random)
     index = realObj.index
 
     # Pass the flux to the object
     realObj = realObj.withFlux(flux)
 
-    #do the transformation from sky to pixel coordinates, if given
+    # Do the transformation from sky to pixel coordinates, if given
     if transform is not None:
         realObj = realObj.transform(*tuple(transform.ravel()))
 
@@ -447,13 +547,12 @@ def galSimRealGalaxy(flux, real_galaxy_catalog, index=None, psfImage=None,
     if psfImage is not None:
         # Convert the PSF Image Array into a GalSim Object
         # Norm=True by default
-        psfObj   = arrayToGSObj(psfImage, norm=True)
+        psfObj = arrayToGSObj(psfImage, norm=True)
         realFinal = galsim.Convolve([realObj, psfObj])
     else:
         realFinal = realFinal
 
     # Make a PNG figure of the fake galaxy to check if everything is Ok
-    # TODO: For test, should be removed later
     if plotFake:
         plotFakeGalaxy(realFinal, galID=index, suffix='realga')
 
@@ -466,20 +565,20 @@ def galSimRealGalaxy(flux, real_galaxy_catalog, index=None, psfImage=None,
 
 
 def testMakeFake(galList, asciiTab=False, single=True, double=True, real=True):
-
+    """Test the makeFake functions."""
     # Make a fake Gaussian PSF
     psfGaussian = galsim.Gaussian(fwhm=2.0)
-    psfImage    = psfGaussian.drawImage().array
+    psfImage = psfGaussian.drawImage().array
 
     # Test SingleSersic
     if single:
         if asciiTab:
-            galData = np.loadtxt(galList, dtype=[('ID','int'),
-                                                 ('mag','float'),
-                                                 ('sersic_n','float'),
-                                                 ('reff','float'),
-                                                 ('b_a','float'),
-                                                 ('theta','float')])
+            galData = np.loadtxt(galList, dtype=[('ID', 'int'),
+                                                 ('mag', 'float'),
+                                                 ('sersic_n', 'float'),
+                                                 ('reff', 'float'),
+                                                 ('b_a', 'float'),
+                                                 ('theta', 'float')])
         else:
             galData = fits.open(galList)[1].data
 
@@ -517,7 +616,8 @@ def testMakeFake(galList, asciiTab=False, single=True, double=True, real=True):
             (comp1, comp2) = parseDoubleSersic(flux, gal)
 
             # TODO: Get error when the axis ratio is small: 0.2?
-            # RuntimeError: Solve error: Too many iterations in bracketLowerWithLimit()
+            # RuntimeError: Solve error: Too many iterations in
+            #               bracketLowerWithLimit()
             # It seems like that GalSim has some issues with highly elliptical
             # objects. Although different, see this one:
             # https://github.com/GalSim-developers/GalSim/issues/384
@@ -547,9 +647,8 @@ def testMakeFake(galList, asciiTab=False, single=True, double=True, real=True):
 
     # Test RealGalaxy
     if real:
-
         # Make a special PSF for real galaxy
-        psfReal      = galsim.Gaussian(fwhm=0.2)
+        psfReal = galsim.Gaussian(fwhm=0.2)
         psfRealImage = psfReal.drawImage().array
         # TODO : Scale seems to be a problem, should check again !!
 
@@ -570,9 +669,12 @@ def testMakeFake(galList, asciiTab=False, single=True, double=True, real=True):
 
             flux = 10.0 ** ((27.0 - gal['mag']) / 2.5)
 
-            realArray = galSimRealGalaxy(flux, real_galaxy_catalog, index=index,
-                                         psfImage=psfRealImage, random=random,
-                                         plotFake=True, returnObj=False,
+            realArray = galSimRealGalaxy(flux, real_galaxy_catalog,
+                                         index=index,
+                                         psfImage=psfRealImage,
+                                         random=random,
+                                         plotFake=True,
+                                         returnObj=False,
                                          drawMethod='no_pixel')
 
             print '\n---------------------------------'

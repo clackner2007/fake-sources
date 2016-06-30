@@ -16,7 +16,7 @@ class RandomStarFakeSourcesConfig(FakeSourcesConfig):
                                    doc="Size of margin at edge that should not be added")
     seed = lsst.pex.config.Field(dtype=int, default=0,
                                  doc="Seed for random number generator")
-  
+
 
 class RandomStarFakeSourcesTask(FakeSourcesTask):
     ConfigClass = RandomStarFakeSourcesConfig
@@ -49,11 +49,11 @@ class RandomStarFakeSourcesTask(FakeSourcesTask):
             psfImage = psf.computeImage(lsst.afw.geom.Point2D(x, y))
             psfImage *= flux
             psfMaskedImage = fsl.addNoise(psfImage.convertF(), exposure.getDetector(), rand_gen=self.npRand)
-            
+
             mask = psfMaskedImage.getMask()
             mask.set(self.bitmask)
-            
-            # the line below would work if the subimage call worked in PARENT coordinates.  
+
+            # the line below would work if the subimage call worked in PARENT coordinates.
             # Since it doesn't at present, we have to do the longer call below.
             # subMaskedImage = exposure.getMaskedImage()[psfImage.getBBox(lsst.afw.image.PARENT)]
             subMaskedImage = exposure.getMaskedImage().Factory(exposure.getMaskedImage(),

@@ -13,6 +13,7 @@ import lsst.afw.detection as afwDetect
 #overrides in $OBS_SUBARU/config/hsc/processCcd.py.
 #See https://dev.lsstcorp.org/trac/ticket/2282 for more details
 #I think you need something like cmdLineTask.applyOverrides to deal with this
+
 class OnlyFakesDetectionConfig(measAlg.SourceDetectionTask.ConfigClass):
     dummyVar = pexConfig.Field(doc='Dummy config variable, does nothing',
                                dtype=bool, default=True)

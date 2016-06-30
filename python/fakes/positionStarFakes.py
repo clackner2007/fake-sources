@@ -10,7 +10,6 @@ import lsst.afw.math as afwMath
 import lsst.afw.coord as afwCoord
 import lsst.afw.image as afwImage
 import lsst.pex.config as afwConfig
-import lsst.afw.cameraGeom
 
 from lsst.pipe.tasks.fakes import FakeSourcesConfig, FakeSourcesTask
 

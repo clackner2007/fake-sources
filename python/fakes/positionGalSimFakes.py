@@ -12,34 +12,36 @@ import lsst.afw.geom
 import lsst.afw.math
 import lsst.afw.cameraGeom
 import lsst.afw.coord
-import lsst.pex.config
+import lsst.pex.config as lsstConfig
 
 from lsst.pipe.tasks.fakes import FakeSourcesConfig, FakeSourcesTask
 
-import makeFakeGalaxy as makeFake
 import FakeSourceLib as fsl
+import makeFakeGalaxy as makeFake
 
 
 class PositionGalSimFakesConfig(FakeSourcesConfig):
-    galList = lsst.pex.config.Field(dtype=str,
-                                    doc="catalog of galaxies to add")
-    maxMargin = lsst.pex.config.Field(dtype=int, default=600,
-                                      optional=True,
-                                      doc="Size of margin")
-    seed = lsst.pex.config.Field(dtype=int, default=1,
-                                 doc="Seed for random number generator")
-    addShear = lsst.pex.config.Field(dtype=bool, default=False,
-                                     doc='include shear in the galaxies')
+    galList = lsstConfig.Field(dtype=str,
+                               doc="catalog of galaxies to add")
+    maxMargin = lsstConfig.Field(dtype=int, default=600,
+                                 optional=True,
+                                 doc="Size of margin")
+    seed = lsstConfig.Field(dtype=int, default=1,
+                            doc="Seed for random number generator")
+    addShear = lsstConfig.Field(dtype=bool, default=False,
+                                doc='include shear in the galaxies')
+    sersic_prec = lsstConfig.Field(dtype=float, default=0.0,
+                                   doc='The desired precision for n')
     cosStr = 'Use Galsim.COSMOSlog()'
     serStr = 'Single sersic galaxies added'
     dSerStr = 'Double sersic galaxies added'
     realStr = 'Real HST galaxy images added'
-    galType = lsst.pex.config.ChoiceField(dtype=str, default='sersic',
-                                          allowed={'dsersic': dSerStr,
-                                                   'sersic': serStr,
-                                                   'real': realStr,
-                                                   'cosmos': cosStr},
-                                          doc='type of GalSim galaxies to add')
+    galType = lsstConfig.ChoiceField(dtype=str, default='sersic',
+                                     allowed={'dsersic': dSerStr,
+                                              'sersic': serStr,
+                                              'real': realStr,
+                                              'cosmos': cosStr},
+                                     doc='type of GalSim galaxies to add')
 
 
 class PositionGalSimFakesTask(FakeSourcesTask):
@@ -67,6 +69,10 @@ class PositionGalSimFakesTask(FakeSourcesTask):
         if not os.path.isfile(skipLog):
             os.system('touch ' + skipLog)
 
+        if self.config.galType is 'cosmos':
+            import galsim
+            cosmosCat = galsim.COSMOSCatalog()
+
         for igal, gal in enumerate(self.galData):
             """
             TODO: If galType='cosmos', use a different way
@@ -91,16 +97,31 @@ class PositionGalSimFakesTask(FakeSourcesTask):
             bboxI = exposure.getBBox(PARENT)
             bboxI.grow(self.config.maxMargin)
             if not bboxI.contains(lsst.afw.geom.Point2I(galXY)):
+                # Will just skip this object
                 continue
 
             # This is extrapolating for the PSF, probably not a good idea
+            #  Return an Image of the PSF, in a form suitable for convolution.
+            #  The returned image is normalized to sum to unity.
             psfImage = psf.computeKernelImage(galXY)
             try:
-                galArray = makeFake.makeGalaxy(flux, gal,
-                                               psfImage.getArray(),
-                                               self.config.galType,
-                                               transform=skyToPixelMatrix,
-                                               addShear=self.config.addShear)
+                addShear = self.config.addShear
+                prec = self.config.sersic_prec
+                galType = self.config.galType
+                if self.config.galType is not 'cosmos':
+                    galArray = makeFake.makeGalaxy(flux, gal,
+                                                   psfImage.getArray(),
+                                                   galType=galType,
+                                                   addShear=addShear,
+                                                   transform=skyToPixelMatrix)
+                else:
+                    galArray = makeFake.makeGalaxy(flux, gal,
+                                                   psfImage.getArray(),
+                                                   cosmosCat=cosmosCat,
+                                                   galType=galType,
+                                                   addShear=addShear,
+                                                   sersic_prec=prec,
+                                                   transform=skyToPixelMatrix)
             except KeyError as kerr:
                 self.log.info("GalSim Key Error: Skipping %d" % galident)
                 self.log.info("   Mag, N, R, Q: %5.2f, %5.2f, %6.2f, %4.1f" % (
