@@ -228,7 +228,7 @@ if __name__ == '__main__':
                         help="Root directory of data after adding fakes")
     parser.add_argument("visit", type=int, help="Visit to show")
     parser.add_argument("ccd", type=int, help="CCD to show")
-    parser.add_argument("root",
+    parser.add_argument("-r", "--root",
                         help="Master root directory",
                         default=None)
     args = parser.parse_args()
