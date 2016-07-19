@@ -14,7 +14,7 @@ def makeGalaxy(flux, gal, psfImage,
                galType='sersic', cosmosCat=None,
                drawMethod='no_pixel', trunc=10.0,
                transform=None, addShear=False,
-               sersic_prec=0.02, addPoisson=False):
+               sersic_prec=0.01, addPoisson=False):
     """
     Function called by task to make galaxy images
 
@@ -319,6 +319,15 @@ def galSimFakeCosmos(cosmosCat, flux, gal,
     if transform is not None:
         cosObj = cosObj.transform(*tuple(transform.ravel()))
 
+    # Convolve the Sersic model using the provided PSF image
+    if psfImage is not None:
+        # Convert the PSF Image Array into a GalSim Object
+        # Norm=True by default
+        psfObj = arrayToGSObj(psfImage, norm=True)
+        cosConv = galsim.Convolve([cosObj, psfObj])
+    else:
+        cosConv = cosObj
+
     # TODO : Should check the flux
     """
     The flux of the galaxy corresponds to a 1 second exposure time with the
@@ -345,16 +354,7 @@ def galSimFakeCosmos(cosmosCat, flux, gal,
     """
     hstMag = -2.5 * np.log10(cosObj.flux) + 25.94
     hscFlux = 10.0 ** ((27.0 - hstMag) / 2.5)
-    cosObj = cosObj.withFlux(float(hscFlux))
-
-    # Convolve the Sersic model using the provided PSF image
-    if psfImage is not None:
-        # Convert the PSF Image Array into a GalSim Object
-        # Norm=True by default
-        psfObj = arrayToGSObj(psfImage, norm=True)
-        cosFinal = galsim.Convolve([cosObj, psfObj])
-    else:
-        cosFinal = cosObj
+    cosFinal = cosConv.withFlux(float(hscFlux))
 
     # Make a PNG figure of the fake galaxy to check if everything is Ok
     if plotFake:
