@@ -338,9 +338,14 @@ def galSimFakeCosmos(cosmosCat, flux, gal,
     We're also ignoring the pi/4 factor since it appears in the numerator and
     denominator, so we use area = diam^2.
     """
+    """
     hstEffArea = (2.4 ** 2) * (1.0 - 0.33 ** 2)
     subaruEffArea = (8.2 ** 2) * (1.0 - 0.1 ** 2)
     fluxScaling = (subaruEffArea / hstEffArea)
+    """
+    hstMag = -2.5 * np.log10(cosObj.flux) + 25.94
+    hscFlux = 10.0 ** ((27.0 - hstMag) / 2.5)
+    fluxScaling = (hscFlux / cosObj.flux)
     cosObj *= fluxScaling
 
     # Convolve the Sersic model using the provided PSF image
