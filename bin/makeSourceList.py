@@ -153,9 +153,13 @@ class MakeFakeInputsTask(pipeBase.CmdLineTask):
                 colAdd = astropy.table.Column(name=colname,
                                               data=mergedData[colname])
                 outTab.add_column(colAdd)
+
             # Replace ID with a unique integer (using index)
             if ('ID' in outTab.colnames) and (self.config.uniqueID):
                 outTab.rename_column('ID', 'modelID')
+                outTab.add_column(astropy.table.Column(name="ID",
+                                  data=np.arange(len(outTab))))
+            elif ('ID' not in outTab.colnames):
                 outTab.add_column(astropy.table.Column(name="ID",
                                   data=np.arange(len(outTab))))
 
