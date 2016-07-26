@@ -43,7 +43,7 @@ class MakeFakeInputsConfig(pexConfig.Config):
     innerTract = pexConfig.Field(doc='Only add to the inner Tract region',
                                  dtype=bool, optional=True, default=False)
     uniqueID = pexConfig.Field(doc='Use the index as unique ID',
-                               dtype=bool, optional=True, default=False)
+                               dtype=bool, optional=False, default=True)
 
 
 class MakeFakeInputsTask(pipeBase.CmdLineTask):
