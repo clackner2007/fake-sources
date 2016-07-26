@@ -14,6 +14,7 @@ def makeGalaxy(flux, gal, psfImage,
                galType='sersic', cosmosCat=None,
                drawMethod='no_pixel', trunc=10.0,
                transform=None, addShear=False,
+               calib=None,
                sersic_prec=0.01, addPoisson=False):
     """
     Function called by task to make galaxy images
@@ -72,9 +73,9 @@ def makeGalaxy(flux, gal, psfImage,
                                 addPoisson=addPoisson)
 
     if galType is 'cosmos':
-        if cosmosCat is None:
+        if cosmosCat is None or calib is None:
             raise Exception("# No COSMOSCatalog() provided!")
-        return galSimFakeCosmos(cosmosCat, flux, gal,
+        return galSimFakeCosmos(cosmosCat, calib, gal,
                                 psfImage=psfImage,
                                 returnObj=False,
                                 sersic_prec=sersic_prec,
@@ -280,7 +281,7 @@ def plotFakeGalaxy(galObj, galID=None, suffix=None,
     plt.savefig(outPNG)
 
 
-def galSimFakeCosmos(cosmosCat, flux, gal,
+def galSimFakeCosmos(cosmosCat, calib, gal,
                      psfImage=None, plotFake=False,
                      returnObj=True, sersic_prec=0.02,
                      drawMethod='no_pixel', scale=1.0,
@@ -353,7 +354,8 @@ def galSimFakeCosmos(cosmosCat, flux, gal,
     fluxScaling = (subaruEffArea / hstEffArea)
     """
     hstMag = -2.5 * np.log10(cosObj.flux) + 25.94
-    hscFlux = 10.0 ** ((27.0 - hstMag) / 2.5)
+    # hscFlux = 10.0 ** ((27.0 - hstMag) / 2.5)
+    hscFlux = calib.getFlux(hstMag)
     cosFinal = cosConv.withFlux(float(hscFlux))
 
     # Make a PNG figure of the fake galaxy to check if everything is Ok
