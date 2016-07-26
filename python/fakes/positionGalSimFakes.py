@@ -83,7 +83,8 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                 galident = igal + 1
 
             try:
-                flux = exposure.getCalib().getFlux(float(gal['mag']))
+                calib = exposure.getCalib()
+                flux = calib.getFlux(float(gal['mag']))
             except KeyError:
                 raise KeyError("No mag column in %s" % self.config.galList)
 
@@ -118,6 +119,7 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                     galArray = makeFake.makeGalaxy(flux, gal,
                                                    psfImage.getArray(),
                                                    cosmosCat=cosmosCat,
+                                                   calib=calib,
                                                    galType=galType,
                                                    addShear=addShear,
                                                    sersic_prec=prec,
