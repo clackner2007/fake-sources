@@ -113,6 +113,8 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                     galArray = makeFake.makeGalaxy(flux, gal,
                                                    psfImage.getArray(),
                                                    galType=galType,
+                                                   cosmosCat=None,
+                                                   calib=None,
                                                    addShear=addShear,
                                                    transform=skyToPixelMatrix)
                 else:
