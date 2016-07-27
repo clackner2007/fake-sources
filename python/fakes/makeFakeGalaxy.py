@@ -305,6 +305,7 @@ def galSimFakeCosmos(cosmosCat, calib, gal,
     cosObj = cosmosCat.makeGalaxy(index=galIndex,
                                   sersic_prec=sersic_prec,
                                   gal_type='parametric')
+    hstFlux = cosObj.flux
 
     # If necessary, apply addtion shear (e.g. for weak lensing test)
     if addShear:
@@ -319,15 +320,6 @@ def galSimFakeCosmos(cosmosCat, calib, gal,
     # Do the transformation from sky to pixel coordinates, if given
     if transform is not None:
         cosObj = cosObj.transform(*tuple(transform.ravel()))
-
-    # Convolve the Sersic model using the provided PSF image
-    if psfImage is not None:
-        # Convert the PSF Image Array into a GalSim Object
-        # Norm=True by default
-        psfObj = arrayToGSObj(psfImage, norm=True)
-        cosConv = galsim.Convolve([cosObj, psfObj])
-    else:
-        cosConv = cosObj
 
     # TODO : Should check the flux
     """
@@ -353,10 +345,21 @@ def galSimFakeCosmos(cosmosCat, calib, gal,
     subaruEffArea = (8.2 ** 2) * (1.0 - 0.1 ** 2)
     fluxScaling = (subaruEffArea / hstEffArea)
     """
-    hstMag = -2.5 * np.log10(cosObj.flux) + 25.94
+    hstMag = -2.5 * np.log10(hstFlux) + 25.94
     # hscFlux = 10.0 ** ((27.0 - hstMag) / 2.5)
     hscFlux = calib.getFlux(hstMag)
-    cosFinal = cosConv.withFlux(float(hscFlux))
+    cosObj *= (hscFlux / hstFlux)
+
+    # cosFinal = cosConv.withFlux(float(hscFlux))
+
+    # Convolve the Sersic model using the provided PSF image
+    if psfImage is not None:
+        # Convert the PSF Image Array into a GalSim Object
+        # Norm=True by default
+        psfObj = arrayToGSObj(psfImage, norm=True)
+        cosFinal = galsim.Convolve([cosObj, psfObj])
+    else:
+        cosFinal = cosObj
 
     # Make a PNG figure of the fake galaxy to check if everything is Ok
     if plotFake:
@@ -451,6 +454,9 @@ def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
     if transform is not None:
         serObj = serObj.transform(*tuple(transform.ravel()))
 
+    # Pass the flux to the object
+    serObj = serObj.withFlux(float(flux))
+
     # Convolve the Sersic model using the provided PSF image
     if psfImage is not None:
         # Convert the PSF Image Array into a GalSim Object
@@ -459,9 +465,6 @@ def galSimFakeSersic(flux, gal, psfImage=None, scaleRad=False, returnObj=True,
         serFinal = galsim.Convolve([serObj, psfObj])
     else:
         serFinal = serObj
-
-    # Pass the flux to the object
-    serFinal = serFinal.withFlux(float(flux))
 
     # Make a PNG figure of the fake galaxy to check if everything is Ok
     if plotFake:
