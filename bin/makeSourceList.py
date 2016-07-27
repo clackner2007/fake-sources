@@ -75,10 +75,14 @@ class MakeFakeInputsTask(pipeBase.CmdLineTask):
         between the two adjacent Tracts: 1 arcmin ~ 0.01667 deg
         """
         if self.config.innerTract:
-            ra0 += 0.0167
-            ra1 -= 0.0167
-            dec0 += 0.0167
-            dec1 -= 0.0167
+            # ra0 += 0.0167
+            # ra1 -= 0.0167
+            # dec0 += 0.0167
+            # dec1 -= 0.0167
+            ra0 += 0.09
+            ra1 -= 0.09
+            dec0 += 0.09
+            dec1 -= 0.09
 
         radUse = self.config.rad
         raArr, decArr = np.array(zip(*makeRaDecCat.getRandomRaDec(nFakes,
