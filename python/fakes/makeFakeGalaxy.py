@@ -348,9 +348,8 @@ def galSimFakeCosmos(cosmosCat, calib, gal,
     hstMag = -2.5 * np.log10(hstFlux) + 25.94
     # hscFlux = 10.0 ** ((27.0 - hstMag) / 2.5)
     hscFlux = calib.getFlux(hstMag)
-    cosObj *= (hscFlux / hstFlux)
-
-    # cosFinal = cosConv.withFlux(float(hscFlux))
+    # cosObj *= (hscFlux / hstFlux)
+    cosObj = cosObj.withFlux(float(hscFlux))
 
     # Convolve the Sersic model using the provided PSF image
     if psfImage is not None:
