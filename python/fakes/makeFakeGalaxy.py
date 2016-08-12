@@ -297,9 +297,9 @@ def galSimFakeCosmos(cosmosCat, calib, gal,
 
     galFound = np.where(objectUse['IDENT'] == gal['COSMOS_ID'])[0]
     if len(galFound) == 0:
-        raise Exception("# Find no match for %d" % gal['COSMOS_ID'])
+        warnings.warn("# Find no match for %d" % gal['COSMOS_ID'])
     elif len(galFound) > 1:
-        raise Exception("# Multiple match for %d" % gal['COSMOS_ID'])
+        warnings.warn("# Multiple match for %d" % gal['COSMOS_ID'])
 
     galIndex = galFound[0]
     cosObj = cosmosCat.makeGalaxy(index=galIndex,
