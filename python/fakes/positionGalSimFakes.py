@@ -107,6 +107,19 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                 # Will just skip this object
                 continue
 
+            # Check the magnitude
+            if gal['mag'] <= 0:
+                self.log.info("Mag <= 0: Skipping %d" % galident)
+                self.log.info("  mag: %7.3d" % gal['mag'])
+                with open(skipLog, "a") as slog:
+                    try:
+                        fcntl.flock(slog, fcntl.LOCK_EX)
+                        slog.write("%8d , negMag\n" % galident)
+                        fcntl.flock(slog, fcntl.LOCK_UN)
+                    except IOError:
+                        continue
+                continue
+
             # This is extrapolating for the PSF, probably not a good idea
             #  Return an Image of the PSF, in a form suitable for convolution.
             #  The returned image is normalized to sum to unity.
