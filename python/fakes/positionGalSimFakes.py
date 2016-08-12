@@ -42,6 +42,12 @@ class PositionGalSimFakesConfig(FakeSourcesConfig):
                                               'real': realStr,
                                               'cosmos': cosStr},
                                      doc='type of GalSim galaxies to add')
+    exclusionLevel = lsstConfig.ChoiceField(dtype=str, default='none',
+                                            allowed={'none': "None",
+                                                     'marginal': "Marginal",
+                                                     'bad_stamp': "Bad Stamp",
+                                                     'bad_fits': "Bad Fits"},
+                                            doc='Exclusion level')
 
 
 class PositionGalSimFakesTask(FakeSourcesTask):
@@ -59,6 +65,7 @@ class PositionGalSimFakesTask(FakeSourcesTask):
         PARENT = lsst.afw.image.PARENT
         psf = exposure.getPsf()
         md = exposure.getMetadata()
+        calib = exposure.getCalib()
         expBBox = exposure.getBBox(PARENT)
         wcs = exposure.getWcs()
         skyToPixelMatrix = (wcs.getLinearTransform().invert().getMatrix() /
@@ -71,19 +78,16 @@ class PositionGalSimFakesTask(FakeSourcesTask):
 
         if self.config.galType is 'cosmos':
             import galsim
-            cosmosCat = galsim.COSMOSCatalog()
+            exLevel = self.config.exclusionLevel
+            cosmosCat = galsim.COSMOSCatalog(exclusion_level=exLevel)
 
         for igal, gal in enumerate(self.galData):
-            """
-            TODO: If galType='cosmos', use a different way
-            """
             try:
                 galident = gal["ID"]
             except KeyError:
                 galident = igal + 1
 
             try:
-                calib = exposure.getCalib()
                 flux = calib.getFlux(float(gal['mag']))
             except KeyError:
                 raise KeyError("No mag column in %s" % self.config.galList)
