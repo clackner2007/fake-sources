@@ -80,6 +80,8 @@ class PositionGalSimFakesTask(FakeSourcesTask):
             import galsim
             exLevel = self.config.exclusionLevel
             cosmosCat = galsim.COSMOSCatalog(exclusion_level=exLevel)
+        else:
+            cosmosCat = None
 
         for igal, gal in enumerate(self.galData):
             try:
@@ -170,6 +172,17 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                     try:
                         fcntl.flock(slog, fcntl.LOCK_EX)
                         slog.write("%8d , galsimR\n" % galident)
+                        fcntl.flock(slog, fcntl.LOCK_UN)
+                    except IOError:
+                        continue
+                continue
+            except Exception as uerr:
+                self.log.info("Unexpected Error: Skipping %d" % galident)
+                self.log.info(uerr.message)
+                with open(skipLog, "a") as slog:
+                    try:
+                        fcntl.flock(slog, fcntl.LOCK_EX)
+                        slog.write("%8d , Unexpected\n" % galident)
                         fcntl.flock(slog, fcntl.LOCK_UN)
                     except IOError:
                         continue
