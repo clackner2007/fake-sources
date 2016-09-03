@@ -1,0 +1,20 @@
+\begin{thebibliography}{1}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+
+\bibitem[{{Suchyta} {et~al.}(2016){Suchyta}, {Huff}, {Aleksi{\'c}}, {Melchior},
+  {Jouvel}, {MacCrann}, {Ross}, {Crocce}, {Gaztanaga}, {Honscheid}, {Leistedt},
+  {Peiris}, {Rykoff}, {Sheldon}, {Abbott}, {Abdalla}, {Allam}, {Banerji},
+  {Benoit-L{\'e}vy}, {Bertin}, {Brooks}, {Burke}, {Rosell}, {Kind},
+  {Carretero}, {Cunha}, {D'Andrea}, {da Costa}, {DePoy}, {Desai}, {Diehl},
+  {Dietrich}, {Doel}, {Eifler}, {Estrada}, {Evrard}, {Flaugher}, {Fosalba},
+  {Frieman}, {Gerdes}, {Gruen}, {Gruendl}, {James}, {Jarvis}, {Kuehn},
+  {Kuropatkin}, {Lahav}, {Lima}, {Maia}, {March}, {Marshall}, {Miller},
+  {Miquel}, {Neilsen}, {Nichol}, {Nord}, {Ogando}, {Percival}, {Reil},
+  {Roodman}, {Sako}, {Sanchez}, {Scarpine}, {Sevilla-Noarbe}, {Smith},
+  {Soares-Santos}, {Sobreira}, {Swanson}, {Tarle}, {Thaler}, {Thomas},
+  {Vikram}, {Walker}, {Wechsler}, {Zhang}, \& {DES
+  Collaboration}}]{Suchyta2016}
+{Suchyta}, E., {Huff}, E.~M., {Aleksi{\'c}}, J., {et~al.} 2016, \mnras, 457,
+  786
+
+\end{thebibliography}

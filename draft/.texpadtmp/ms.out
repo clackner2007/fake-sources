@@ -1,0 +1,19 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [1][-]{section.2}{HSC Pipeline Overview}{}% 2
+\BOOKMARK [1][-]{section.3}{SynPipe Overview}{}% 3
+\BOOKMARK [1][-]{section.4}{Test Design}{}% 4
+\BOOKMARK [2][-]{subsection.4.1}{Selection of HSC Data}{section.4}% 5
+\BOOKMARK [2][-]{subsection.4.2}{Synthetic Stellar Object}{section.4}% 6
+\BOOKMARK [2][-]{subsection.4.3}{Synthetic Galaxy}{section.4}% 7
+\BOOKMARK [2][-]{subsection.4.4}{Running SynPipe Test}{section.4}% 8
+\BOOKMARK [1][-]{section.5}{Results}{}% 9
+\BOOKMARK [2][-]{subsection.5.1}{Detection Limits of Point Sources \(Optional\)}{section.5}% 10
+\BOOKMARK [2][-]{subsection.5.2}{Star-Galaxy Separation \(Optional\)}{section.5}% 11
+\BOOKMARK [2][-]{subsection.5.3}{Photometric Performance}{section.5}% 12
+\BOOKMARK [3][-]{subsubsection.5.3.1}{General Behaviours \(Optional\)}{subsection.5.3}% 13
+\BOOKMARK [3][-]{subsubsection.5.3.2}{PSF photometry of Stars}{subsection.5.3}% 14
+\BOOKMARK [3][-]{subsubsection.5.3.3}{Kron photometry of Galaxies}{subsection.5.3}% 15
+\BOOKMARK [3][-]{subsubsection.5.3.4}{cModel photometry of Galaxies}{subsection.5.3}% 16
+\BOOKMARK [3][-]{subsubsection.5.3.5}{Color using PSF-matched Aperture Photometry \(Optional\)}{subsection.5.3}% 17
+\BOOKMARK [3][-]{subsubsection.5.3.6}{Shape and Structural Parameters of Galaxies \(Optional\)}{subsection.5.3}% 18
+\BOOKMARK [1][-]{section.6}{Conclusions and Future Plans}{}% 19
