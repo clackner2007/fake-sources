@@ -29,7 +29,8 @@ def percent(values, p=0.5):
     return m + p*interval
 
 
-def main(butler, tract, visits, ccds=None, showPatch=False, singleVisit=False):
+def main(butler, tract, visits, ccds=None,
+        showPatch=False, singleVisit=False, filter="HSC-I"):
     """Plot the visits/CCDs belong to certain Tract."""
     #  draw the CCDs
     ras, decs = [], []
@@ -87,9 +88,10 @@ def main(butler, tract, visits, ccds=None, showPatch=False, singleVisit=False):
     fig = pyplot.gcf()
 
     if singleVisit:
-        fig.savefig("%s_patches_%s.png" % (tract, visit))
+        fig.savefig("%s_patches_%s_%s.png" % (tract, visit, filter))
     else:
-        fig.savefig("%s_patches.png" % tract)
+        fig.savefig("%s_patches_%s.png" % (tract, filter))
+
     fig.clear()
 
 
@@ -99,6 +101,8 @@ if __name__ == '__main__':
     parser.add_argument("tract", type=int, help="Tract to show")
     parser.add_argument("visits", help="visit to show")
     parser.add_argument("-c", "--ccds", help="specify CCDs")
+    parser.add_argument("-f", "--filter", help="filter",
+                        default='HSC-I')
     parser.add_argument("-p", "--showPatch", action='store_true',
                         default=False,
                         help="Show the patch boundaries")
@@ -129,10 +133,12 @@ if __name__ == '__main__':
         main(butler, args.tract, visits=idSplit(args.visits),
              ccds=idSplit(args.ccds),
              showPatch=args.showPatch,
-             singleVisit=args.singleVisit)
+             singleVisit=args.singleVisit,
+             filter=args.filter)
     else:
         for vv in visits:
             main(butler, args.tract, visits=[vv],
                  ccds=idSplit(args.ccds),
                  showPatch=args.showPatch,
-                 singleVisit=args.singleVisit)
+                 singleVisit=args.singleVisit,
+                 filter=args.filter)
