@@ -148,8 +148,11 @@ class addFakesTask(BatchPoolTask):
 
             with self.logOperation("processing %s (ccdId=%d)" % (dataId,
                                                                  ccdId)):
+                self.log.info("Loading... %s - %s" % (dataId, ccdId))
                 exposure = dataRef.get('calexp', immediate=True)
+                self.log.info("Running... %s - %s" % (dataId, ccdId))
                 self.fakes.run(exposure, None)
+                self.log.info("Finishing... %s - %s" % (dataId, ccdId))
 
                 """ Remove unused mask plane CR, and UNMASKEDNAN """
                 self.log.info("Removing unused mask plane")
