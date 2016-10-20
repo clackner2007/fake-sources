@@ -31,7 +31,10 @@ class PositionStarFakesTask(FakeSourcesTask):
         print "RNG seed:", self.config.seed
         self.rng = afwMath.Random(self.config.seed)
         self.npRand = np.random.RandomState(self.config.seed)
-        self.starData = fits.open(self.config.starList)[1].data
+        try:
+            self.starData = fits.open(self.config.starList)[1].data
+        except Exception:
+            raise
 
     def run(self, exposure, background):
 
