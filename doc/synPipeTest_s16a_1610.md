@@ -71,11 +71,23 @@
     ```
 
 * Combine the regions files in five bands together using function `combineWkbFiles()`
-  under `coaddPatchNoData.py`
+  under `coaddPatchNoData.py`; Example commands: 
+    ``` python 
+    from coaddPatchNoData import combineWkbFiles as cwf
+    from coaddPatchNoData import showNoDataMask as show 
+
+    cwb('dr1_s16a_8764_nodata_all.lis', output='dr1_s16a_8764_nodata_all.wkb') 
+    show('dr1_s16a_8764_nodata_all.wkb', pngName='dr1_s16a_8764_nodata_all.png')
+    ```
 
 * Useful files, under `/lustre/Subaru/SSP/rerun/song/fake/synpipe/mask/`
     ```
-    
+    dr1_s16a_8764_nodata_all.wkb 
+    dr1_s16a_8764_nodata_big.wkb 
+    dr1_s16a_9693_nodata_all.wkb 
+    dr1_s16a_9693_nodata_big.wkb 
+    dr1_s16a_9699_nodata_all.wkb 
+    dr1_s16a_9699_nodata_big.wkb 
     ```
 
 ### List of Visits that belong to each Tract: 
@@ -85,8 +97,10 @@
 * Using script within SynPipe. Example command: 
     ```
     tractFindVisits.py s15b_wide 9693 --filter='HSC-G' --dataDir='/lustre2/HSC_DR/dr1/s15b/data/'
-    showTractVisit.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide 9693 6306^6322^6328^6334^6346^34334^34370^34380^34410^34428^34430^34452^38306^38310^38314^38316^38318^38324^38326^38330^38332^38342^38344^38346 -p
+    showTractVisit.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide 9693 6306^6322^6328^6334^6346^34334^34370^34380^34410^34428^34430^34452^38306^38310^38314^38316^38318^38324^38326^38330^38332^38342^38344^38346 -p -f HSC-I
     ```
+
+* Also define corresponding environmental parameters for later usage
 
 #### Tract=9693: 
 
@@ -177,6 +191,114 @@
 
 * 500000 objects with magnitudes in all five bands: `jijia_qso_test.fits`
 
+* Catalogs used for inputs: `jijia_qso_test_HSC-G/R/I/Z/Y.fits`
+
 ### Stars from S16A WIDE:
 
-* 
+* These are stars with $i_{PSF} < 26.5$ in the VVDS chunk.  They have been filtered with
+  basic quality cuts, and they have low `blendedness`, not within region affected by
+  bright objects.  We have checked their color-color distributions, and they behave as
+  expected.
+
+* Input catalog: `dr1_s16a_star_vvds_i26.5_input.fits`
+
+#### Generate Input Catalogs for Tract=9699
+
+* Command: 
+    ```
+    makeSourceList.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+        --rerun /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+        --id tract=9699 filter='HSC-I' patch='4,4' \
+        -c inputCat='dr1_s16a_star_vvds_i26.5_input.fits' \
+        innerTract=True uniqueID=True \
+        rhoFakes=1500 \
+        rejMask='dr1_s16a_9699_nodata_all.wkb' \
+        acpMask='dr1_s16a_9699_HSC-I_shape_all.wkb'
+    ```
+
+* **119616** objects are included.  
+    - Files: `star_9699_HSC-G/R/I/Z/Y.fits` 
+
+#### Generate Input Catalogs for Tract=8764
+
+* Command: 
+    ```
+    makeSourceList.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+        --rerun /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+        --id tract=8764 filter='HSC-I' patch='4,4' \
+        -c inputCat='dr1_s16a_star_vvds_i26.5_input.fits' \
+        innerTract=True uniqueID=True \
+        rhoFakes=1500 \
+        rejMask='dr1_s16a_8764_nodata_all.wkb' \
+        acpMask='dr1_s16a_8764_HSC-I_shape_all.wkb'
+    ```
+
+* **120363** objects are included.  
+    - Files: `star_8764_HSC-G/R/I/Z/Y.fits` 
+
+### Galaxies from Claire's COSMOS catalog 
+
+* **TBD**
+
+----
+
+## Add Fake Galaxies to Single Visits 
+
+### Point Sources in Tract=9699 
+
+#### Prepare Config Files
+
+* Example config file: 
+    ```
+    import fakes.positionStarFakes as positionStarFakes
+    
+    root.fakes.retarget(positionStarFakes.PositionStarFakesTask)
+    root.fakes.starList = 'star_9699_HSC-G.fits'
+    ```
+
+* Config files: `star_9699_HSC-G/R/I/Z/Y.config`
+
+#### runAddFakes.py
+
+* Commands 
+    - `HSC-G`:
+        ```
+        runAddFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+            --output /lustre/Subaru/SSP/rerun/song/fake/synpipe/star1 \
+            --id visit=$G9699 \
+            --clobber-config -C star_9699_HSC-G.config \
+            --queue small --job star_add_G --nodes 9 --procs 12
+        ```
+* Start: 10/20/23:44; 
+
+
+### Point Sources in Tract=8764 
+
+#### Prepare Config Files
+
+* Example config file: 
+    ```
+    import fakes.positionStarFakes as positionStarFakes
+    
+    root.fakes.retarget(positionStarFakes.PositionStarFakesTask)
+    root.fakes.starList = 'star_8764_HSC-G.fits'
+    ```
+
+* Config files: `star_8764_HSC-G/R/I/Z/Y.config`
+
+
+### Ji-Jia's QSOs in Tract=9693
+
+#### Prepare Config Files
+
+* Example config file: 
+    ```
+    import fakes.positionStarFakes as positionStarFakes
+    
+    root.fakes.retarget(positionStarFakes.PositionStarFakesTask)
+    root.fakes.starList = 'jijia_qso_test_HSC-G.fits'
+    ```
+
+* Config files: `jijia_qso_HSC-G/R/I/Z/Y.config`
+
+-----
