@@ -250,7 +250,7 @@
 
 * Example config file: 
     ```
-    import fakes.positionStarFakes as positionStarFakes
+    from fakes import positionStarFakes
     
     root.fakes.retarget(positionStarFakes.PositionStarFakesTask)
     root.fakes.starList = 'star_9699_HSC-G.fits'
@@ -269,7 +269,54 @@
             --clobber-config -C star_9699_HSC-G.config \
             --queue small --job star_add_G --nodes 9 --procs 12
         ```
-* Start: 10/20/23:44; 
+        * Start: 10/24/18:04; Finished: 10/24/19:31 
+        * Visual check: 
+            ```
+            compFakeGalaxy.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/star1 34386 40
+            ```
+            - Looks Ok: `star1-34386-40.png`
+
+    - `HSC-R`:
+        ```
+        runAddFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+            --output /lustre/Subaru/SSP/rerun/song/fake/synpipe/star1 \
+            --id visit=$R9699 \
+            --clobber-config -C star_9699_HSC-R.config \
+            --queue small --job star_add_R --nodes 9 --procs 12
+        ```
+        * Submit: 10/24/19:26 
+
+    - `HSC-I`:
+        ```
+        runAddFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+            --output /lustre/Subaru/SSP/rerun/song/fake/synpipe/star1 \
+            --id visit=$I9699 \
+            --clobber-config -C star_9699_HSC-I.config \
+            --queue small --job star_add_I --nodes 9 --procs 12
+        ```
+        * Submit: 10/24/19:32 
+
+    - `HSC-Z`:
+        ```
+        runAddFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+            --output /lustre/Subaru/SSP/rerun/song/fake/synpipe/star1 \
+            --id visit=$Z9699 \
+            --clobber-config -C star_9699_HSC-Z.config \
+            --queue small --job star_add_Z --nodes 9 --procs 12
+        ```
+        * Submit: 10/24/19:33 
+
+    - `HSC-Y`:
+        ```
+        runAddFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+            --output /lustre/Subaru/SSP/rerun/song/fake/synpipe/star1 \
+            --id visit=$Y9699 \
+            --clobber-config -C star_9699_HSC-Y.config \
+            --queue small --job star_add_Y --nodes 9 --procs 12
+        ```
+        * Submit: 10/24/19:34 
+
 
 
 ### Point Sources in Tract=8764 
@@ -278,13 +325,66 @@
 
 * Example config file: 
     ```
-    import fakes.positionStarFakes as positionStarFakes
+    from fakes import positionStarFakes
     
     root.fakes.retarget(positionStarFakes.PositionStarFakesTask)
     root.fakes.starList = 'star_8764_HSC-G.fits'
     ```
 
 * Config files: `star_8764_HSC-G/R/I/Z/Y.config`
+
+#### runAddFakes.py
+
+* Commands 
+    - `HSC-G`:
+        ```
+        runAddFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+            --output /lustre/Subaru/SSP/rerun/song/fake/synpipe/star2 \
+            --id visit=$G8764 \
+            --clobber-config -C star_8764_HSC-G.config \
+            --queue small --job star2_add_G --nodes 9 --procs 12
+        ```
+        * Submit: 10/24/21:47; 
+
+    - `HSC-R`:
+        ```
+        runAddFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+            --output /lustre/Subaru/SSP/rerun/song/fake/synpipe/star2 \
+            --id visit=$R8764 \
+            --clobber-config -C star_8764_HSC-R.config \
+            --queue small --job star2_add_R --nodes 9 --procs 12
+        ```
+        * Submit: 10/24/21:48; 
+    
+    - `HSC-I`:
+        ```
+        runAddFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+            --output /lustre/Subaru/SSP/rerun/song/fake/synpipe/star2 \
+            --id visit=$I8764 \
+            --clobber-config -C star_8764_HSC-I.config \
+            --queue small --job star2_add_I --nodes 9 --procs 12
+        ```
+        * Submit: 10/24/21:48; 
+
+    - `HSC-Z`:
+        ```
+        runAddFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+            --output /lustre/Subaru/SSP/rerun/song/fake/synpipe/star2 \
+            --id visit=$Z8764 \
+            --clobber-config -C star_8764_HSC-Z.config \
+            --queue small --job star2_add_Z --nodes 9 --procs 12
+        ```
+        * Submit: 10/24/21:49; 
+
+    - `HSC-Y`:
+        ```
+        runAddFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+            --output /lustre/Subaru/SSP/rerun/song/fake/synpipe/star2 \
+            --id visit=$Y8764 \
+            --clobber-config -C star_8764_HSC-Y.config \
+            --queue small --job star2_add_Y --nodes 9 --procs 12
+        ```
+        * Submit: 10/24/21:50; 
 
 
 ### Ji-Jia's QSOs in Tract=9693
@@ -293,12 +393,67 @@
 
 * Example config file: 
     ```
-    import fakes.positionStarFakes as positionStarFakes
+    from fakes import positionStarFakes
     
     root.fakes.retarget(positionStarFakes.PositionStarFakesTask)
-    root.fakes.starList = 'jijia_qso_test_HSC-G.fits'
+    root.fakes.starList = 'jijia_qso_HSC-G.fits'
     ```
 
 * Config files: `jijia_qso_HSC-G/R/I/Z/Y.config`
+
+#### runAddFakes.py
+
+* Commands 
+    - `HSC-G`:
+        ```
+        runAddFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+            --output /lustre/Subaru/SSP/rerun/song/fake/synpipe/qso \
+            --id visit=$G9693 \
+            --clobber-config -C jijia_qso_HSC-G.config \
+            --queue small --job qso_add_G --nodes 9 --procs 12
+        ```
+        * Submit: 10/24/19:35; 
+
+    - `HSC-R`:
+        ```
+        runAddFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+            --output /lustre/Subaru/SSP/rerun/song/fake/synpipe/qso \
+            --id visit=$R9693 \
+            --clobber-config -C jijia_qso_HSC-R.config \
+            --queue small --job qso_add_R --nodes 9 --procs 12
+        ```
+        * Submit: 10/24/19:35; 
+
+    - `HSC-I`:
+        ```
+        runAddFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+            --output /lustre/Subaru/SSP/rerun/song/fake/synpipe/qso \
+            --id visit=$I9693 \
+            --clobber-config -C jijia_qso_HSC-I.config \
+            --queue small --job qso_add_I --nodes 9 --procs 12
+        ```
+        * Submit: 10/24/19:39; 
+
+    - `HSC-Z`:
+        ```
+        runAddFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+            --output /lustre/Subaru/SSP/rerun/song/fake/synpipe/qso \
+            --id visit=$Z9693 \
+            --clobber-config -C jijia_qso_HSC-Z.config \
+            --queue small --job qso_add_Z --nodes 9 --procs 12
+        ```
+        * Submit: 10/24/19:40; 
+
+    - `HSC-Y`:
+        ```
+        runAddFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+            --output /lustre/Subaru/SSP/rerun/song/fake/synpipe/qso \
+            --id visit=$Y9693 \
+            --clobber-config -C jijia_qso_HSC-Y.config \
+            --queue small --job qso_add_Y --nodes 9 --procs 12
+        ```
+        * Submit: 10/24/19:35; 
+
+
 
 -----
