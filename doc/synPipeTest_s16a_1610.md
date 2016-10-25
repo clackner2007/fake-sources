@@ -513,7 +513,6 @@
         ```
         * Submit: 10/25/20:06; 
 
-
 ----
 
 ## Stack the Single Visits into Coadd Images 
@@ -534,6 +533,15 @@
             --selectId visit=$G9699
         ```
         * Submit: 10/25/19:58
+        * Start: 10/25/19:59; Finished: 10/25/20:07  
+        * Visual check:
+            ```
+            showInDs9.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/star1 \
+                9699 4,4 --filter HSC-G 
+            compFakeCoadd.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/star1 9699 4,4 HSC-G
+            ```
+            - File: `star1-9699-4,4-HSC-G.png`
 
     - `HSC-R`: 
         ```
@@ -557,7 +565,7 @@
             --id tract=9699 filter=HSC-I \
             --selectId visit=$I9699
         ```
-        * Submit: 10/25/
+        * Submit: 10/25/21:33
 
     - `HSC-Z`: 
         ```
@@ -569,7 +577,7 @@
             --id tract=9699 filter=HSC-Z \
             --selectId visit=$Z9699
         ```
-        * Submit: 10/25/
+        * Submit: 10/25/21:34
 
     - `HSC-Y`: 
         ```
@@ -581,7 +589,7 @@
             --id tract=9699 filter=HSC-Y \
             --selectId visit=$Y9699
         ```
-        * Submit: 10/25/
+        * Submit: 10/25/21:34
 
 ### Point Sources in Tract=8764 
 
@@ -598,7 +606,7 @@
             --id tract=8764 filter=HSC-G \
             --selectId visit=$G8764
         ```
-        * Submit: 10/25/
+        * Submit: 10/25/21:43
 
     - `HSC-R`: 
         ```
@@ -610,7 +618,7 @@
             --id tract=8764 filter=HSC-R \
             --selectId visit=$R8764
         ```
-        * Submit: 10/25/
+        * Submit: 10/25/21:46
 
     - `HSC-I`: 
         ```
@@ -622,7 +630,7 @@
             --id tract=8764 filter=HSC-I \
             --selectId visit=$I8764
         ```
-        * Submit: 10/25/
+        * Submit: 10/25/21:47
 
     - `HSC-Z`: 
         ```
@@ -634,7 +642,7 @@
             --id tract=8764 filter=HSC-Z \
             --selectId visit=$Z8764
         ```
-        * Submit: 10/25/
+        * Submit: 10/25/21:48
 
     - `HSC-Y`: 
         ```
@@ -646,7 +654,7 @@
             --id tract=8764 filter=HSC-Y \
             --selectId visit=$Y8764
         ```
-        * Submit: 10/25/
+        * Submit: 10/25/21:50
 
 ### Ji-Jia's QSO Test 
 
