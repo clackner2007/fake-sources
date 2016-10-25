@@ -472,6 +472,13 @@
             --queue small --job qso_add_G --nodes 9 --procs 12
         ```
         * Submit: 10/25/19:45; 
+        * Start: 10/25/19:46; Finished: 10/25/23:02  
+        * Visual check: 
+            ```
+            compFakeGalaxy.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/qso 38310 40
+            ```
+            - Looks Ok: `qso-38310-40.png`
 
     - `HSC-R`:
         ```
@@ -482,6 +489,13 @@
             --queue small --job qso_add_R --nodes 9 --procs 12
         ```
         * Submit: 10/25/20:06; 
+        * Start: 10/25/20:07; Finished: 10/25/22:46
+        * Visual check: 
+            ```
+            compFakeGalaxy.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/qso 40758 40
+            ```
+            - Looks Ok: `qso-40758-40.png`
 
     - `HSC-I`:
         ```
@@ -492,6 +506,13 @@
             --queue small --job qso_add_I --nodes 9 --procs 12
         ```
         * Submit: 10/25/20:06; 
+        * Start: 10/25/22:46; Finished: 10/26/02:54
+        * Visual check: 
+            ```
+            compFakeGalaxy.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/qso 35902 40
+            ```
+            - Looks Ok: `qso-35902-40.png`
 
     - `HSC-Z`:
         ```
@@ -512,6 +533,13 @@
             --queue small --job qso_add_Y --nodes 9 --procs 12
         ```
         * Submit: 10/25/20:06; 
+        * Start: 10/26/01:55; Finished: 10/26/06:25
+        * Visual check: 
+            ```
+            compFakeGalaxy.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/qso 34892 40
+            ```
+            - Looks Ok: `qso-34892-40.png`
 
 ----
 
@@ -554,6 +582,15 @@
             --selectId visit=$R9699
         ```
         * Submit: 10/25/20:07
+        * Start: 10/26/02:54; Finished: 10/26/03:02  
+        * Visual check:
+            ```
+            showInDs9.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/star1 \
+                9699 4,4 --filter HSC-R 
+            compFakeCoadd.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/star1 9699 4,4 HSC-R
+            ```
+            - File: `star1-9699-4,4-HSC-R.png`
 
     - `HSC-I`: 
         ```
@@ -566,6 +603,15 @@
             --selectId visit=$I9699
         ```
         * Submit: 10/25/21:33
+        * Start: 10/26/04:17; Finished: 10/26/04:28  
+        * Visual check:
+            ```
+            showInDs9.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/star1 \
+                9699 4,4 --filter HSC-I 
+            compFakeCoadd.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/star1 9699 4,4 HSC-I
+            ```
+            - File: `star1-9699-4,4-HSC-I.png`
 
     - `HSC-Z`: 
         ```
@@ -578,6 +624,15 @@
             --selectId visit=$Z9699
         ```
         * Submit: 10/25/21:34
+        * Start: 10/26/04:28; Finished: 10/26/04:40  
+        * Visual check:
+            ```
+            showInDs9.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/star1 \
+                9699 4,4 --filter HSC-Z 
+            compFakeCoadd.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/star1 9699 4,4 HSC-Z
+            ```
+            - File: `star1-9699-4,4-HSC-Z.png`
 
     - `HSC-Y`: 
         ```
@@ -590,6 +645,15 @@
             --selectId visit=$Y9699
         ```
         * Submit: 10/25/21:34
+        * Start: 10/26/04:40; Finished: 10/26/04:49  
+        * Visual check:
+            ```
+            showInDs9.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/star1 \
+                9699 4,4 --filter HSC-Y 
+            compFakeCoadd.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/star1 9699 4,4 HSC-Y
+            ```
+            - File: `star1-9699-4,4-HSC-Y.png`
 
 ### Point Sources in Tract=8764 
 
@@ -607,6 +671,15 @@
             --selectId visit=$G8764
         ```
         * Submit: 10/25/21:43
+        * Start: 10/26/04:49; Finished: 10/26/04:57  
+        * Visual check:
+            ```
+            showInDs9.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/star2 \
+                8764 4,4 --filter HSC-G 
+            compFakeCoadd.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/star2 8764 4,4 HSC-G
+            ```
+            - File: `star2-8764-4,4-HSC-G.png`
 
     - `HSC-R`: 
         ```
@@ -619,6 +692,15 @@
             --selectId visit=$R8764
         ```
         * Submit: 10/25/21:46
+        * Start: 10/26/04:57; Finished: 10/26/05:04  
+        * Visual check:
+            ```
+            showInDs9.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/star2 \
+                8764 4,4 --filter HSC-R 
+            compFakeCoadd.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/star2 8764 4,4 HSC-R
+            ```
+            - File: `star2-8764-4,4-HSC-R.png`
 
     - `HSC-I`: 
         ```
@@ -631,6 +713,15 @@
             --selectId visit=$I8764
         ```
         * Submit: 10/25/21:47
+        * Start: 10/26/05:04; Finished: 10/26/05:16  
+        * Visual check:
+            ```
+            showInDs9.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/star2 \
+                8764 4,4 --filter HSC-I 
+            compFakeCoadd.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/star2 8764 4,4 HSC-I
+            ```
+            - File: `star2-8764-4,4-HSC-I.png`
 
     - `HSC-Z`: 
         ```
@@ -643,6 +734,15 @@
             --selectId visit=$Z8764
         ```
         * Submit: 10/25/21:48
+        * Start: 10/26/05:16; Finished: 10/26/05:25  
+        * Visual check:
+            ```
+            showInDs9.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/star2 \
+                8764 4,4 --filter HSC-Z 
+            compFakeCoadd.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/star2 8764 4,4 HSC-Z
+            ```
+            - File: `star2-8764-4,4-HSC-Z.png`
 
     - `HSC-Y`: 
         ```
@@ -655,9 +755,135 @@
             --selectId visit=$Y8764
         ```
         * Submit: 10/25/21:50
+        * Start: 10/26/05:25; Finished: 10/26/05:35  
+        * Visual check:
+            ```
+            showInDs9.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/star2 \
+                8764 4,4 --filter HSC-Y 
+            compFakeCoadd.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/star2 8764 4,4 HSC-Y
+            ```
+            - File: `star2-8764-4,4-HSC-Y.png`
 
 ### Ji-Jia's QSO Test 
 
 #### Stack.py 
+
+* Commands: 
+    - `HSC-G`: 
+        ```
+        stack.py /lustre/Subaru/SSP/ --rerun=song/fake/synpipe/qso \
+            --job stack_qso_HSC-G --queue small --nodes 9 --procs 12 \
+            --batch-type=pbs --mpiexec='-bind-to socket' \
+            --clobber-config \
+            --config makeCoaddTempExp.doOverwrite=True doOverwriteCoadd=True \
+            --id tract=9693 filter=HSC-G \
+            --selectId visit=$G9693
+        ```
+        * Submit: 10/26/07:45
+
+    - `HSC-R`: 
+        ```
+        stack.py /lustre/Subaru/SSP/ --rerun=song/fake/synpipe/qso \
+            --job stack_qso_HSC-R --queue small --nodes 9 --procs 12 \
+            --batch-type=pbs --mpiexec='-bind-to socket' \
+            --clobber-config \
+            --config makeCoaddTempExp.doOverwrite=True doOverwriteCoadd=True \
+            --id tract=9693 filter=HSC-R \
+            --selectId visit=$R9693
+        ```
+        * Submit: 10/26/07:47
+
+    - `HSC-I`: 
+        ```
+        stack.py /lustre/Subaru/SSP/ --rerun=song/fake/synpipe/qso \
+            --job stack_qso_HSC-I --queue small --nodes 9 --procs 12 \
+            --batch-type=pbs --mpiexec='-bind-to socket' \
+            --clobber-config \
+            --config makeCoaddTempExp.doOverwrite=True doOverwriteCoadd=True \
+            --id tract=9693 filter=HSC-I \
+            --selectId visit=$I9693
+        ```
+        * Submit: 10/26/07:47
+
+    - `HSC-Z`: 
+        ```
+        stack.py /lustre/Subaru/SSP/ --rerun=song/fake/synpipe/qso \
+            --job stack_qso_HSC-Z --queue small --nodes 9 --procs 12 \
+            --batch-type=pbs --mpiexec='-bind-to socket' \
+            --clobber-config \
+            --config makeCoaddTempExp.doOverwrite=True doOverwriteCoadd=True \
+            --id tract=9693 filter=HSC-Z \
+            --selectId visit=$Z9693
+        ```
+
+    - `HSC-Y`: 
+        ```
+        stack.py /lustre/Subaru/SSP/ --rerun=song/fake/synpipe/qso \
+            --job stack_qso_HSC-Y --queue small --nodes 9 --procs 12 \
+            --batch-type=pbs --mpiexec='-bind-to socket' \
+            --clobber-config \
+            --config makeCoaddTempExp.doOverwrite=True doOverwriteCoadd=True \
+            --id tract=9693 filter=HSC-Y \
+            --selectId visit=$Y9693
+        ```
+        * Submit: 10/26/07:48
+
+
+-----
+
+## Photometric Measurement using Multiband.py
+
+### Configuration Files:
+
+* `multi.config`: Without using pixel weights
+    ``` python 
+    root.measureCoaddSources.propagateFlags.flags={}
+    root.clobberMergedDetections = True
+    root.clobberMeasurements = True
+    root.clobberMergedMeasurements = True
+    root.clobberForcedPhotometry = True
+    ```
+
+### Point Sources in Tract=9699 
+
+#### Multiband.py 
+
+* Command: 
+    ```
+    multiBand.py /lustre/Subaru/SSP/ --rerun=song/fake/synpipe/star1 \
+        --id tract=9699 filter=HSC-I^HSC-R^HSC-Z^HSC-G^HSC-Y \
+        --job=star1_multi --clobber-config -C multi.config \
+        --queue small --nodes 9 --procs 12 \
+        --batch-type=pbs --mpiexec="-bind-to socket" --time=1000000 
+    ```
+
+
+### Point Sources in Tract=8764 
+
+#### Multiband.py 
+
+* Command: 
+    ```
+    multiBand.py /lustre/Subaru/SSP/ --rerun=song/fake/synpipe/star2 \
+        --id tract=8764 filter=HSC-I^HSC-R^HSC-Z^HSC-G^HSC-Y \
+        --job=star2_multi --clobber-config -C multi.config \
+        --queue small --nodes 9 --procs 12 \
+        --batch-type=pbs --mpiexec="-bind-to socket" --time=1000000 
+    ```
+
+
+### Ji-Jia's QSO Tests Tract=9693
+
+#### Multiband.py 
+
+* Command: 
+    ```
+    multiBand.py /lustre/Subaru/SSP/ --rerun=song/fake/synpipe/qso \
+        --id tract=9693 filter=HSC-I^HSC-R^HSC-Z^HSC-G^HSC-Y \
+        --job=qso_multi --clobber-config -C multi.config \
+        --queue small --nodes 9 --procs 12 \
+        --batch-type=pbs --mpiexec="-bind-to socket" --time=1000000 
+    ```
 
 -----
