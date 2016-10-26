@@ -41,6 +41,12 @@ if __name__ == '__main__':
     parser.add_argument('-j', '--multijobs', type=int,
                         help='Number of jobs run at the same time',
                         dest='multijobs', default=1)
+    parser.add_argument('--ra', '--raCol', dest='raCol',
+                        help='Name of the column for RA',
+                        default='RA')
+    parser.add_argument('--dec', '--decCol', dest='decCol',
+                        help='Name of the column for Dec',
+                        default='Dec')
     args = parser.parse_args()
 
     if (args.ccd is None) or (len(args.ccd) < 1):
@@ -58,4 +64,5 @@ if __name__ == '__main__':
                                 multiband=args.multiband,
                                 reffMatch=args.reffMatch,
                                 multijobs=args.multijobs,
-                                minRad=args.minRad)
+                                minRad=args.minRad,
+                                raCol=args.raCol, decCol=args.decCol)

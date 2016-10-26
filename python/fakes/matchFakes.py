@@ -150,7 +150,8 @@ def getFakeMatchesHeader(cal_md, sources, tol=1.0):
 
 
 def getFakeMatchesRaDec(sources, radecCatFile, bbox, wcs, tol=1.0,
-                        reffMatch=False, pix=0.168, minRad=None):
+                        reffMatch=False, pix=0.168, minRad=None,
+                        raCol='RA', decCol='Dec'):
     """
     Return the fake matches based on an radec match.
 
@@ -180,9 +181,9 @@ def getFakeMatchesRaDec(sources, radecCatFile, bbox, wcs, tol=1.0,
         raise
 
     for fakeSrc in fakeCat:
-        fakeCoord = wcs.skyToPixel(lsst.afw.geom.Angle(fakeSrc['RA'],
+        fakeCoord = wcs.skyToPixel(lsst.afw.geom.Angle(fakeSrc[raCol],
                                                        lsst.afw.geom.degrees),
-                                   lsst.afw.geom.Angle(fakeSrc['Dec'],
+                                   lsst.afw.geom.Angle(fakeSrc[decCol],
                                                        lsst.afw.geom.degrees))
         if bbox.contains(fakeCoord):
             if reffMatch:
@@ -220,7 +221,8 @@ def getFakeMatchesRaDec(sources, radecCatFile, bbox, wcs, tol=1.0,
 def getFakeSources(butler, dataId, tol=1.0,
                    extraCols=('zeropoint', 'visit', 'ccd'),
                    includeMissing=False, footprints=False, radecMatch=None,
-                   multiband=False, reffMatch=False, pix=0.168, minRad=None):
+                   multiband=False, reffMatch=False, pix=0.168, minRad=None,
+                   raCol='RA', decCol='Dec'):
     """
     Get list of sources which agree in pixel position with fake ones with tol.
 
@@ -307,7 +309,9 @@ def getFakeSources(butler, dataId, tol=1.0,
                                                          tol=tol,
                                                          reffMatch=reffMatch,
                                                          pix=pix,
-                                                         minRad=minRad)
+                                                         minRad=minRad,
+                                                         raCol=raCol,
+                                                         decCol=decCol)
 
     mapper = SchemaMapper(sources.schema)
     mapper.addMinimalSchema(sources.schema)
@@ -469,7 +473,8 @@ def getAstroTable(src, mags=True):
 def returnMatchSingle(butler, slist, visit, ccd,
                       filt=None, tol=1.0, pix=0.168,
                       fakeCat=None, pixMatch=False, multiband=False,
-                      reffMatch=False, includeMissing=True, minRad=None):
+                      reffMatch=False, includeMissing=True, minRad=None,
+                      raCol='RA', decCol='Dec'):
         """Return matched catalog for each CCD or Patch."""
         if filt is None:
             print 'Doing ccd %d' % int(ccd)
@@ -481,7 +486,7 @@ def returnMatchSingle(butler, slist, visit, ccd,
                                              'thetaNorth'),
                                   radecMatch=fakeCat if not pixMatch else None,
                                   tol=tol, reffMatch=reffMatch, pix=pix,
-                                  minRad=minRad)
+                                  minRad=minRad, raCol=raCol, decCol=decCol)
         else:
             print 'Doing patch %s' % ccd
             mlis = getFakeSources(butler,
@@ -493,7 +498,7 @@ def returnMatchSingle(butler, slist, visit, ccd,
                                   radecMatch=fakeCat if not pixMatch else None,
                                   tol=tol, multiband=multiband,
                                   reffMatch=reffMatch, pix=pix,
-                                  minRad=minRad)
+                                  minRad=minRad, raCol=raCol, decCol=decCol)
 
         if mlis is None:
             print '   No match returns!'
@@ -510,7 +515,8 @@ def returnMatchSingle(butler, slist, visit, ccd,
 def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
                      overwrite=False, filt=None, tol=1.0, pixMatch=False,
                      multiband=False, reffMatch=False, pix=0.168,
-                     multijobs=1, includeMissing=True, minRad=None):
+                     multijobs=1, includeMissing=True, minRad=None,
+                     raCol='RA', decCol='Dec'):
     """
     Driver (main function) for return match to fakes.
 
@@ -550,7 +556,9 @@ def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
                                                reffMatch=reffMatch, tol=tol,
                                                multiband=multiband,
                                                minRad=minRad,
-                                               pix=pix) for ccd in ccdList)
+                                               pix=pix,
+                                               decCol=decCol,
+                                               raCol=raCol) for ccd in ccdList)
             for m in mlist:
                 if m is not None:
                     if slist is None:
@@ -568,7 +576,8 @@ def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
                                           reffMatch=reffMatch,
                                           tol=tol, pix=pix,
                                           multiband=multiband,
-                                          minRad=minRad)
+                                          minRad=minRad,
+                                          raCol=raCol, decCol=decCol)
     else:
         for ccd in ccdList:
             slist = returnMatchSingle(butler, slist, visit, ccd,
@@ -578,7 +587,8 @@ def returnMatchTable(rootDir, visit, ccdList, outfile=None, fakeCat=None,
                                       reffMatch=reffMatch,
                                       tol=tol, pix=pix,
                                       multiband=multiband,
-                                      minRad=minRad)
+                                      minRad=minRad,
+                                      raCol=raCol, decCol=decCol)
 
     if slist is None:
         print "Returns no match....!"
@@ -632,6 +642,12 @@ if __name__ == '__main__':
     parser.add_argument('-j', '--multijobs', type=int,
                         help='Number of jobs run at the same time',
                         dest='multijobs', default=1)
+    parser.add_argument('--ra', '--raCol', dest='raCol',
+                        help='Name of the column for RA',
+                        default='RA')
+    parser.add_argument('--dec', '--decCol', dest='decCol',
+                        help='Name of the column for Dec',
+                        default='Dec')
     args = parser.parse_args()
 
     returnMatchTable(args.rootDir, args.visit, args.ccd, args.outfile,
@@ -639,4 +655,5 @@ if __name__ == '__main__':
                      tol=args.tol, multiband=args.multiband,
                      reffMatch=args.reffMatch,
                      multijobs=args.multijobs,
-                     minRad=args.minRad)
+                     minRad=args.minRad,
+                     raCol=args.raCol, decCol=args.decCol)
