@@ -1,4 +1,6 @@
-# SynPipe Test for HSC S16A Data Release 
+#runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/qso 9693 \
+            -f HSC-Y -c jijia_qso_HSC-Y.fits \
+            -o qso_HSC-Y_syn -w -t 2.0 -j 10 --ra RA --dec Dec SynPipe Test for HSC S16A Data Release 
 
 ---- 
 
@@ -851,6 +853,15 @@
             --selectId visit=$Z9693
         ```
         * Submit: 10/26/04:01
+        * Start: 10/26/16:24; Finished: 10/26/16:37 
+        * Visual check:
+            ```
+            showInDs9.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/qso \
+                9693 4,4 --filter HSC-Z 
+            compFakeCoadd.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/qso 9693 4,4 HSC-Z
+            ```
+            - File: `qso-9693-4,4-HSC-Z.png`
 
     - `HSC-Y`: 
         ```
@@ -872,7 +883,6 @@
                 /lustre/Subaru/SSP/rerun/song/fake/synpipe/qso 9693 4,4 HSC-Y
             ```
             - File: `qso-9693-4,4-HSC-Y.png`
-
 
 -----
 
@@ -902,6 +912,7 @@
         --batch-type=pbs --mpiexec="-bind-to socket" --time=1000000 
     ```
     * Submit: 10/26:13:34
+    * Start: 10/26/13:34; Finished: 10/26/16:24 
 
 
 ### Point Sources in Tract=8764 
@@ -917,6 +928,7 @@
         --batch-type=pbs --mpiexec="-bind-to socket" --time=1000000 
     ```
     * Submit: 10/26:13:34
+    * Start: 10/26/13:34; Finished: 10/26/18:20 
 
 
 ### Ji-Jia's QSO Tests Tract=9693
@@ -931,5 +943,278 @@
         --queue small --nodes 9 --procs 12 \
         --batch-type=pbs --mpiexec="-bind-to socket" --time=1000000 
     ```
+    * Submit: 10/26/20:58
+    * Start: 10/27/05:02; Finished: 10/27/10:13 
+
+-----
+
+## Match the Output Catalogs
+
+### Point Sources in Tract=9699 
+
+#### Rerun with Fake Objects 
+
+* Commands: 
+    -`HSC-G`:
+        ``` bash
+        runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/star1 9699 \
+            -f HSC-G -c star_9699_HSC-G.fits \
+            -o star1_HSC-G_syn -w -t 2.0 -j 6 --ra RA --dec DEC 
+        ```
+        - File: `star1_HSC-G_syn.fits`
+        - Visual check: Ok
+
+    -`HSC-R`:
+        ``` bash
+        runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/star1 9699 \
+            -f HSC-R -c star_9699_HSC-R.fits \
+            -o star1_HSC-R_syn -w -t 2.0 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `star1_HSC-R_syn.fits`
+
+    -`HSC-I`:
+        ``` bash
+        runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/star1 9699 \
+            -f HSC-I -c star_9699_HSC-I.fits \
+            -o star1_HSC-I_syn -w -t 2.0 -j 6 --ra RA --dec DEC 
+        ```
+        - File: `star1_HSC-I_syn.fits`
+
+    -`HSC-Z`:
+        ``` bash
+        runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/star1 9699 \
+            -f HSC-Z -c star_9699_HSC-Z.fits \
+            -o star1_HSC-Z_syn -w -t 2.0 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `star1_HSC-Z_syn.fits`
+
+    -`HSC-Y`:
+        ``` bash
+        runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/star1 9699 \
+            -f HSC-Y -c star_9699_HSC-Y.fits \
+            -o star1_HSC-Y_syn -w -t 2.0 -j 6 --ra RA --dec Dec
+        ```
+        - File: `star1_HSC-Y_syn.fits`
+
+#### Match with original rerun 
+
+* Commands: 
+    -`HSC-G`:
+        ``` bash
+        runMatchFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide 9699 \
+            -f HSC-G -c star_9699_HSC-G.fits \
+            -o star1_HSC-G_ori -w -t 2.5 -j 6 --ra RA --dec DEC 
+        ```
+        - File: `star1_HSC-G_ori.fits`
+
+    -`HSC-R`:
+        ``` bash
+        runMatchFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide 9699 \
+            -f HSC-R -c star_9699_HSC-R.fits \
+            -o star1_HSC-R_ori -w -t 2.5 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `star1_HSC-R_ori.fits`
+
+    -`HSC-I`:
+        ``` bash
+        runMatchFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide 9699 \
+            -f HSC-I -c star_9699_HSC-I.fits \
+            -o star1_HSC-I_ori -w -t 2.5 -j 6 --ra RA --dec DEC 
+        ```
+        - File: `star1_HSC-I_ori.fits`
+
+    -`HSC-Z`:
+        ``` bash
+        runMatchFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide 9699 \
+            -f HSC-Z -c star_9699_HSC-Z.fits \
+            -o star1_HSC-Z_ori -w -t 2.5 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `star1_HSC-Z_ori.fits`
+
+    -`HSC-Y`:
+        ``` bash
+        runMatchFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide 9699 \
+            -f HSC-Y -c star_9699_HSC-Y.fits \
+            -o star1_HSC-Y_ori -w -t 2.5 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `star1_HSC-Y_ori.fits`
+
+
+### Point Sources in Tract=8764 
+
+#### Rerun with Fake Objects 
+
+* Commands: 
+    -`HSC-G`:
+        ``` bash
+        runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/star2 8764 \
+            -f HSC-G -c star_8764_HSC-G.fits \
+            -o star2_HSC-G_syn -w -t 2.0 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `star2_HSC-G_syn.fits`
+
+    -`HSC-R`:
+        ``` bash
+        runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/star2 8764 \
+            -f HSC-R -c star_8764_HSC-R.fits \
+            -o star2_HSC-R_syn -w -t 2.0 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `star2_HSC-R_syn.fits`
+
+    -`HSC-I`:
+        ``` bash
+        runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/star2 8764 \
+            -f HSC-I -c star_8764_HSC-I.fits \
+            -o star2_HSC-I_syn -w -t 2.0 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `star2_HSC-I_syn.fits`
+
+    -`HSC-Z`:
+        ``` bash
+        runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/star2 8764 \
+            -f HSC-Z -c star_8764_HSC-Z.fits \
+            -o star2_HSC-Z_syn -w -t 2.0 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `star2_HSC-Z_syn.fits`
+
+    -`HSC-Y`:
+        ``` bash
+        runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/star2 8764 \
+            -f HSC-Y -c star_8764_HSC-Y.fits \
+            -o star2_HSC-Y_syn -w -t 2.0 -j 6 --ra RA --dec Dec
+        ```
+        - File: `star2_HSC-Y_syn.fits`
+
+#### Match with original rerun 
+
+* Commands: 
+    -`HSC-G`:
+        ``` bash
+        runMatchFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide 8764 \
+            -f HSC-G -c star_8764_HSC-G.fits \
+            -o star2_HSC-G_ori -w -t 2.5 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `star2_HSC-G_ori.fits`
+
+    -`HSC-R`:
+        ``` bash
+        runMatchFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide 8764 \
+            -f HSC-R -c star_8764_HSC-R.fits \
+            -o star2_HSC-R_ori -w -t 2.5 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `star2_HSC-R_ori.fits`
+
+    -`HSC-I`:
+        ``` bash
+        runMatchFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide 8764 \
+            -f HSC-I -c star_8764_HSC-I.fits \
+            -o star2_HSC-I_ori -w -t 2.5 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `star2_HSC-I_ori.fits`
+
+    -`HSC-Z`:
+        ``` bash
+        runMatchFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide 8764 \
+            -f HSC-Z -c star_8764_HSC-Z.fits \
+            -o star2_HSC-Z_ori -w -t 2.5 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `star2_HSC-Z_ori.fits`
+
+    -`HSC-Y`:
+        ``` bash
+        runMatchFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide 8764 \
+            -f HSC-Y -c star_8764_HSC-Y.fits \
+            -o star2_HSC-Y_ori -w -t 2.5 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `star2_HSC-Y_ori.fits`
+
+
+### Ji-Jia's QSOs in Tract=9693 
+
+#### Rerun with Fake Objects 
+
+* Commands: 
+    -`HSC-G`:
+        ``` bash
+        runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/qso 9693 \
+            -f HSC-G -c jijia_qso_HSC-G.fits \
+            -o qso_HSC-G_syn -w -t 2.0 -j 6 --ra RA --dec DEC 
+        ```
+        - File: `qso_HSC-G_syn.fits`
+
+    -`HSC-R`:
+        ``` bash
+        runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/qso 9693 \
+            -f HSC-R -c jijia_qso_HSC-R.fits \
+            -o qso_HSC-R_syn -w -t 2.0 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `qso_HSC-R_syn.fits`
+
+    -`HSC-I`:
+        ``` bash
+        runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/qso 9693 \
+            -f HSC-I -c jijia_qso_HSC-I.fits \
+            -o qso_HSC-I_syn -w -t 2.0 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `qso_HSC-I_syn.fits`
+
+    -`HSC-Z`:
+        ``` bash
+        runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/qso 9693 \
+            -f HSC-Z -c jijia_qso_HSC-Z.fits \
+            -o qso_HSC-Z_syn -w -t 2.0 -j 10 --ra RA --dec Dec 
+        ```
+        - File: `qso_HSC-Z_syn.fits`
+
+    -`HSC-Y`:
+        ``` bash
+        runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/qso 9693 \
+            -f HSC-Y -c jijia_qso_HSC-Y.fits \
+            -o qso_HSC-Y_syn -w -t 2.0 -j 10 --ra RA --dec Dec 
+        ```
+        - File: `qso_HSC-Y_syn.fits`
+
+#### Match with original rerun 
+
+* Commands: 
+    -`HSC-G`:
+        ``` bash
+        runMatchFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide 9693 \
+            -f HSC-G -c jijia_qso_HSC-G.fits \
+            -o qso_HSC-G_ori -w -t 2.5 -j 10 --ra RA --dec DEC 
+        ```
+        - File: `qso_HSC-G_ori.fits`
+
+    -`HSC-R`:
+        ``` bash
+        runMatchFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide 9693 \
+            -f HSC-R -c jijia_qso_HSC-R.fits \
+            -o qso_HSC-R_ori -w -t 2.5 -j 10 --ra RA --dec Dec 
+        ```
+        - File: `qso_HSC-R_ori.fits`
+
+    -`HSC-I`:
+        ``` bash
+        runMatchFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide 9693 \
+            -f HSC-I -c jijia_qso_HSC-I.fits \
+            -o qso_HSC-I_ori -w -t 2.5 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `qso_HSC-I_ori.fits`
+
+    -`HSC-Z`:
+        ``` bash
+        runMatchFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide 9693 \
+            -f HSC-Z -c jijia_qso_HSC-Z.fits \
+            -o qso_HSC-Z_ori -w -t 2.5 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `qso_HSC-Z_ori.fits`
+
+    -`HSC-Y`:
+        ``` bash
+        runMatchFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide 9693 \
+            -f HSC-Y -c jijia_qso_HSC-Y.fits \
+            -o qso_HSC-Y_ori -w -t 2.5 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `qso_HSC-Y_ori.fits`
 
 -----
