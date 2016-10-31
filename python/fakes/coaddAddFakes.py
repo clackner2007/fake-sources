@@ -36,7 +36,7 @@ class coaddAddFakesConfig(lsst.pex.config.Config):
 
     fakes = lsst.pex.config.ConfigurableField(
         target=DummyFakeSourcesTask,
-        doc="Injection of fake sources to processed patches"
+        doc="Injection of fake sources to processed Patches"
     )
     ignorePatchList = lsst.pex.config.ListField(dtype=int, default=[],
                                                 doc="List of Patches \
@@ -114,10 +114,10 @@ class coaddAddFakesTask(BatchPoolTask):
         Modified by Song Huang; To work on coadd images
         """
         kwargs.pop("doBatch", False)
-        parser = ArgumentParser(name=cls._DefaultName, *args, **kwargs)
-        parser.add_id_argument("--id", level="deepCoadd_calexp",
-                               help="data ID, e.g. --id tract=12345\
-                                       patch=1,2",
+        parser = ArgumentParser(name="multiband", *args, **kwargs)
+        parser.add_id_argument("--id", datasetType="raw",
+                               level="deepCoadd_calexp",
+                               help="data ID, e.g. --id tract=12345",
                                ContainerClass=TractDataIdContainer)
         return parser
 
