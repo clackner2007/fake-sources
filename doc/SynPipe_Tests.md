@@ -48,3 +48,16 @@
     ~500000 QSOs per tract 
 - **Progress**: Finished 
 
+----- 
+
+## Photometric Tests for Synthetic LAEs at z=5.7 and 6.6
+
+* by Akira Konno @ICRR
+
+* Inputs: 6-band (NB0816 or NB0921; and grizy) photometry of synthetic z=5.7 (or 6.6) LAEs at NB<27.0
+* Tracts: 9813 / 9464
+* Basic Information: 6-band tests in stacked images; random locations within the tract; ~150000 LAEs per tract
+* Progress: On going
+
+
+
