@@ -8,6 +8,7 @@ import fcntl
 
 import lsst.pex.config
 # import lsst.afw.cameraGeom as afwCg
+from lsst.pex.config import Config, Field
 
 from lsst.pipe.base import ArgumentParser
 from lsst.pipe.tasks.fakes import DummyFakeSourcesTask
@@ -33,7 +34,7 @@ Debugger().enabled = True
 
 class coaddAddFakesConfig(lsst.pex.config.Config):
     """Configs of the addFakeTask."""
-
+    coaddName = Field(dtype=str, default="deep", doc="Name of coadd")
     fakes = lsst.pex.config.ConfigurableField(
         target=DummyFakeSourcesTask,
         doc="Injection of fake sources to processed Patches"
@@ -114,9 +115,8 @@ class coaddAddFakesTask(BatchPoolTask):
         Modified by Song Huang; To work on coadd images
         """
         kwargs.pop("doBatch", False)
-        parser = ArgumentParser(name="multiband", *args, **kwargs)
-        parser.add_id_argument("--id", datasetType="raw",
-                               level="deepCoadd_calexp",
+        parser = ArgumentParser(name=cls._DefaultName, *args, **kwargs)
+        parser.add_id_argument("--id", "deepCoadd_calexp",
                                help="data ID, e.g. --id tract=12345",
                                ContainerClass=TractDataIdContainer)
         return parser
@@ -141,7 +141,7 @@ class coaddAddFakesTask(BatchPoolTask):
         patchRefList = [patchRef for patchRef in patchRefList if
                         patchRef.datasetExists(self.config.coaddName +
                                                "Coadd_calexp") and
-                        patchRef.datasetExists(self.config.coaddname +
+                        patchRef.datasetExists(self.config.coaddName +
                                                "Coadd_det")]
         dataIdList = [patchRef.dataId for patchRef in patchRefList]
 
@@ -161,7 +161,7 @@ class coaddAddFakesTask(BatchPoolTask):
             patches[patch].append(dataId)
 
         # Scatter: process CCDs independently
-        outList = pool.map(self.process, dataIdList.values())
+        outList = pool.map(self.process, dataIdList)
 
         numGood = sum(1 for s in outList if s == 0)
         if numGood == 0:
@@ -176,44 +176,46 @@ class coaddAddFakesTask(BatchPoolTask):
         """
         cache.result = None
         ignorePatchList = self.config.ignorePatchList
-        if dataId["ccd"] in ignorePatchList:
-            self.log.warn("Ignoring %s Patch" % (dataId,))
-            return None
+        #if dataId["patch"] in ignorePatchList:
+        #    self.log.warn("Ignoring %s Patch" % (dataId,))
+        #    return None
         """
         Try to deal with missing CCDs gracefully
         Song Huang
         """
-        try:
-            dataRef = hscButler.getDataRef(cache.butler, dataId)
+        #try:
+        self.log.info("Reading...%s" % (dataId,))
+        dataRef = hscButler.getDataRef(cache.butler, dataId,
+                                       self.config.coaddName + 'Coadd_calexp')
 
-            with self.logOperation("processing %s" % (dataId,)):
-                self.log.info("Loading... %s" % (dataId,))
-                exposure = dataRef.get('deepCoadd_calexp', immediate=True)
-                self.log.info("Running... %s" % (dataId,))
-                self.fakes.run(exposure, None)
-                self.log.info("Finishing... %s" % (dataId,))
+        with self.logOperation("processing %s" % (dataId,)):
+            self.log.info("Loading... %s" % (dataId,))
+            exposure = dataRef.get(self.config.coaddName + 'Coadd_calexp',
+                                   immediate=True)
+            self.log.info("Running... %s" % (dataId,))
+            self.fakes.run(exposure, None)
+            self.log.info("Finishing... %s" % (dataId,))
 
-                """ Remove unused mask plane CR, and UNMASKEDNAN """
-                self.log.info("Removing unused mask plane")
-                maskPlane = exposure.getMaskedImage().getMask()
-                try:
-                    maskPlane.removeAndClearMaskPlane('CROSSTALK', True)
-                except Exception:
-                    self.log.info("Can not remove the CROSSTALK plane")
-                try:
-                    maskPlane.removeAndClearMaskPlane('UNMASKEDNAN', True)
-                except Exception:
-                    self.log.info("Can not remove the UNMASKEDNAN plane")
-                dataRef.put(exposure, "deepCoadd_calexp")
-            return 0
-        except Exception, errMsg:
-            with open(self.missingLog, "a") as mlog:
-                try:
-                    mlog.write("%s !" % (dataId))
-                    fcntl.flock(mlog, fcntl.LOCK_UN)
-                except IOError:
-                    pass
-            self.log.warn(str(errMsg))
-            self.log.warn("Something is wrong for %s" % (dataId,))
-
-            return None
+            """ Remove unused mask plane CR, and UNMASKEDNAN """
+            self.log.info("Removing unused mask plane")
+            maskPlane = exposure.getMaskedImage().getMask()
+            try:
+                maskPlane.removeAndClearMaskPlane('CROSSTALK', True)
+            except Exception:
+                self.log.info("Can not remove the CROSSTALK plane")
+            try:
+                maskPlane.removeAndClearMaskPlane('UNMASKEDNAN', True)
+            except Exception:
+                self.log.info("Can not remove the UNMASKEDNAN plane")
+            dataRef.put(exposure, "deepCoadd_calexp")
+        return 0
+        #except Exception, errMsg:
+        #    with open(self.missingLog, "a") as mlog:
+        #        try:
+        #            mlog.write("%s !" % (dataId))
+        #            fcntl.flock(mlog, fcntl.LOCK_UN)
+        #        except IOError:
+        #            pass
+        #    self.log.warn(str(errMsg))
+        #    self.log.warn("Something is wrong for %s" % (dataId,))
+        #    return None
