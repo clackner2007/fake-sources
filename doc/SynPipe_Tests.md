@@ -19,7 +19,7 @@
 
 ### Photometric Tests for Synthetic Stars
 
-* *Inputs*: 5-band photometry of real stars at $i < 26.5$ mag in the VVDs region.
+* **Inputs**: 5-band photometry of real stars at $$$i < 26.5$$$ mag in the VVDs region.
     (Basic quality cuts applied)
 * **Tracts**: 9699 / 8764 
 * **Basic Information**: 5-band tests at single-visit level; 
