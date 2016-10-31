@@ -18,8 +18,7 @@
 * The tests rightn now have three components: 
 
 ### Photometric Tests for Synthetic Stars
-    
-    - **Inputs**: 5-band photometry of real stars at $$i < 26.5$$ mag in the VVDs region.
+    - *Inputs*: 5-band photometry of real stars at $i < 26.5$ mag in the VVDs region.
         (Basic quality cuts applied)
     - **Tracts**: 9699 / 8764 
     - **Basic Information**: 5-band tests at single-visit level; 
@@ -28,7 +27,6 @@
     - **Progress**: Finished 
 
 ### Photometric Tests for Synthetic Galaxies 
-
     - **Inputs**: Single Sersic model of COSMOS galaxies with $$i<25.2$$ mag from 
         Claire Lackner's catalog; Colors are based on multiband catalog for COSMOS
     - **Tracts**: 9699 / 8764 
@@ -39,7 +37,6 @@
     - **Progress**: In preparation
 
 ### Photometric Tests for Synthetic QSOs (On behalf of Ji-Jia)
-
     - **Inputs**: 5-band photometry of synthetic QSOs from Ji-Jia down to $$i > 28.0$$;
         QSOs are modeled as point sources. 
     - **Tracts**: 9693
