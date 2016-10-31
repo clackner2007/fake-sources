@@ -54,10 +54,41 @@
 
 * by Akira Konno @ICRR
 
-* Inputs: 6-band (NB0816 or NB0921; and grizy) photometry of synthetic z=5.7 (or 6.6) LAEs at NB<27.0
-* Tracts: 9813 / 9464
-* Basic Information: 6-band tests in stacked images; random locations within the tract; ~150000 LAEs per tract
-* Progress: On going
+* **Inputs**: 6-band (NB0816 or NB0921; and grizy) photometry of synthetic z=5.7 (or 6.6) LAEs at NB<27.0
+* **Tracts**: 9813 / 9464
+* **Basic Information**: 6-band tests in stacked images; random locations within the tract; ~150000 LAEs per tract
+* **Progress**: On going
 
+----- 
 
+## Test the Selection Completness for the Paper of High-z Dropout Galaxies
+
+* by Yoshiaki Ono@ICRR (ono@icrr.u-tokyo.ac.jp)
+
+* The purpose of the tests is to estimate the completeness of high-z galaxies by using our selection criteria for the HSC SSP catalogs. 
+
+* All the catalogs are kept on the ICRR computer. Please contact Yoshiaki Ono if you are interested in the catalogs. The results will be used in high-z dropout galaxy papers. 
+
+### Tests for z=4 g-dropout, z=5 r-dropout, z=6 i-dropout and z=7 z-dropout galaxies 
+    - **Inputs**: 5-band photometry (grizy) of z=4-7 galaxies with $m_UV$=22-27 mag.    
+    - **Tracts**: 9813 (Ultradeep) / 9464 (Deep) / 8766 (Wide)
+    - **Basic Information**: added at single-visit level; grid locations 
+    - **Progress**: Finished
+
+### Tests for z=3 u-dropout galaxies and z=2 BX/BM galaxies
+    - **Inputs**: 6-band photometry (ugrizy) of z=2-3 galaxies with $m_UV$=22-27 mag. 
+    - **Progress**: in preparation; we need to work around the source inserting process for the CLAUDS u-band data.  
+
+----- 
+
+## Detection and Selection Tests in Small Scale Separations 
+
+* by Yuichi Harikane @ICRR  (hari@icrr.u-tokyo.ac.jp)
+
+* The catalogs are in the ICRR computer to save the resources in IPMU. Please contact Yuichi Harikane if you are interested in them.
+
+- **Inputs**: 5-band photometry of model Lyman break galaxies with `23.25<i<26.75 mag`.
+- **Tracts**: 9813 (UD-COSMOS)
+- **Basic Information**: Grid locations within the tract; ~200000 galaxies per tract. The separations of pairs are changed from 1" to 15" in order to test the detection/selection completeness depending on the separation.
+- **Progress**: Finished. 
 
