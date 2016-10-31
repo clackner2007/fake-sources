@@ -1,6 +1,4 @@
-#runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/qso 9693 \
-            -f HSC-Y -c jijia_qso_HSC-Y.fits \
-            -o qso_HSC-Y_syn -w -t 2.0 -j 10 --ra RA --dec Dec SynPipe Test for HSC S16A Data Release 
+# Basic SynPipe Photometric Tests 
 
 ---- 
 
