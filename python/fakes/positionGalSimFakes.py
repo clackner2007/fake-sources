@@ -30,6 +30,8 @@ class PositionGalSimFakesConfig(FakeSourcesConfig):
                             doc="Seed for random number generator")
     addShear = lsstConfig.Field(dtype=bool, default=False,
                                 doc='include shear in the galaxies')
+    addMask = lsstConfig.Field(dtype=bool, default=False,
+                               doc='add FAKE mask plane')
     sersic_prec = lsstConfig.Field(dtype=float, default=0.0,
                                    doc='The desired precision for n')
     cosStr = 'Use Galsim.COSMOSlog()'
@@ -242,7 +244,9 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                                                             galXY.getX(),
                                                             galXY.getY()))
             # Set bit mask
-            galMaskedImage.getMask().set(self.bitmask)
+            if self.config.addMask:
+                galMaskedImage.getMask().set(self.bitmask)
+
             maskedImage = exposure.getMaskedImage()
 
             BBox = galMaskedImage.getBBox(PARENT)
