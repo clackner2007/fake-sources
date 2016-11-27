@@ -92,3 +92,13 @@
 - **Basic Information**: Grid locations within the tract; ~200000 galaxies per tract. The separations of pairs are changed from 1" to 15" in order to test the detection/selection completeness depending on the separation.
 - **Progress**: Finished. 
 
+----- 
+
+## Detection and photometry tests in (CAMIRA) cluster fields 
+
+* by I-Non Chiu@ASIAA  (inchiu@asiaa.sinica.edu.tw)
+
+- **Inputs**: Coordinates (RA/Dec) and grizY band photometry of selected background galaxies (modelled from BC03 templates).
+- **Tracts**: TBD (we are going to select several typical clusters where we want to run Synpipe on).
+- **Basic Information**: Grid locations around cluster centers. We are going to study the `relative` difference (or a function of clustercentric radius) in detection and photometry.
+- **Progress**: The catalogs are done. The projection onto the tracts is being prepared.
