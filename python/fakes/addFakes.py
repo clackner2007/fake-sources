@@ -13,7 +13,6 @@ from lsst.pipe.base import ArgumentParser
 from lsst.pipe.tasks.fakes import DummyFakeSourcesTask
 
 import hsc.pipe.base.butler as hscButler
-
 from hsc.pipe.base.pool import abortOnError, Pool, Debugger
 from hsc.pipe.base.parallel import BatchPoolTask
 
@@ -155,17 +154,17 @@ class addFakesTask(BatchPoolTask):
                 self.log.info("Finishing... %s - %s" % (dataId, ccdId))
 
                 """ Remove unused mask plane CR, and UNMASKEDNAN """
-                self.log.info("Removing unused mask plane")
-                maskPlane = exposure.getMaskedImage().getMask()
-                try:
-                    maskPlane.removeAndClearMaskPlane('CROSSTALK', True)
-                except Exception:
-                    self.log.info("Can not remove the CROSSTALK plane")
+                #self.log.info("Removing unused mask plane")
+                #maskPlane = exposure.getMaskedImage().getMask()
+                #try:
+                #    maskPlane.removeAndClearMaskPlane('CROSSTALK', True)
+                #except Exception:
+                #    self.log.info("Can not remove the CROSSTALK plane")
 
-                try:
-                    maskPlane.removeAndClearMaskPlane('UNMASKEDNAN', True)
-                except Exception:
-                    self.log.info("Can not remove the UNMASKEDNAN plane")
+                #try:
+                #    maskPlane.removeAndClearMaskPlane('UNMASKEDNAN', True)
+                #except Exception:
+                #    self.log.info("Can not remove the UNMASKEDNAN plane")
 
                 dataRef.put(exposure, "calexp")
 
