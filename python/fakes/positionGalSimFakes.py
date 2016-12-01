@@ -244,8 +244,8 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                                                             galXY.getX(),
                                                             galXY.getY()))
             # Set bit mask
-            if self.config.addMask:
-                galMaskedImage.getMask().set(self.bitmask)
+            #if self.config.addMask:
+            galMaskedImage.getMask().set(self.bitmask)
 
             maskedImage = exposure.getMaskedImage()
 
