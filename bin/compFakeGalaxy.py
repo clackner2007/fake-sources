@@ -181,6 +181,8 @@ def main(root1, root2, visit, ccd, root=None, showMatch=False):
 
     # get the name of the rerun
     rerun = os.path.split(root2)[-1]
+    if rerun is '':
+        rerun = 'synpipe'
 
     # get the image array before the fake objects are added
     if root is not None:
