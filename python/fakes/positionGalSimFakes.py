@@ -244,21 +244,7 @@ class PositionGalSimFakesTask(FakeSourcesTask):
                                                             galXY.getX(),
                                                             galXY.getY()))
             # Set bit mask
-            #if self.config.addMask:
-
             galMaskedImage.getMask().set(self.bitmask)
-            try:
-                galMaskedImage.getMask().removeAndClearMaskPlane('FAKE', True)
-            except Exception:
-                pass
-            try:
-                galMaskedImage.getMask().removeAndClearMaskPlane('CROSSTALK', True)
-            except Exception:
-                pass
-            try:
-                galMaskedImage.getMask().removeAndClearMaskPlane('UNMASKEDNAN', True)
-            except Exception:
-                pass
 
             maskedImage = exposure.getMaskedImage()
             try:
