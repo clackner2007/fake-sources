@@ -236,9 +236,48 @@
 * **120363** objects are included.  
     - Files: `star_8764_HSC-G/R/I/Z/Y.fits` 
 
+
 ### Galaxies from Claire's COSMOS catalog 
 
-* **TBD**
+#### Assign realistic optical colors to fake galaxies
+
+* TODO: Fill more details later
+* `cosmos_mag25.2_shuang_multiband_phocolor_short.fits`
+
+#### Generate Input Catalogs for Tract=9699; Full magnitude range; Full Sersic index range
+
+* Command: 
+    ```
+    makeSourceList.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+        --rerun /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+        --id tract=9699 filter='HSC-I' patch='4,4' \
+        -c inputCat='cosmos_mag25.2_shuang_multiband_phocolor_short.fits' \
+        innerTract=True uniqueID=True \
+        rhoFakes=500 \
+        rejMask='dr1_s16a_9699_nodata_all.wkb' \
+        acpMask='dr1_s16a_9699_HSC-I_shape_all.wkb'
+    ```
+
+* **39869** objects are included.  
+    - Files: `galaxy_all_9699_HSC-G/R/I/Z/Y.fits` 
+
+#### Generate Input Catalogs for Tract=8764; Full magnitude range; Full Sersic index range
+
+* Command: 
+    ```
+    makeSourceList.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+        --rerun /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+        --id tract=8764 filter='HSC-I' patch='4,4' \
+        -c inputCat='cosmos_mag25.2_shuang_multiband_phocolor_short.fits' \
+        innerTract=True uniqueID=True \
+        rhoFakes=500 \
+        rejMask='dr1_s16a_8764_nodata_all.wkb' \
+        acpMask='dr1_s16a_8764_HSC-I_shape_all.wkb'
+    ```
+
+* **40115** objects are included.  
+    - Files: `galaxy_all_8764_HSC-G/R/I/Z/Y.fits` 
+
 
 ----
 
@@ -547,6 +586,153 @@
                 /lustre/Subaru/SSP/rerun/song/fake/synpipe/qso 34892 40
             ```
             - Looks Ok: `qso-34892-40.png`
+
+
+### Galaxies in Tract=9699 (Full magnitude and Sersic index range) 
+
+#### Prepare Config Files
+
+* Example config file: 
+    ```
+    from fakes import positionGalSimFakes
+    root.fakes.retarget(positionGalSimFakes.PositionGalSimFakesTask)
+    root.fakes.galList = 'galaxy_all_9699_HSC-G.fits'
+    root.fakes.galType = 'sersic'
+    root.fakes.maxMargin = 150
+    root.fakes.addShear = False
+    ```
+
+* Config files: `galaxy_all_9699_HSC-G/R/I/Z/Y.config`
+
+#### runAddFakes.py
+
+* Commands 
+    - `HSC-G`:
+        ```
+        runAddFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+            --output /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all1 \
+            --id visit=$G9699 \
+            --clobber-config -C galaxy_all_9699_HSC-G.config \
+            --queue small --job galA1_add_G --nodes 9 --procs 12
+        ```
+        * Submit: 12/23/06:33; 
+        * Start: 10/25/10:15; Finished: 10/25/11:46  
+        * Visual check: 
+            ```
+            compFakeGalaxy.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all1 42432 40
+            ```
+            - Looks Ok: `gal_all1-42432-40.png`
+
+    - `HSC-R`:
+        ```
+        runAddFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+            --output /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all1 \
+            --id visit=$R9699 \
+            --clobber-config -C galaxy_all_9699_HSC-R.config \
+            --queue small --job galA1_add_R --nodes 9 --procs 12
+        ```
+        * Submit: 12/23/06:36; 
+
+    - `HSC-I`:
+        ```
+        runAddFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+            --output /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all1 \
+            --id visit=$I9699 \
+            --clobber-config -C galaxy_all_9699_HSC-I.config \
+            --queue small --job galA1_add_I --nodes 9 --procs 12
+        ```
+        * Submit: 12/23/06:37; 
+
+    - `HSC-Z`:
+        ```
+        runAddFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+            --output /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all1 \
+            --id visit=$Z9699 \
+            --clobber-config -C galaxy_all_9699_HSC-Z.config \
+            --queue small --job galA1_add_Z --nodes 9 --procs 12
+        ```
+        * Submit: 12/23/06:38; 
+
+    - `HSC-Y`:
+        ```
+        runAddFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+            --output /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all1 \
+            --id visit=$Y9699 \
+            --clobber-config -C galaxy_all_9699_HSC-Y.config \
+            --queue small --job galA1_add_Y --nodes 9 --procs 12
+        ```
+        * Submit: 12/23/06:39; 
+
+
+### Galaxies in Tract=8764 (Full magnitude and Sersic index range) 
+
+#### Prepare Config Files
+
+* Example config file: 
+    ```
+    from fakes import positionGalSimFakes
+    root.fakes.retarget(positionGalSimFakes.PositionGalSimFakesTask)
+    root.fakes.galList = 'galaxy_all_8764_HSC-G.fits'
+    root.fakes.galType = 'sersic'
+    root.fakes.maxMargin = 150
+    root.fakes.addShear = False
+    ```
+
+* Config files: `galaxy_all_8764_HSC-G/R/I/Z/Y.config`
+
+#### runAddFakes.py
+
+* Commands 
+    - `HSC-G`:
+        ```
+        runAddFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+            --output /data3a/work/song/synpipe/gal_all2 \
+            --id visit=$G8764 \
+            --clobber-config -C galaxy_all_8764_HSC-G.config \
+            --queue small --job galA2_add_G --nodes 9 --procs 12
+        ```
+        * Submit: 12/23/06:41; 
+
+    - `HSC-R`:
+        ```
+        runAddFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+            --output /data3a/work/song/synpipe/gal_all2 \
+            --id visit=$R8764 \
+            --clobber-config -C galaxy_all_8764_HSC-R.config \
+            --queue small --job galA2_add_R --nodes 9 --procs 12
+        ```
+        * Submit: 12/23/06:42; 
+
+    - `HSC-I`:
+        ```
+        runAddFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+            --output /data3a/work/song/synpipe/gal_all2 \
+            --id visit=$I8764 \
+            --clobber-config -C galaxy_all_8764_HSC-I.config \
+            --queue small --job galA2_add_I --nodes 9 --procs 12
+        ```
+        * Submit: 12/23/06:42; 
+
+    - `HSC-Z`:
+        ```
+        runAddFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+            --output /data3a/work/song/synpipe/gal_all2 \
+            --id visit=$Z8764 \
+            --clobber-config -C galaxy_all_8764_HSC-Z.config \
+            --queue small --job galA2_add_Z --nodes 9 --procs 12
+        ```
+        * Submit: 12/23/06:38; 
+
+    - `HSC-Y`:
+        ```
+        runAddFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide/ \
+            --output /data3a/work/song/synpipe/gal_all2 \
+            --id visit=$Y8764 \
+            --clobber-config -C galaxy_all_8764_HSC-Y.config \
+            --queue small --job galA2_add_Y --nodes 9 --procs 12
+        ```
+        * Submit: 12/23/06:39; 
 
 ----
 
