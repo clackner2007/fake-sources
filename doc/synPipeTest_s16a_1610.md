@@ -616,13 +616,13 @@
             --queue small --job galA1_add_G --nodes 9 --procs 12
         ```
         * Submit: 12/23/06:33; 
-        * Start: 10/25/10:15; Finished: 10/25/11:46  
+        * Start: 12/23/06:34; Finished: 10/25/07:29  
         * Visual check: 
             ```
             compFakeGalaxy.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
-                /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all1 42432 40
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all1 34386 40
             ```
-            - Looks Ok: `gal_all1-42432-40.png`
+            - Looks Ok: `gal_all1-34386-40.png`
 
     - `HSC-R`:
         ```
@@ -633,6 +633,13 @@
             --queue small --job galA1_add_R --nodes 9 --procs 12
         ```
         * Submit: 12/23/06:36; 
+        * Start: 12/23/06:36; Finished: 10/25/07:32  
+        * Visual check: 
+            ```
+            compFakeGalaxy.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all1 34726 40
+            ```
+            - Looks Ok: `gal_all1-34726-40.png`
 
     - `HSC-I`:
         ```
@@ -643,6 +650,13 @@
             --queue small --job galA1_add_I --nodes 9 --procs 12
         ```
         * Submit: 12/23/06:37; 
+        * Start: 12/23/06:37; Finished: 10/25/07:59  
+        * Visual check: 
+            ```
+            compFakeGalaxy.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all1 36132 40
+            ```
+            - Looks Ok: `gal_all1-36132-40.png`
 
     - `HSC-Z`:
         ```
@@ -653,6 +667,13 @@
             --queue small --job galA1_add_Z --nodes 9 --procs 12
         ```
         * Submit: 12/23/06:38; 
+        * Start: 12/23/07:29; Finished: 10/25/08:74  
+        * Visual check: 
+            ```
+            compFakeGalaxy.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all1 38932 40
+            ```
+            - Looks Ok: `gal_all1-38932-40.png`
 
     - `HSC-Y`:
         ```
@@ -663,6 +684,13 @@
             --queue small --job galA1_add_Y --nodes 9 --procs 12
         ```
         * Submit: 12/23/06:39; 
+        * Start: 12/23/07:32; Finished: 10/25/08:30  
+        * Visual check: 
+            ```
+            compFakeGalaxy.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all1 36760 40
+            ```
+            - Looks Ok: `gal_all1-36760-40.png`
 
 
 ### Galaxies in Tract=8764 (Full magnitude and Sersic index range) 
@@ -693,6 +721,13 @@
             --queue small --job galA2_add_G --nodes 9 --procs 12
         ```
         * Submit: 12/23/06:41; 
+        * Start: 12/23/07:59; Finished: 10/25/09:05  
+        * Visual check: 
+            ```
+            compFakeGalaxy.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /data3a/work/song/synpipe/gal_all2 42432 40
+            ```
+            - Looks Ok: `gal_all2-42432-40.png`
 
     - `HSC-R`:
         ```
@@ -703,6 +738,13 @@
             --queue small --job galA2_add_R --nodes 9 --procs 12
         ```
         * Submit: 12/23/06:42; 
+        * Start: 12/23/08:30; Finished: 10/25/10:11  
+        * Visual check: 
+            ```
+            compFakeGalaxy.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /data3a/work/song/synpipe/gal_all2 41040 40
+            ```
+            - Looks Ok: `gal_all2-41040-40.png`
 
     - `HSC-I`:
         ```
@@ -713,6 +755,13 @@
             --queue small --job galA2_add_I --nodes 9 --procs 12
         ```
         * Submit: 12/23/06:42; 
+        * Start: 12/23/08:47; Finished: 10/25/11:40  
+        * Visual check: 
+            ```
+            compFakeGalaxy.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /data3a/work/song/synpipe/gal_all2 14168 40
+            ```
+            - Looks Ok: `gal_all2-14168-40.png`
 
     - `HSC-Z`:
         ```
@@ -723,6 +772,13 @@
             --queue small --job galA2_add_Z --nodes 9 --procs 12
         ```
         * Submit: 12/23/06:38; 
+        * Start: 12/23/09:05; Finished: 10/25/11:40  
+        * Visual check: 
+            ```
+            compFakeGalaxy.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /data3a/work/song/synpipe/gal_all2 15146 40
+            ```
+            - Looks Ok: `gal_all2-15146-40.png`
 
     - `HSC-Y`:
         ```
@@ -733,6 +789,13 @@
             --queue small --job galA2_add_Y --nodes 9 --procs 12
         ```
         * Submit: 12/23/06:39; 
+        * Start: 12/23/10:11; Finished: 10/25/12:16  
+        * Visual check: 
+            ```
+            compFakeGalaxy.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /data3a/work/song/synpipe/gal_all2 16102 40
+            ```
+            - Looks Ok: `gal_all2-16102-40.png`
 
 ----
 
@@ -1068,6 +1131,210 @@
             ```
             - File: `qso-9693-4,4-HSC-Y.png`
 
+
+### Galaxies in Tract=9699 (Full magnitude and Sersic index range) 
+
+#### Stack.py 
+
+* Commands: 
+
+    - `HSC-G`: 
+        ```
+        stack.py /lustre/Subaru/SSP/ --rerun=song/fake/synpipe/gal_all1 \
+            --job galA1_stack-G --queue small --nodes 9 --procs 12 \
+            --batch-type=pbs --mpiexec='-bind-to socket' \
+            --clobber-config \
+            --config makeCoaddTempExp.doOverwrite=True doOverwriteCoadd=True \
+            --id tract=9699 filter=HSC-G \
+            --selectId visit=$G9699
+        ```
+        * Submit: 12/23/16:54
+        * Start: 12/23/16:58; Finished: 12/23/17:20  
+        * Visual check:
+            ```
+            compFakeCoadd.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all1 9699 4,4 HSC-G
+            ```
+            - File: `gal_all1-9699-4,4-HSC-G.png`
+
+    - `HSC-R`: 
+        ```
+        stack.py /lustre/Subaru/SSP/ --rerun=song/fake/synpipe/gal_all1 \
+            --job galA1_stack-R --queue small --nodes 9 --procs 12 \
+            --batch-type=pbs --mpiexec='-bind-to socket' \
+            --clobber-config \
+            --config makeCoaddTempExp.doOverwrite=True doOverwriteCoadd=True \
+            --id tract=9699 filter=HSC-R \
+            --selectId visit=$R9699
+        ```
+        * Submit: 12/23/17:00
+        * Start: 12/23/17:00; Finished: 12/23/17:25  
+        * Visual check:
+            ```
+            compFakeCoadd.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all1 9699 4,4 HSC-R
+            ```
+            - File: `gal_all1-9699-4,4-HSC-R.png`
+
+    - `HSC-I`: 
+        ```
+        stack.py /lustre/Subaru/SSP/ --rerun=song/fake/synpipe/gal_all1 \
+            --job galA1_stack-I --queue small --nodes 9 --procs 12 \
+            --batch-type=pbs --mpiexec='-bind-to socket' \
+            --clobber-config \
+            --config makeCoaddTempExp.doOverwrite=True doOverwriteCoadd=True \
+            --id tract=9699 filter=HSC-I \
+            --selectId visit=$I9699
+        ```
+        * Submit: 12/23/17:01
+        * Start: 12/23/17:01; Finished: 12/23/17:40  
+        * Visual check:
+            ```
+            compFakeCoadd.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all1 9699 4,4 HSC-I
+            ```
+            - File: `gal_all1-9699-4,4-HSC-I.png`
+
+    - `HSC-Z`: 
+        ```
+        stack.py /lustre/Subaru/SSP/ --rerun=song/fake/synpipe/gal_all1 \
+            --job galA1_stack-Z --queue small --nodes 9 --procs 12 \
+            --batch-type=pbs --mpiexec='-bind-to socket' \
+            --clobber-config \
+            --config makeCoaddTempExp.doOverwrite=True doOverwriteCoadd=True \
+            --id tract=9699 filter=HSC-Z \
+            --selectId visit=$Z9699
+        ```
+        * Submit: 12/23/17:02
+        * Start: 12/23/17:20; Finished: 12/23/17:46  
+        * Visual check:
+            ```
+            compFakeCoadd.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all1 9699 4,4 HSC-Z
+            ```
+            - File: `gal_all1-9699-4,4-HSC-Z.png`
+
+    - `HSC-Y`: 
+        ```
+        stack.py /lustre/Subaru/SSP/ --rerun=song/fake/synpipe/gal_all1 \
+            --job galA1_stack-Y --queue small --nodes 9 --procs 12 \
+            --batch-type=pbs --mpiexec='-bind-to socket' \
+            --clobber-config \
+            --config makeCoaddTempExp.doOverwrite=True doOverwriteCoadd=True \
+            --id tract=9699 filter=HSC-Y \
+            --selectId visit=$Y9699
+        ```
+        * Submit: 12/23/17:03
+        * Start: 12/23/17:25; Finished: 12/23/17:45  
+        * Visual check:
+            ```
+            compFakeCoadd.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all1 9699 4,4 HSC-Y
+            ```
+            - File: `gal_all1-9699-4,4-HSC-Y.png`
+
+
+### Galaxies in Tract=8764 (Full magnitude and Sersic index range) 
+
+#### Stack.py 
+
+* Commands: 
+
+    - `HSC-G`: 
+        ```
+        stack.py /lustre/Subaru/SSP/ --rerun=song/fake/synpipe/gal_all2 \
+            --job galA2_stack-G --queue small --nodes 9 --procs 12 \
+            --batch-type=pbs --mpiexec='-bind-to socket' \
+            --clobber-config \
+            --config makeCoaddTempExp.doOverwrite=True doOverwriteCoadd=True \
+            --id tract=8764 filter=HSC-G \
+            --selectId visit=$G8764
+        ```
+        * Submit: 12/23/17:14
+        * Start: 12/24/11:06; Finished: 12/24/01:17  
+        * Visual check:
+            ```
+            compFakeCoadd.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all2 8764 4,4 HSC-G
+            ```
+            - File: `gal_all2-8764-4,4-HSC-G.png`
+
+    - `HSC-R`: 
+        ```
+        stack.py /lustre/Subaru/SSP/ --rerun=song/fake/synpipe/gal_all2 \
+            --job galA2_stack-R --queue small --nodes 9 --procs 12 \
+            --batch-type=pbs --mpiexec='-bind-to socket' \
+            --clobber-config \
+            --config makeCoaddTempExp.doOverwrite=True doOverwriteCoadd=True \
+            --id tract=8764 filter=HSC-R \
+            --selectId visit=$R8764
+        ```
+        * Submit: 12/23/17:14
+        * Start: 12/24/01:13; Finished: 12/24/01:41  
+        * Visual check:
+            ```
+            compFakeCoadd.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all2 8764 4,4 HSC-R
+            ```
+            - File: `gal_all2-8764-4,4-HSC-R.png`
+
+    - `HSC-I`: 
+        ```
+        stack.py /lustre/Subaru/SSP/ --rerun=song/fake/synpipe/gal_all2 \
+            --job galA2_stack-I --queue small --nodes 9 --procs 12 \
+            --batch-type=pbs --mpiexec='-bind-to socket' \
+            --clobber-config \
+            --config makeCoaddTempExp.doOverwrite=True doOverwriteCoadd=True \
+            --id tract=8764 filter=HSC-I \
+            --selectId visit=$I8764
+        ```
+        * Submit: 12/23/17:15
+        * Start: 12/24/01:14; Finished: 12/24/01:56  
+        * Visual check:
+            ```
+            compFakeCoadd.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all2 8764 4,4 HSC-I
+            ```
+            - File: `gal_all2-8764-4,4-HSC-I.png`
+
+    - `HSC-Z`: 
+        ```
+        stack.py /lustre/Subaru/SSP/ --rerun=song/fake/synpipe/gal_all2 \
+            --job galA2_stack-Z --queue small --nodes 9 --procs 12 \
+            --batch-type=pbs --mpiexec='-bind-to socket' \
+            --clobber-config \
+            --config makeCoaddTempExp.doOverwrite=True doOverwriteCoadd=True \
+            --id tract=8764 filter=HSC-Z \
+            --selectId visit=$Z8764
+        ```
+        * Submit: 12/23/17:15
+        * Start: 12/24/01:17; Finished: 12/24/01:57  
+        * Visual check:
+            ```
+            compFakeCoadd.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all2 8764 4,4 HSC-Z
+            ```
+            - File: `gal_all2-8764-4,4-HSC-Z.png`
+
+    - `HSC-Y`: 
+        ```
+        stack.py /lustre/Subaru/SSP/ --rerun=song/fake/synpipe/gal_all2 \
+            --job galA2_stack-Y --queue small --nodes 9 --procs 12 \
+            --batch-type=pbs --mpiexec='-bind-to socket' \
+            --clobber-config \
+            --config makeCoaddTempExp.doOverwrite=True doOverwriteCoadd=True \
+            --id tract=8764 filter=HSC-Y \
+            --selectId visit=$Y8764
+        ```
+        * Submit: 12/23/17:15
+        * Start: 12/24/01:41; Finished: 12/24/02:02  
+        * Visual check:
+            ```
+            compFakeCoadd.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide \
+                /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all2 8764 4,4 HSC-Y
+            ```
+            - File: `gal_all2-8764-4,4-HSC-Y.png`
+
 -----
 
 ## Photometric Measurement using Multiband.py
@@ -1081,6 +1348,19 @@
     root.clobberMeasurements = True
     root.clobberMergedMeasurements = True
     root.clobberForcedPhotometry = True
+    ```
+
+* `multi_pix.config`: 
+    ```
+    root.measureCoaddSources.propagateFlags.flags={}
+    root.clobberMergedDetections = True
+    root.clobberMeasurements = True
+    root.clobberMergedMeasurements = True
+    root.clobberForcedPhotometry = True
+    root.forcedPhotCoadd.measurement.algorithms["cmodel"].exp.usePixelWeights = True
+    root.forcedPhotCoadd.measurement.algorithms["cmodel"].dev.usePixelWeights = True
+    root.measureCoaddSources.measurement.algorithms["cmodel"].exp.usePixelWeights = True
+    root.measureCoaddSources.measurement.algorithms["cmodel"].dev.usePixelWeights = True
     ```
 
 ### Point Sources in Tract=9699 
@@ -1129,6 +1409,76 @@
     ```
     * Submit: 10/26/20:58
     * Start: 10/27/05:02; Finished: 10/27/10:13 
+
+
+### Galaxies in Tract=9699 (Full magnitude and Sersic index range) 
+
+#### Multiband.py using `multi.config` 
+
+* Command: 
+    ```
+    multiBand.py /lustre/Subaru/SSP/ --rerun=song/fake/synpipe/gal_all1 \
+        --id tract=9699 filter=HSC-I^HSC-R^HSC-Z^HSC-G^HSC-Y \
+        --job=galA1_multi --clobber-config -C multi.config \
+        --queue small --nodes 9 --procs 12 \
+        --batch-type=pbs --mpiexec="-bind-to socket" --time=1000000 
+    ```
+    * Submit: 12/23:17:53
+    * Start: 10/26/20:31; Finished: 10/26/00:54 
+
+#### TODO: Afterburner.py
+
+* Command: 
+    ```
+    afterburner.py /lustre/Subaru/SSP --rerun song/fake/synpipe/gal_all1 \
+        --id tract=9699 filter=HSC-G^HSC-R^HSC-I^HSC-Z^HSC-Y \
+        --doraise -j 12 --logdest galA1_afterburner.log -t 999999999999
+    ```
+    * Submit: 12/23:17:53
+    * Start: 10/26/13:34; Finished: 10/26/16:24 
+
+#### Multiband.py using `multi_pix.config` 
+
+* Command: 
+    ```
+    multiBand.py /lustre/Subaru/SSP/ --rerun=song/fake/synpipe/gal_all1 \
+        --id tract=9699 filter=HSC-I^HSC-R^HSC-Z^HSC-G^HSC-Y \
+        --job=galA1_multipix --clobber-config -C multi_pix.config \
+        --queue small --nodes 9 --procs 12 \
+        --batch-type=pbs --mpiexec="-bind-to socket" --time=1000000 
+    ```
+    * Submit: 12/24:02:32
+    * Start: 12/24/02:36; Finished: 10/26/07:42 
+
+
+### Galaxies in Tract=8764 (Full magnitude and Sersic index range) 
+
+#### Multiband.py using `multi.config` 
+
+* Command: 
+    ```
+    multiBand.py /lustre/Subaru/SSP/ --rerun=song/fake/synpipe/gal_all2 \
+        --id tract=8764 filter=HSC-I^HSC-R^HSC-Z^HSC-G^HSC-Y \
+        --job=galA2_multi --clobber-config -C multi.config \
+        --queue small --nodes 9 --procs 12 \
+        --batch-type=pbs --mpiexec="-bind-to socket" --time=1000000 
+    ```
+    * Submit: 12/24:02:10
+    * Start: 12/24/02:10; Finished: 10/26/05:33 
+
+#### Multiband.py using `multi_pix.config` 
+
+* Command: 
+    ```
+    multiBand.py /lustre/Subaru/SSP/ --rerun=song/fake/synpipe/gal_all2 \
+        --id tract=8764 filter=HSC-I^HSC-R^HSC-Z^HSC-G^HSC-Y \
+        --job=galA2_multipix --clobber-config -C multi_pix.config \
+        --queue small --nodes 9 --procs 12 \
+        --batch-type=pbs --mpiexec="-bind-to socket" --time=1000000 
+    ```
+    * Submit: 12/24:09:42
+    * Start: 12/24/02:10; Finished: 10/26/05:33 
+
 
 -----
 
@@ -1400,5 +1750,232 @@
             -o qso_HSC-Y_ori -w -t 2.5 -j 6 --ra RA --dec Dec 
         ```
         - File: `qso_HSC-Y_ori.fits`
+
+### Fake Galaxies Tract=9699 (Full magnitude and Sersic index range)
+
+#### Rerun with Fake Objects 
+
+* Commands: 
+    -`HSC-G`:
+        ``` bash
+        runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all1 9699 \
+            -f HSC-G -c galaxy_all_9699_HSC-G.fits \
+            -o gal_all1_HSC-G_syn -w -t 2.0 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `gal_all1_HSC-G_syn.fits`
+        - Visual check: Ok
+
+    -`HSC-R`:
+        ``` bash
+        runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all1 9699 \
+            -f HSC-R -c galaxy_all_9699_HSC-R.fits \
+            -o gal_all1_HSC-R_syn -w -t 2.0 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `gal_all1_HSC-R_syn.fits`
+        - Visual check: Ok
+
+    -`HSC-I`:
+        ``` bash
+        runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all1 9699 \
+            -f HSC-I -c galaxy_all_9699_HSC-I.fits \
+            -o gal_all1_HSC-I_syn -w -t 2.0 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `gal_all1_HSC-I_syn.fits`
+
+    -`HSC-Z`:
+        ``` bash
+        runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all1 9699 \
+            -f HSC-Z -c galaxy_all_9699_HSC-Z.fits \
+            -o gal_all1_HSC-Z_syn -w -t 2.0 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `gal_all1_HSC-Z_syn.fits`
+
+    -`HSC-Y`:
+        ``` bash
+        runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all1 9699 \
+            -f HSC-Y -c galaxy_all_9699_HSC-Y.fits \
+            -o gal_all1_HSC-Y_syn -w -t 2.0 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `gal_all1_HSC-Y_syn.fits`
+
+#### Rerun with Fake Objects (multipix run) 
+
+* Commands: 
+    -`HSC-G`:
+        ``` bash
+        runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all1 9699 \
+            -f HSC-G -c galaxy_all_9699_HSC-G.fits \
+            -o gal_all1_HSC-G_syn_multipix -w -t 2.0 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `gal_all1_HSC-G_syn_multipix.fits`
+        - Visual check: Ok
+
+    -`HSC-R`:
+        ``` bash
+        runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all1 9699 \
+            -f HSC-R -c galaxy_all_9699_HSC-R.fits \
+            -o gal_all1_HSC-R_syn_multipix -w -t 2.0 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `gal_all1_HSC-R_syn_multipix.fits`
+        - Visual check: Ok
+
+    -`HSC-I`:
+        ``` bash
+        runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all1 9699 \
+            -f HSC-I -c galaxy_all_9699_HSC-I.fits \
+            -o gal_all1_HSC-I_syn_multipix -w -t 2.0 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `gal_all1_HSC-I_syn_multipix.fits`
+
+    -`HSC-Z`:
+        ``` bash
+        runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all1 9699 \
+            -f HSC-Z -c galaxy_all_9699_HSC-Z.fits \
+            -o gal_all1_HSC-Z_syn_multipix -w -t 2.0 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `gal_all1_HSC-Z_syn_multipix.fits`
+
+    -`HSC-Y`:
+        ``` bash
+        runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all1 9699 \
+            -f HSC-Y -c galaxy_all_9699_HSC-Y.fits \
+            -o gal_all1_HSC-Y_syn_multipix -w -t 2.0 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `gal_all1_HSC-Y_syn_multipix.fits`
+
+#### Match with original rerun 
+
+* Commands: 
+    -`HSC-G`:
+        ``` bash
+        runMatchFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide 9699 \
+            -f HSC-G -c galaxy_all_9699_HSC-G.fits \
+            -o gal_all1_HSC-G_ori -w -t 2.5 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `gal_all1_HSC-G_ori.fits`
+
+    -`HSC-R`:
+        ``` bash
+        runMatchFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide 9699 \
+            -f HSC-R -c galaxy_all_9699_HSC-R.fits \
+            -o gal_all1_HSC-R_ori -w -t 2.5 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `gal_all1_HSC-R_ori.fits`
+
+    -`HSC-I`:
+        ``` bash
+        runMatchFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide 9699 \
+            -f HSC-I -c galaxy_all_9699_HSC-I.fits \
+            -o gal_all1_HSC-I_ori -w -t 2.5 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `gal_all1_HSC-I_ori.fits`
+
+    -`HSC-Z`:
+        ``` bash
+        runMatchFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide 9699 \
+            -f HSC-Z -c galaxy_all_9699_HSC-Z.fits \
+            -o gal_all1_HSC-Z_ori -w -t 2.5 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `gal_all1_HSC-Z_ori.fits`
+
+    -`HSC-Y`:
+        ``` bash
+        runMatchFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide 9699 \
+            -f HSC-Y -c galaxy_all_9699_HSC-Y.fits \
+            -o gal_all1_HSC-Y_ori -w -t 2.5 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `gal_all1_HSC-Y_ori.fits`
+
+### Fake Galaxies Tract=8764 (Full magnitude and Sersic index range)
+
+#### Rerun with Fake Objects 
+
+* Commands: 
+    -`HSC-G`:
+        ``` bash
+        runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all2 8764 \
+            -f HSC-G -c galaxy_all_8764_HSC-G.fits \
+            -o gal_all2_HSC-G_syn -w -t 2.0 -j 8 --ra RA --dec Dec 
+        ```
+        - File: `gal_all2_HSC-G_syn.fits`
+        - Visual check: Ok
+
+    -`HSC-R`:
+        ``` bash
+        runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all2 8764 \
+            -f HSC-R -c galaxy_all_8764_HSC-R.fits \
+            -o gal_all2_HSC-R_syn -w -t 2.0 -j 8 --ra RA --dec Dec 
+        ```
+        - File: `gal_all2_HSC-R_syn.fits`
+        - Visual check: Ok
+
+    -`HSC-I`:
+        ``` bash
+        runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all2 8764 \
+            -f HSC-I -c galaxy_all_8764_HSC-I.fits \
+            -o gal_all2_HSC-I_syn -w -t 2.0 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `gal_all2_HSC-I_syn.fits`
+
+    -`HSC-Z`:
+        ``` bash
+        runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all2 8764 \
+            -f HSC-Z -c galaxy_all_8764_HSC-Z.fits \
+            -o gal_all2_HSC-Z_syn -w -t 2.0 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `gal_all2_HSC-Z_syn.fits`
+
+    -`HSC-Y`:
+        ``` bash
+        runMatchFakes.py /lustre/Subaru/SSP/rerun/song/fake/synpipe/gal_all2 8764 \
+            -f HSC-Y -c galaxy_all_8764_HSC-Y.fits \
+            -o gal_all2_HSC-Y_syn -w -t 2.0 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `gal_all2_HSC-Y_syn.fits`
+
+#### Match with original rerun 
+
+* Commands: 
+    -`HSC-G`:
+        ``` bash
+        runMatchFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide 8764 \
+            -f HSC-G -c galaxy_all_8764_HSC-G.fits \
+            -o gal_all2_HSC-G_ori -w -t 2.5 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `gal_all2_HSC-G_ori.fits`
+
+    -`HSC-R`:
+        ``` bash
+        runMatchFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide 8764 \
+            -f HSC-R -c galaxy_all_8764_HSC-R.fits \
+            -o gal_all2_HSC-R_ori -w -t 2.5 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `gal_all2_HSC-R_ori.fits`
+
+    -`HSC-I`:
+        ``` bash
+        runMatchFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide 8764 \
+            -f HSC-I -c galaxy_all_8764_HSC-I.fits \
+            -o gal_all2_HSC-I_ori -w -t 2.5 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `gal_all2_HSC-I_ori.fits`
+
+    -`HSC-Z`:
+        ``` bash
+        runMatchFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide 8764 \
+            -f HSC-Z -c galaxy_all_8764_HSC-Z.fits \
+            -o gal_all2_HSC-Z_ori -w -t 2.5 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `gal_all2_HSC-Z_ori.fits`
+
+    -`HSC-Y`:
+        ``` bash
+        runMatchFakes.py /lustre2/HSC_DR/dr1/s15b/data/s15b_wide 8764 \
+            -f HSC-Y -c galaxy_all_8764_HSC-Y.fits \
+            -o gal_all2_HSC-Y_ori -w -t 2.5 -j 6 --ra RA --dec Dec 
+        ```
+        - File: `gal_all2_HSC-Y_ori.fits`
+
+
 
 -----
