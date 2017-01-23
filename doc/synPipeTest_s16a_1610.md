@@ -1426,7 +1426,9 @@
     * Submit: 12/23:17:53
     * Start: 10/26/20:31; Finished: 10/26/00:54 
 
-#### TODO: Afterburner.py
+#### Afterburner.py
+
+* Need to copy the original schema files to the reruns for fakes
 
 * Command: 
     ```
@@ -1434,8 +1436,9 @@
         --id tract=9699 filter=HSC-G^HSC-R^HSC-I^HSC-Z^HSC-Y \
         --doraise -j 12 --logdest galA1_afterburner.log -t 999999999999
     ```
-    * Submit: 12/23:17:53
-    * Start: 10/26/13:34; Finished: 10/26/16:24 
+    * Submit: 01/23:16:36
+    * Start: 01/23/16:36; Finished: 10/26/16:24 
+
 
 #### Multiband.py using `multi_pix.config` 
 
