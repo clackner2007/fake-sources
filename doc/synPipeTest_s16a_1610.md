@@ -1482,6 +1482,19 @@
     * Submit: 12/24:09:42
     * Start: 12/24/02:10; Finished: 10/26/05:33 
 
+#### Afterburner.py
+
+* Need to copy the original schema files to the reruns for fakes
+
+* Command: 
+    ```
+    afterburner.py /lustre/Subaru/SSP --rerun song/fake/synpipe/gal_all2 \
+        --id tract=8764 filter=HSC-G^HSC-R^HSC-I^HSC-Z^HSC-Y \
+        --doraise -j 12 --logdest galA2_afterburner.log -t 999999999999
+    ```
+    * Submit: 01/23:16:36
+    * Start: 01/23/16:36; Finished: 10/26/16:24 
+
 
 -----
 
